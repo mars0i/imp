@@ -128,6 +128,11 @@ let list_complement max_n subset =
 
 (* let algebra_complements omega idx_sets = L.map (fun s -> subtract_list omega s) idx_sets *)
 
+(* DEBUG *)
+let prmax x y = 
+  let mx = max x y in
+  Printf.printf "%s\n" (if mx = x then "first" else "second");
+  mx
 
 (** Calculate a lower, L value from a probability interval.
     Equation (3) p. 1317 in Skulj 2009 (funny capitalization evokes the paper) *)
@@ -191,12 +196,23 @@ let mat_from_fn dim f = M.map f (M.empty dim dim)
 
 (*********** test data ***********)
 
-let size = 4
-let ps = L.init 10 (fun _ -> unif_stoch_vec size)
+let omega_size = 4 (* number of atoms *)
+let num_dists = 10 (* number of probability functions *)
+
+(* a list of num_dists probability dists on omega_size atoms *)
+let ps = L.init num_dists (fun _ -> unif_stoch_vec omega_size) 
+
+(* probabilities for algebras for each of the num_dists distributions *)
+let algs = L.map algebra_probs ps (* alists mapping atom lists to probs *)
+
+(* min and max values of atomic probs across all num_dists distributions *)
 let mins = min_elts ps
 let maxs = max_elts ps
-let f_lowers = pri_F_field_Lowers (size - 1) mins maxs
-let f_uppers = pri_F_field_Uppers (size - 1) mins maxs
-let algs = L.map algebra_probs ps
+
+(* min and max values of probs for each member of the algebra *)
 let min_alg = min_algebra_elts algs
 let max_alg = max_algebra_elts algs
+
+(* prob values for each member of the algebra computed using (3) and (4) in Skulj *)
+let f_lowers = pri_F_field_Lowers (omega_size - 1) mins maxs
+let f_uppers = pri_F_field_Uppers (omega_size - 1) mins maxs
