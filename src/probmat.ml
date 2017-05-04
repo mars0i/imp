@@ -53,13 +53,6 @@ let next_intsets pset =
   let addl_sets = (L.map (fun xs -> n :: xs) pset) in
   (pset, addl_sets @ pset)
 
-(* Note on next_intsets: An alternative would be to skip the append 
- * and just have each element contain the new additions to the power 
- * set.  Then to get a power set, you have to concat all sets up until 
- * and including that one.  This is more space efficient but means 
- * re-appending again if you want another powerset. *)
-
-
 (** Return a lazy list of subsequent power sets of integers from 0 to n. 
     They can be retreived using e.g., to get the power set of integers
     up to 5: LazyList.at intsets 4 .  Note each power set is in the form
@@ -82,10 +75,6 @@ let algebra_probs probs =
   let idx_sets = LL.at algebra_sets (num_atoms - 1) in
   let idx_prob_entry idxs = (idxs, prob_sum probs idxs) in
   L.map idx_prob_entry idx_sets 
-
-(* Note on algebra_probs: Could use Sets instead of lists as keys, but they don't 
- * display their contents by default, which makes playing around at the repl 
- * inconvenient. *)
 
 (** Given two algebra_probs alists, return a similar alist in which values are 
  * the minimum/maximum/etc (according to relat) of the two corresponding probs. *)
@@ -114,13 +103,6 @@ let min_algebra_elts alg_probs_list =
     with maxima of all probs for each set of indexes. *)
 let max_algebra_elts alg_probs_list =
   L.reduce (fun combo alg -> algebra_maxs combo alg) alg_probs_list
-
-(* Perhaps it's a bit fragile, but since I'm representing sets of
- * atoms as lists of integers in decreasing order, we can use that
- * to compute complements.  Since this is for exploratory
- * experimentation, I prefer this representation to using Batteries or Core
- * Sets, which don't display their contents by default.
-*)
 
 (** Given lists xs and ys that are both ordered in the same way (e.g. 
     monotonically ordered integers), return a list containing all
@@ -173,7 +155,8 @@ let pri_F_field_Lowers max_n atom_mins atom_maxs =
     (atoms, U-value) alist *)
 let pri_F_field_Uppers max_n atom_mins atom_maxs =
   let algebra_idx_sets = LL.at algebra_sets max_n in
-  let upper idx_set = (idx_set, pri_F_field_Upper max_n atom_mins atom_maxs idx_set) in
+  let upper idx_set = 
+    (idx_set, pri_F_field_Upper max_n atom_mins atom_maxs idx_set) in
   L.map upper algebra_idx_sets
 
 
@@ -217,4 +200,3 @@ let f_uppers = pri_F_field_Uppers (size - 1) mins maxs
 let algs = L.map algebra_probs ps
 let min_alg = min_algebra_elts algs
 let max_alg = max_algebra_elts algs
-
