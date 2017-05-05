@@ -1,0 +1,16 @@
+Name: Imp
+Version: 0.1
+Synopsis: Experiments with imprecise probabilities in OCaml
+Authors: Marshall Abrams
+License: GPL
+
+Description: Experimental. Released under the GPL 3.0 license.
+Homepage: https://github.com/mars0i/imp 
+
+OASISFormat: 0.4
+BuildTools: ocamlbuild
+Plugins: META (0.4), DevFiles (0.4)
+
+Executable "probmat"
+  Path: src
+  MainIs: probmat.ml
