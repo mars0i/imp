@@ -1,5 +1,12 @@
 (** Tools for exploring imprecise Markov processes *)
 
+I THINK THE PROBLEM WITH THE NEW FUNCTIONS IS THAT I'M SUMMING ACROSS
+MAXES (OR MINS) WHEN CALCULATING VALUES OF NON-ATOMS.  BUT THAT'S
+WRONG.  I SHOULD SUM WITHIN EACH PROB DIST, AND THEN COMPARE
+MINS/MAXES.
+
+UH, ON THE OTHER HAND, *ISN'T THIS WHAT (3) AND (4) SAY* ??
+
 (* RWO says you shouldn't do this, but Clojure shows it works well. *)
 module M  = Owl.Mat
 module L  = Batteries.List
