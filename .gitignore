@@ -15,8 +15,8 @@ _build/
 # oasis generated files
 setup.data
 setup.log
-.*.swp
 setup.ml
+.*.swp
 _tags
 myocamlbuild.ml
 src/Probmat.*
