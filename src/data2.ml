@@ -5,9 +5,9 @@ module L  = Batteries.List
 
 (*********** test data ***********)
 
-let om_max = 3 (* max index into atoms, = omega size - 1 *)
+let om_max = 2 (* max index into atoms, = omega size - 1 *)
 let om_sz = om_max + 1
-let num_dists = 10 (* number of probability functions *)
+let num_dists = 3 (* number of probability functions *)
 
 (* a list of num_dists probability dists on omega_sz atoms *)
 let ps = L.init num_dists (fun _ -> unif_stoch_vec om_sz) 
