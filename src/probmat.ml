@@ -153,15 +153,20 @@ let pri_f_field_lowers omega_max atom_mins atom_maxs =
   let algebra_idx_sets = LL.at algebra_sets omega_max in
   let mins = pri_f_field_simple_sums omega_max atom_mins in
   let inverted_maxs = pri_f_field_inverted_sums omega_max atom_maxs in
-  let minmins = L.map2 min mins inverted_maxs in
+  let minmins = L.map2 max mins inverted_maxs in
   L.combine algebra_idx_sets minmins
 
 let pri_f_field_uppers omega_max atom_mins atom_maxs =
   let algebra_idx_sets = LL.at algebra_sets omega_max in
   let maxs = pri_f_field_simple_sums omega_max atom_maxs in
   let inverted_mins = pri_f_field_inverted_sums omega_max atom_mins in
-  let maxmaxs = L.map2 max maxs inverted_mins in
+  let maxmaxs = L.map2 min maxs inverted_mins in
   L.combine algebra_idx_sets maxmaxs
+
+let pri_f_field_intervals lowers uppers =
+  let add_elt elts (event, lower_prob) (_, upper_prob) =   (* events s/b same in lower and upper *)
+    (event, [lower_prob; upper_prob]) :: elts
+  in L.fold_left2 add_elt [] lowers uppers
 
 
 (*********** Ways to make matrices **********)
