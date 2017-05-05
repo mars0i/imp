@@ -1,2 +1,2 @@
 # imp
-miscellaneous experiments with imprecise probability in OCaml
+Miscellaneous experiments with imprecise probability in OCaml
