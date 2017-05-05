@@ -137,7 +137,6 @@ let prmax x y =
   Printf.printf "%s\n" (if mx = x then "first" else "second");
   mx
 
-
 let invert_prob_sum omega_sz atom_extrema subset_idxs = 
   let omega_max = omega_sz - 1 in
   1. -. prob_sum atom_extrema (list_complement omega_max subset_idxs)
@@ -257,4 +256,3 @@ let pri_F_field_Uppers omega_sz atom_mins atom_maxs =
   let upper idx_set = 
     (idx_set, pri_F_field_Upper omega_sz atom_mins atom_maxs idx_set) in
   L.map upper algebra_idx_sets
-
