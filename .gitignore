@@ -19,3 +19,8 @@ _build/
 setup.data
 setup.log
 .*.swp
+
+./setup.ml
+_tags
+myocamlbuild.ml
+src/Probmat.*
