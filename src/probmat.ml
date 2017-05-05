@@ -80,13 +80,10 @@ let algebra_probs probs =
 
 (** Given two algebra_probs alists, return a similar alist in which values are 
  * the minimum/maximum/etc (according to relat) of the two corresponding probs. *)
-let algebra_extrema relat alg_probs1 alg_probs2 =
-  let make_entry = 
-    (fun set_prob1 set_prob2 ->
-       let (atoms, prob1) = set_prob1 in
-       let (_    , prob2) = set_prob2 in  (* first elts s/b same *)
-       (atoms, relat prob1 prob2))
-  in L.map2 make_entry alg_probs1 alg_probs2
+let algebra_extrema relat alg_probs1 alg_probs2:((int list * float) list) =   (* compiler needs a little help with types here *)
+  let make_entry (event, prob1) (_, prob2) =
+    (event, relat prob1 prob2) in (* first elts s/b same *)
+  L.map2 make_entry alg_probs1 alg_probs2
 
 (** Given two algebra_probs lists, return a similar list in which
     values are the minimum of the two corresponding probabilities. *)
