@@ -119,13 +119,12 @@ let rec subtract_list xs ys =
   | x::xs', y::ys' when x = y -> subtract_list xs' ys'
   | x::xs', _ -> x::(subtract_list xs' ys)
 
-(** Given a maximum element omega_sz and a subset of a domain of atoms 
+(** Given a maximum element omega_max and a subset of a domain of atoms 
     represented by list of integers in decreasing order, return a list
-    of the integers, between 0 and omega_sz inclusive, that are not in
+    of the integers, between 0 and omega_max inclusive, that are not in
     the subset.  The returned list will also be in decreasing order.
-    Note that omega_sz is one less than the size of the domain. *)
-let list_complement omega_sz subset =
-  let omega_max = omega_sz - 1 in
+    Note that omega_max is one less than the size of the domain. *)
+let list_complement omega_max subset =
   let omega = L.range omega_max `Downto 0 in
   subtract_list omega subset
 
@@ -137,31 +136,27 @@ let prmax x y =
   Printf.printf "%s\n" (if mx = x then "first" else "second");
   mx
 
-let invert_prob_sum omega_sz atom_extrema subset_idxs = 
-  let omega_max = omega_sz - 1 in
+let invert_prob_sum omega_max atom_extrema subset_idxs = 
   1. -. prob_sum atom_extrema (list_complement omega_max subset_idxs)
 
-let pri_f_field_simple_sums omega_sz atom_extrema =
-  let omega_max = omega_sz - 1 in
+(** THESE ARE NOT RIGHT.  I'm getting numbers greater than 1 and less than zero! **)
+
+let pri_f_field_simple_sums omega_max atom_extrema =
   let algebra_idx_sets = LL.at algebra_sets omega_max in
   L.map (prob_sum atom_extrema) algebra_idx_sets
 
-let pri_f_field_inverted_sums omega_sz atom_extrema =
-  let omega_max = omega_sz - 1 in
+let pri_f_field_inverted_sums omega_max atom_extrema =
   let algebra_idx_sets = LL.at algebra_sets omega_max in
   L.map (invert_prob_sum omega_max atom_extrema) algebra_idx_sets
 
-let pri_f_field_lowers omega_sz atom_mins atom_maxs =
-  let omega_max = omega_sz - 1 in
+let pri_f_field_lowers omega_max atom_mins atom_maxs =
   let algebra_idx_sets = LL.at algebra_sets omega_max in
   let mins = pri_f_field_simple_sums omega_max atom_mins in
   let inverted_maxs = pri_f_field_inverted_sums omega_max atom_maxs in
   let minmins = L.map2 min mins inverted_maxs in
-  Printf.printf "%d %d\n" (L.length mins) (L.length algebra_idx_sets);
   L.combine algebra_idx_sets minmins
 
-let pri_f_field_uppers omega_sz atom_mins atom_maxs =
-  let omega_max = omega_sz - 1 in
+let pri_f_field_uppers omega_max atom_mins atom_maxs =
   let algebra_idx_sets = LL.at algebra_sets omega_max in
   let maxs = pri_f_field_simple_sums omega_max atom_maxs in
   let inverted_mins = pri_f_field_inverted_sums omega_max atom_mins in
@@ -199,8 +194,9 @@ let mat_from_fn dim f = M.map f (M.empty dim dim)
 
 (*********** test data ***********)
 
-let om_sz = 4 (* max index into atoms; size of omega - 1 *)
+let om_max = 3 (* max index into atoms; size of omega - 1 *)
 let num_dists = 10 (* number of probability functions *)
+let om_sz = om_max + 1
 
 (* a list of num_dists probability dists on omega_sz atoms *)
 let ps = L.init num_dists (fun _ -> unif_stoch_vec om_sz) 
@@ -216,43 +212,47 @@ let maxs = max_elts ps
 let min_alg = min_algebra_elts algs
 let max_alg = max_algebra_elts algs
 
-let f_mins = pri_f_field_simple_sums om_sz mins
-let f_maxs = pri_f_field_simple_sums om_sz maxs
-let f_inverted_mins = pri_f_field_inverted_sums om_sz mins
-let f_inverted_maxs = pri_f_field_inverted_sums om_sz maxs
-(* prob values for each member of the algebra computed using (3) and (4) in Skulj *)
-let f_lowers = pri_f_field_lowers om_sz mins maxs
-let f_uppers = pri_f_field_uppers om_sz mins maxs
+(* prob values for each member of the algebra computed using (3) in Skulj 
+ * The first two are min'ed to produce the third. *)
+let f_mins = pri_f_field_simple_sums om_max mins
+let f_inverted_maxs = pri_f_field_inverted_sums om_max maxs
+let f_lowers = pri_f_field_lowers om_max mins maxs
+
+(* prob values for each member of the algebra computed using (4) in Skulj
+ * The first two are max'ed to produce the third. *)
+let f_maxs = pri_f_field_simple_sums om_max maxs
+let f_inverted_mins = pri_f_field_inverted_sums om_max mins
+let f_uppers = pri_f_field_uppers om_max mins maxs
 
 
-
+(************** OLD **************)
 
 (** OLD Calculate a lower, L value from a probability interval.
     Equation (3) p. 1317 in Skulj 2009 (funny capitalization evokes the paper) *)
-let pri_F_field_Lower  omega_sz  atom_mins  atom_maxs  subset_idxs = 
+let pri_F_field_Lower  omega_max  atom_mins  atom_maxs  subset_idxs = 
   let mins_sum = prob_sum atom_mins subset_idxs in
-  let maxs_comp_sum = prob_sum atom_maxs (list_complement omega_sz subset_idxs) in
+  let maxs_comp_sum = prob_sum atom_maxs (list_complement omega_max subset_idxs) in
   max mins_sum (1. -. maxs_comp_sum)
 
 (** OLD Calculate an upper, U value from a probability interval.
     Equation (4) p. 1317 in Skulj 2009 *)
-let pri_F_field_Upper  omega_sz  atom_mins  atom_maxs  subset_idxs = 
+let pri_F_field_Upper  omega_max  atom_mins  atom_maxs  subset_idxs = 
   let maxs_sum = prob_sum atom_maxs subset_idxs in
-  let mins_comp_sum = prob_sum atom_mins (list_complement omega_sz subset_idxs) in
+  let mins_comp_sum = prob_sum atom_mins (list_complement omega_max subset_idxs) in
   min maxs_sum (1. -. mins_comp_sum)
 
 (** OLD Calculate L values for all members of the algebra and return an
     (atoms, L-value) alist *)
-let pri_F_field_Lowers omega_sz atom_mins atom_maxs =
-  let algebra_idx_sets = LL.at algebra_sets omega_sz in
+let pri_F_field_Lowers omega_max atom_mins atom_maxs =
+  let algebra_idx_sets = LL.at algebra_sets omega_max in
   let lower idx_set =
-    (idx_set, pri_F_field_Lower omega_sz atom_mins atom_maxs idx_set) in
+    (idx_set, pri_F_field_Lower omega_max atom_mins atom_maxs idx_set) in
   L.map lower algebra_idx_sets
 
 (** OLD Calculate U values for all members of the algebra and return an
     (atoms, U-value) alist *)
-let pri_F_field_Uppers omega_sz atom_mins atom_maxs =
-  let algebra_idx_sets = LL.at algebra_sets omega_sz in
+let pri_F_field_Uppers omega_max atom_mins atom_maxs =
+  let algebra_idx_sets = LL.at algebra_sets omega_max in
   let upper idx_set = 
-    (idx_set, pri_F_field_Upper omega_sz atom_mins atom_maxs idx_set) in
+    (idx_set, pri_F_field_Upper omega_max atom_mins atom_maxs idx_set) in
   L.map upper algebra_idx_sets
