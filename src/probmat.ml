@@ -1,12 +1,5 @@
 (** Tools for exploring imprecise Markov processes *)
 
-I THINK THE PROBLEM WITH THE NEW FUNCTIONS IS THAT I'M SUMMING ACROSS
-MAXES (OR MINS) WHEN CALCULATING VALUES OF NON-ATOMS.  BUT THAT'S
-WRONG.  I SHOULD SUM WITHIN EACH PROB DIST, AND THEN COMPARE
-MINS/MAXES.
-
-UH, ON THE OTHER HAND, *ISN'T THIS WHAT (3) AND (4) SAY* ??
-
 (* RWO says you shouldn't do this, but Clojure shows it works well. *)
 module M  = Owl.Mat
 module L  = Batteries.List
@@ -198,38 +191,6 @@ let unif_stoch_mat dim =
     passed indexes, e.g: mat_from_fn 4 (fun _ -> Owl.Stats.Rnd.uniform ())  *)
 let mat_from_fn dim f = M.map f (M.empty dim dim)
 
-
-(*********** test data ***********)
-
-let om_max = 3 (* max index into atoms; size of omega - 1 *)
-let num_dists = 10 (* number of probability functions *)
-let om_sz = om_max + 1
-
-(* a list of num_dists probability dists on omega_sz atoms *)
-let ps = L.init num_dists (fun _ -> unif_stoch_vec om_sz) 
-
-(* probabilities for algebras for each of the num_dists distributions *)
-let algs = L.map algebra_probs ps (* alists mapping atom lists to probs *)
-
-(* min and max values of atomic probs across all num_dists distributions *)
-let mins = min_elts ps
-let maxs = max_elts ps
-
-(* min and max values of probs for each member of the algebra *)
-let min_alg = min_algebra_elts algs
-let max_alg = max_algebra_elts algs
-
-(* prob values for each member of the algebra computed using (3) in Skulj 
- * The first two are min'ed to produce the third. *)
-let f_mins = pri_f_field_simple_sums om_max mins
-let f_inverted_maxs = pri_f_field_inverted_sums om_max maxs
-let f_lowers = pri_f_field_lowers om_max mins maxs
-
-(* prob values for each member of the algebra computed using (4) in Skulj
- * The first two are max'ed to produce the third. *)
-let f_maxs = pri_f_field_simple_sums om_max maxs
-let f_inverted_mins = pri_f_field_inverted_sums om_max mins
-let f_uppers = pri_f_field_uppers om_max mins maxs
 
 
 (************** OLD **************)
