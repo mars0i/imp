@@ -11,8 +11,7 @@ OASISFormat: 0.4
 BuildTools: ocamlbuild
 Plugins: META (0.4), DevFiles (0.4)
 
-BuildDepends: batteries, owl
-
 Executable "probmat"
   Path: src
   MainIs: probmat.ml
+  BuildDepends: batteries, owl
