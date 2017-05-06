@@ -11,8 +11,21 @@ OASISFormat: 0.4
 BuildTools: ocamlbuild
 Plugins: META (0.4), DevFiles (0.4)
 
-BuildDepends: batteries, owl
+# The "sections":
 
-Executable "probmat"
+Library "probmat"
+  BuildDepends: batteries, owl
   Path: src
-  MainIs: probmat.ml
+  Modules: Probmat
+
+Executable "data1"
+  BuildDepends: batteries, probmat
+  Path: src
+  MainIs: data1.ml
+  CompiledObject: best # make native binary
+
+Executable "data2"
+  BuildDepends: batteries, probmat
+  Path: src
+  MainIs: data2.ml
+  # make bytecode
