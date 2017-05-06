@@ -20,3 +20,5 @@ setup.ml
 _tags
 myocamlbuild.ml
 src/Probmat.*
+configure
+META
