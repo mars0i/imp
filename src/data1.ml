@@ -1,7 +1,7 @@
 
 module L  = Batteries.List
 
-(* open Probmat *)
+open Probmat
 
 (*********** test data ***********)
 
@@ -34,4 +34,21 @@ let f_lowers = pri_f_field_lowers om_max mins maxs
 let f_maxs = pri_f_field_simple_sums om_max maxs
 let f_inverted_mins = pri_f_field_inverted_sums om_max mins
 let f_uppers = pri_f_field_uppers om_max mins maxs
+
+(* old versions *)
+let f_old_lowers = pri_F_field_Lowers om_max mins maxs
+let f_old_uppers = pri_F_field_Uppers om_max mins maxs
+
+;;
+
+
+(* test *)
+Printf.printf "\natomic dists:\n";;
+L.iter (fun m -> Owl.Mat.print m) ps;;
+Printf.printf "\nmin dist:";;
+Owl.Mat.print mins;;
+Printf.printf "\nmax dist:";;
+Owl.Mat.print maxs;;
+Printf.printf "\nYow!\n";;
+
 
