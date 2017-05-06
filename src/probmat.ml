@@ -1,6 +1,7 @@
 (** Tools for exploring imprecise Markov processes *)
 
-(* RWO says you shouldn't do this, but Clojure shows it works well. *)
+(* RWO said you shouldn't do this, but that was before module aliases
+ * were legal. Clojure shows it works well. *)
 module M  = Owl.Mat
 module L  = Batteries.List
 module LL = Batteries.LazyList
