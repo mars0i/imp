@@ -1,12 +1,10 @@
 (** Tools for exploring imprecise Markov processes *)
 
-(* RWO said you shouldn't do this, but that was before module aliases
- * were legal. Clojure shows it works well. *)
+
 module M  = Owl.Mat
 module L  = Batteries.List
 module LL = Batteries.LazyList
 module A  = Batteries.Array
-(* module P = Pervasives *) (* to override defs from Owl.Mat *)
 
 
 (* Pull out infixes I might want so I don't have to open Owl.Mat and shadow Pervasives: *)
@@ -27,11 +25,11 @@ let cross_apply f xs ys =
     xs [];;
 
 (** Given two lists of matrices, return a list containing the products of all 
-    combinations of one matrix from the first list and the other from the second  list. *)
+    combinations of one matrix from the first list and the other from the 
+    second list. *)
 let mult_mats = cross_apply M.dot
 
 (*********** Constructing imprecise probability vectors, algebras, and matrices **********)
-
 
 (** Given a list of matrices return one with the same dimensions
     whose elements are the minima of corresponding locations. *)
@@ -83,7 +81,7 @@ let algebra_probs probs =
 
 (** Given *two* algebra_probs alists, return a similar alist in which values are 
  * the minimum/maximum/etc (according to relat) of the two corresponding probs. *)
-let algebra_extrema relat alg_probs1 alg_probs2:((int list * float) list) =   (* compiler needs a little help with types here *)
+let algebra_extrema relat alg_probs1 alg_probs2:((int list * float) list) =  (* compiler needs a little help with types here *)
   let make_entry (event, prob1) (_, prob2) =
     (event, relat prob1 prob2) in (* first elts s/b same *)
   L.map2 make_entry alg_probs1 alg_probs2
@@ -136,12 +134,12 @@ let invert_prob_sum omega_max atom_extrema subset_idxs =
   1. -. prob_sum atom_extrema (list_complement omega_max subset_idxs)
 
 (** Map prob_sum over each possible combination of atoms. *)
-let pri_f_field_simple_sums omega_max atom_extrema =
+let simple_sums omega_max atom_extrema =
   let algebra_idx_sets = LL.at algebra_sets omega_max in
   L.map (prob_sum atom_extrema) algebra_idx_sets
 
 (** Map invert_prob_sum over each possible combination of atoms. *)
-let pri_f_field_inverted_sums omega_max atom_extrema =
+let inverted_sums omega_max atom_extrema =
   let algebra_idx_sets = LL.at algebra_sets omega_max in
   L.map (invert_prob_sum omega_max atom_extrema) algebra_idx_sets
 
@@ -149,8 +147,8 @@ let pri_f_field_inverted_sums omega_max atom_extrema =
     (atoms, L-value) alist *)
 let pri_f_field_lowers omega_max atom_mins atom_maxs =
   let algebra_idx_sets = LL.at algebra_sets omega_max in
-  let mins = pri_f_field_simple_sums omega_max atom_mins in
-  let inverted_maxs = pri_f_field_inverted_sums omega_max atom_maxs in
+  let mins = simple_sums omega_max atom_mins in
+  let inverted_maxs = inverted_sums omega_max atom_maxs in
   let minmins = L.map2 max mins inverted_maxs in
   L.combine algebra_idx_sets minmins
 
@@ -158,8 +156,8 @@ let pri_f_field_lowers omega_max atom_mins atom_maxs =
     (atoms, U-value) alist *)
 let pri_f_field_uppers omega_max atom_mins atom_maxs =
   let algebra_idx_sets = LL.at algebra_sets omega_max in
-  let maxs = pri_f_field_simple_sums omega_max atom_maxs in
-  let inverted_mins = pri_f_field_inverted_sums omega_max atom_mins in
+  let maxs = simple_sums omega_max atom_maxs in
+  let inverted_mins = inverted_sums omega_max atom_mins in
   let maxmaxs = L.map2 min maxs inverted_mins in
   L.combine algebra_idx_sets maxmaxs
 
