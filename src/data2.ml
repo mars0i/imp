@@ -1,9 +1,6 @@
-
 module L  = Batteries.List
 module M = Owl.Mat
 module P = Probmat
-
-(* open Probmat *)
 
 (*********** test data ***********)
 
