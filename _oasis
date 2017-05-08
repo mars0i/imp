@@ -29,3 +29,9 @@ Executable "data2"
   Path: src
   MainIs: data2.ml
   # make bytecode
+
+Executable "data3"
+  BuildDepends: batteries, probmat
+  Path: src
+  MainIs: data3.ml
+  CompiledObject: best # make native binary
