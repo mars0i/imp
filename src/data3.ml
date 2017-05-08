@@ -24,19 +24,15 @@ let max_alg = max_algebra_elts algs
 
 (* prob values for each member of the algebra computed using (3) in Skulj 
  * The first two are min'ed to produce the third. *)
-let f_mins = pri_f_field_simple_sums om_max mins
-let f_inverted_maxs = pri_f_field_inverted_sums om_max maxs
+let f_mins = simple_sums om_max mins
+let f_inverted_maxs = inverted_sums om_max maxs
 let f_lowers = pri_f_field_lowers om_max mins maxs
 
 (* prob values for each member of the algebra computed using (4) in Skulj
  * The first two are max'ed to produce the third. *)
-let f_maxs = pri_f_field_simple_sums om_max maxs
-let f_inverted_mins = pri_f_field_inverted_sums om_max mins
+let f_maxs = simple_sums om_max maxs
+let f_inverted_mins = inverted_sums om_max mins
 let f_uppers = pri_f_field_uppers om_max mins maxs
-
-(* old versions *)
-let f_old_lowers = pri_F_field_Lowers om_max mins maxs
-let f_old_uppers = pri_F_field_Uppers om_max mins maxs
 
 ;;
 

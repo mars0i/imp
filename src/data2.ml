@@ -1,5 +1,6 @@
 
 module L  = Batteries.List
+module M = Owl.Mat
 module P = Probmat
 
 (* open Probmat *)
@@ -26,29 +27,28 @@ let max_alg = P.max_algebra_elts algs
 
 (* prob values for each member of the algebra computed using (3) in Skulj 
  * The first two are min'ed to produce the third. *)
-let f_mins = P.pri_f_field_simple_sums om_max mins
-let f_inverted_maxs = P.pri_f_field_inverted_sums om_max maxs
+let f_mins = P.simple_sums om_max mins
+let f_inverted_maxs = P.inverted_sums om_max maxs
 let f_lowers = P.pri_f_field_lowers om_max mins maxs
 
 (* prob values for each member of the algebra computed using (4) in Skulj
  * The first two are max'ed to produce the third. *)
-let f_maxs = P.pri_f_field_simple_sums om_max maxs
-let f_inverted_mins = P.pri_f_field_inverted_sums om_max mins
+let f_maxs = P.simple_sums om_max maxs
+let f_inverted_mins = P.inverted_sums om_max mins
 let f_uppers = P.pri_f_field_uppers om_max mins maxs
 
-(* old versions *)
-let f_old_lowers = P.pri_F_field_Lowers om_max mins maxs
-let f_old_uppers = P.pri_F_field_Uppers om_max mins maxs
+let f_intervals = P.pri_f_field_intervals f_lowers f_uppers
+(* there is no *easy* way to print this ... *)
 
 ;;
 
 (* test *)
 Printf.printf "\natomic dists:\n";;
-L.iter (fun m -> Owl.Mat.print m) ps;;
+L.iter (fun m -> M.print m) ps;;
 Printf.printf "\nmin dist:\n";;
-Owl.Mat.print mins;;
+M.print mins;;
 Printf.printf "\nmax dist:\n";;
-Owl.Mat.print maxs;;
+M.print maxs;;
 Printf.printf "\nYow!\n";;
 
 
