@@ -38,17 +38,23 @@ let f_inverted_mins = P.inverted_sums om_max mins
 let f_uppers = P.pri_f_field_uppers om_max mins maxs
 
 let f_intervals = P.pri_f_field_intervals f_lowers f_uppers
-(* there is no *easy* way to print this ... *)
 
 ;;
 
 (* test *)
 Printf.printf "\natomic dists:\n";;
 L.iter (fun m -> M.print m) ps;;
+
 Printf.printf "\nmin dist:\n";;
 M.print mins;;
+
 Printf.printf "\nmax dist:\n";;
 M.print maxs;;
+
+Printf.printf "\nalgebra intervals (mangled by dump):\n";;
+Printf.printf "\n%s\n" (Extlib.Std.dump f_intervals);; (* output funky *)
+(* or use BatPervasives.dump, which is physically identical according to == *)
+
 Printf.printf "\nYow!\n";;
 
 
