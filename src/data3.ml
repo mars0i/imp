@@ -34,6 +34,8 @@ let f_maxs = simple_sums om_max maxs
 let f_inverted_mins = inverted_sums om_max mins
 let f_uppers = pri_f_field_uppers om_max mins maxs
 
+let f_intervals = P.pri_f_field_intervals f_lowers f_uppers
+
 ;;
 
 
