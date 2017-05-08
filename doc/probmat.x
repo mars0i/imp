@@ -73,3 +73,7 @@ let pri_F_field_Uppers omega_max atom_mins atom_maxs =
   let upper idx_set = 
     (idx_set, pri_F_field_Upper omega_max atom_mins atom_maxs idx_set) in
   L.map upper algebra_idx_sets
+
+(** Given *two* algebra_probs lists, return a similar alist in which
+    values are the maximum of the two corresponding probabilities. *)
+let algebra_maxs = algebra_extrema max

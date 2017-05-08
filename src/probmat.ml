@@ -39,9 +39,6 @@ let min_elts matlist = L.reduce M.min2 matlist
     whose elements are the maxima of corresponding locations. *)
 let max_elts matlist = L.reduce M.max2 matlist
 
-(** length of a row vector or number of columns of a matrix *)
-let size m = snd (M.shape m)
-
 (** Create a power set of integers from a smaller power set.
   *
   * Given a sequence of sequences representing the power set of non-negative
@@ -63,21 +60,24 @@ let next_intsets pset =
 let make_intsets () = LL.from_loop [[0]; []] next_intsets
 let algebra_sets = make_intsets ()
 
-(** Given a vector of probabilities and a list of indexes representing
+(** Given a vector of atom probabilities and a list of indexes representing
     atoms, returns sum of probabilities for the set containing those atoms. *)
 let prob_sum probs atom_idxs =
-  let add_another prob idx = prob +. M.get probs 0 idx   (* Owl.Mat.get rather than .{i,j} to get type right *)
-  in L.fold_left add_another 0. atom_idxs
+  let add_prob sum idx = sum +. M.get probs 0 idx  (* Owl.Mat.get rather than .{i,j} to get type right *)
+  in L.fold_left add_prob 0. atom_idxs
+
+(** length of a row vector or number of columns of a matrix *)
+let size m = snd (M.shape m)
 
 (** Given a probability vector, returns an alist of pairs for all
     elements in the algebra of sets based on the atoms represented by
     elements in the vector.  Each pair contains a list of indexes 
     representing atoms in a set followed by the probability of that set. *)
 let algebra_probs probs = 
-  let num_atoms = size probs in
-  let idx_sets = LL.at algebra_sets (num_atoms - 1) in
-  let idx_prob_entry idxs = (idxs, prob_sum probs idxs) in
-  L.map idx_prob_entry idx_sets 
+  let i = (size probs) - 1 in
+  let idx_sets = LL.at algebra_sets i in
+  let make_entry event = (event, prob_sum probs event) in
+  L.map make_entry idx_sets 
 
 (** Given *two* algebra_probs alists, return a similar alist in which values are 
  * the minimum/maximum/etc (according to relat) of the two corresponding probs. *)
@@ -86,23 +86,17 @@ let algebra_extrema relat alg_probs1 alg_probs2:((int list * float) list) =  (* 
     (event, relat prob1 prob2) in (* first elts s/b same *)
   L.map2 make_entry alg_probs1 alg_probs2
 
-(** Given *two* algebra_probs lists, return a similar alist in which
-    values are the minimum of the two corresponding probabilities. *)
-let algebra_mins = algebra_extrema min
-
-(** Given *two* algebra_probs lists, return a similar alist in which
-    values are the maximum of the two corresponding probabilities. *)
-let algebra_maxs = algebra_extrema max
-
 (** Given a list of *multiple* algebra_probs, return an algebra_prob-like
     list with minima of all probs for each set of indexes. *)
 let min_algebra_elts alg_probs_list =
-  L.reduce (fun combo alg -> algebra_mins combo alg) alg_probs_list
+  let min_combine combo alg = algebra_extrema min combo alg in
+  L.reduce min_combine alg_probs_list
 
 (** Given a list of *multiple* algebra_probs, return an algebra_prob-like
     list with maxima of all probs for each set of indexes. *)
 let max_algebra_elts alg_probs_list =
-  L.reduce (fun combo alg -> algebra_maxs combo alg) alg_probs_list
+  let max_combine combo alg = algebra_extrema max combo alg in
+  L.reduce max_combine alg_probs_list
 
 (** Given lists xs and ys that are both ordered in the same way (e.g. 
     monotonically ordered integers), return a list containing all
