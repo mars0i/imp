@@ -35,3 +35,9 @@ Executable "data3"
   Path: src
   MainIs: data3.ml
   CompiledObject: best # make native binary
+
+Executable "data4"
+  BuildDepends: batteries, probmat
+  Path: src
+  MainIs: data4.ml
+  CompiledObject: best
