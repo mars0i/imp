@@ -3,9 +3,10 @@
 (* For names mentioned, see references section at end of file. *)
 
 module M  = Owl.Mat
+module A  = Batteries.Array
 module L  = Batteries.List
 module LL = Batteries.LazyList
-module A  = Batteries.Array
+module S  = Batteries.String
 
 
 (*********** misc. convenience definitions **********)
@@ -154,9 +155,9 @@ let pri_f_field_uppers omega_max atom_mins atom_maxs =
   * pri_f_field_uppers, return a list of pairs that combine the lower
   * and upper values into intervals represented as 2-element lists. *)
 let pri_f_field_intervals lowers uppers =
-  let add_elt elts (event, lower_prob) (_, upper_prob) =   (* events s/b same in lower and upper *)
+  let add_elt (event, lower_prob) (_, upper_prob) elts =   (* events s/b same in lower and upper *)
     (event, [lower_prob; upper_prob]) :: elts
-  in L.fold_left2 add_elt [] lowers uppers
+  in L.fold_right2 add_elt lowers uppers []
 
 
 (*********** Ways to make matrices **********)
@@ -201,6 +202,36 @@ let cross_apply f xs ys =
     combinations of one matrix from the first list and the other from the 
     second list. *)
 let mult_mats = cross_apply M.dot
+
+
+(*********** Strings for printing **********)
+
+
+let string_of_t_list string_of_t l = 
+  "[" ^ String.concat "; " (L.map string_of_t l) ^ "]"
+
+let string_of_int_list = string_of_t_list string_of_int
+
+let string_of_float_list = string_of_t_list string_of_float
+
+(* Convert one algebra entry, a record containing a list of indexes
+ * and a probibility, into a string. *)
+let string_of_alg_prob alg_prob =
+  let (k, v) = alg_prob in
+  "(" ^ string_of_int_list k ^ ", " ^ string_of_float v ^ ")"
+
+let string_of_alg_interval alg_interval =
+  let (k, v) = alg_interval in
+  "(" ^ string_of_int_list k ^  ", " ^ string_of_float_list v ^ ")"
+
+(* Convert a list of indexes, probability entries into a string. *)
+let string_of_alg_probs alg_probs =
+  "[" ^ (S.concat "; " (L.map string_of_alg_prob alg_probs)) ^ "]"
+
+(* Convert a list of indexes, probability interval entries into a string. *)
+let string_of_alg_intervals alg_intervals =
+  "[" ^ (S.concat "; " (L.map string_of_alg_interval alg_intervals)) ^ "]"
+
 
 
 (*********** References **********)
