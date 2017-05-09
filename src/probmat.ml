@@ -206,7 +206,6 @@ let mult_mats = cross_apply M.dot
 
 (*********** Strings for printing **********)
 
-
 let string_of_t_list string_of_t l = 
   "[" ^ String.concat "; " (L.map string_of_t l) ^ "]"
 
@@ -229,6 +228,43 @@ let string_of_alg_probs = string_of_t_list string_of_alg_prob
 
 (* Convert a list of indexes, probability interval entries into a string. *)
 let string_of_alg_intervals = string_of_t_list string_of_alg_interval
+
+
+(*********** Convenience function for testing **********)
+
+let generate_system omega_size num_dists =
+  let omega_max = omega_size - 1 in
+  (* make num_dists atomic dists *)
+  let ps = L.init num_dists (fun _ -> unif_stoch_vec omega_size) in
+  (* probabilities for algebras for each of the num_dists distributions *)
+  let algs = L.map algebra_probs ps in (* alists mapping atom lists to probs *)
+  (* min and max values of atomic probs across all num_dists distributions *)
+  let mins = min_elts ps in
+  let maxs = max_elts ps in
+  (* min and max values of probs for each member of the algebra *)
+  let min_alg = min_algebra_elts algs in
+  let max_alg = max_algebra_elts algs in
+  (* prob values for each member of the algebra computed using (3) in Skulj 
+   * The first two are min'ed to produce the third. *)
+  let f_mins = simple_sums omega_max mins in
+  let f_inverted_maxs = inverted_sums omega_max maxs in
+  let f_lowers = pri_f_field_lowers omega_max mins maxs in
+  (* prob values for each member of the algebra computed using (4) in Skulj
+   * The first two are max'ed to produce the third. *)
+  let f_maxs = simple_sums omega_max maxs in
+  let f_inverted_mins = inverted_sums omega_max mins in
+  let f_uppers = pri_f_field_uppers omega_max mins maxs in
+  (* interval enteries constructed from f_lowers, f_uppers *)
+  let f_intervals = pri_f_field_intervals f_lowers f_uppers in
+  (* return all of the above: *)
+  ((ps, mins, maxs),
+   (algs, min_alg, max_alg),
+   (f_lowers, f_mins, f_inverted_maxs),
+   (f_uppers, f_maxs, f_inverted_mins),
+   f_intervals)
+
+
+
 
 (*********** References **********)
 
