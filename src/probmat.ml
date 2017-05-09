@@ -225,14 +225,10 @@ let string_of_alg_interval alg_interval =
   "(" ^ string_of_int_list k ^  ", " ^ string_of_float_list v ^ ")"
 
 (* Convert a list of indexes, probability entries into a string. *)
-let string_of_alg_probs alg_probs =
-  "[" ^ (S.concat "; " (L.map string_of_alg_prob alg_probs)) ^ "]"
+let string_of_alg_probs = string_of_t_list string_of_alg_prob
 
 (* Convert a list of indexes, probability interval entries into a string. *)
-let string_of_alg_intervals alg_intervals =
-  "[" ^ (S.concat "; " (L.map string_of_alg_interval alg_intervals)) ^ "]"
-
-
+let string_of_alg_intervals = string_of_t_list string_of_alg_interval
 
 (*********** References **********)
 
