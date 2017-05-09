@@ -46,6 +46,12 @@ Printf.printf "\nmin dist:";;
 Owl.Mat.print mins;;
 Printf.printf "\nmax dist:";;
 Owl.Mat.print maxs;;
+Printf.printf "\nalgebra uppers:\n";;
+Printf.printf "%s\n" (P.string_of_alg_probs f_uppers);;
+Printf.printf "\nalgebra lowers:\n";;
+Printf.printf "%s\n" (P.string_of_alg_probs f_lowers);;
+Printf.printf "\nalgebra intervals:\n";;
+Printf.printf "%s\n" (P.string_of_alg_intervals f_intervals);;
 Printf.printf "\nYow!\n";;
 
 

@@ -39,16 +39,25 @@ let f_intervals = P.pri_f_field_intervals f_lowers f_uppers
 ;;
 
 (* test *)
-Printf.printf "\natomic dists:\n";;
+Printf.printf "\natomic dists:";;
 L.iter (fun m -> M.print m) ps;;
 
-Printf.printf "\nmin dist:\n";;
+Printf.printf "\nmin dist:";;
 M.print mins;;
 
-Printf.printf "\nmax dist:\n";;
+Printf.printf "\nmax dist:";;
 M.print maxs;;
 
-Printf.printf "\nalgebra intervals (mangled by dump):\n";;
+Printf.printf "\nalgebra uppers:\n";;
+Printf.printf "%s\n" (P.string_of_alg_probs f_uppers);;
+
+Printf.printf "\nalgebra lowers:\n";;
+Printf.printf "%s\n" (P.string_of_alg_probs f_lowers);;
+
+Printf.printf "\nalgebra intervals:\n";;
+Printf.printf "%s\n" (P.string_of_alg_intervals f_intervals);;
+
+Printf.printf "\nalgebra intervals (mangled by dump):";;
 Printf.printf "\n%s\n" (Extlib.Std.dump f_intervals);; (* output funky *)
 (* or use BatPervasives.dump, which is physically identical according to == *)
 
