@@ -8,43 +8,6 @@ module L  = Batteries.List
 module LL = Batteries.LazyList
 module S  = Batteries.String
 
-(*********** notes **********)
-
-(* The def of F-field (Skulj sect 3.1, p. 1316) says that it's an
- * F-field iff for each set A in the algebra, there's a prob dist p in
- * the credal set s.t. L(A) = inf p(A).  Mutatis mutandis for U(A).
- * i.e. when we sum atomic probs to get L(A), they must be probs from
- * the same dist p.  This is so even though l(a) and u(a) for atoms
- * might use different prob dists for different atoms a.
- *
- * This means that the empty set will have min and max probs 0, and
- * Omega will have min and max probs 1.
- *
- * This is what min_alg_probs and max_alg_probs compute.
- *
- * Note also that since U(A) = 1 - L(-A) and L(A) = 1 - U(-A), for an
- * given set A, L(A) and U(A) are sums wrt the same dist p.
- *)
-
-(* In section 3.3 of Skulj, p. 1317, the def of L(A) seems to use sums
- * of *different* prob dists, as I read the last line of the preceding
- * paragraph.  i.e. Sum l(omega) for omega in A is such that l(omega)
- * may use different probs p for different omegas.  And likewise for
- * Sum u(omega).
- *
- * This means that there is no reason to think that either Sum
- * l(omega) or Sum u(omega) are probabilities in any distribution p.
- * Therefore neither is 1 - the latter sum.  Since neither of these
- * values are probabilities per se, neither is their max.
- * Therefore L(A) needn't be a prob in any distribution p.  And
- * therefore L(A) needn't be a probability in any p.
- *
- * A similar point holds for U(A).
- *
- * This means, also, that L(empty) or U(empty) needn't be equal to 
- * zero, nor must L(Omega) and U(Omega) be equal to 1.
- *)
-
 
 (*********** misc. convenience definitions **********)
 
