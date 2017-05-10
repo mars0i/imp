@@ -112,13 +112,13 @@ let algebra_extrema relat alg_probs1 alg_probs2:((int list * float) list) =  (* 
 
 (** Given a list of *multiple* algebra_probs, return an algebra_prob-like
     list with minima of all probs for each set of indexes. *)
-let min_algebra_elts alg_probs_list =
+let min_algebra_probs alg_probs_list =
   let min_combine combo alg = algebra_extrema min combo alg in
   L.reduce min_combine alg_probs_list
 
 (** Given a list of *multiple* algebra_probs, return an algebra_prob-like
     list with maxima of all probs for each set of indexes. *)
-let max_algebra_elts alg_probs_list =
+let max_algebra_probs alg_probs_list =
   let max_combine combo alg = algebra_extrema max combo alg in
   L.reduce max_combine alg_probs_list
 
@@ -242,8 +242,8 @@ let generate_system omega_size num_dists =
   let mins = min_elts ps in
   let maxs = max_elts ps in
   (* min and max values of probs for each member of the algebra *)
-  let min_alg = min_algebra_elts algs in
-  let max_alg = max_algebra_elts algs in
+  let min_alg = min_algebra_probs algs in
+  let max_alg = max_algebra_probs algs in
   (* prob values for each member of the algebra computed using (3) in Skulj 
    * The first two are min'ed to produce the third. *)
   let f_mins = simple_sums omega_max mins in

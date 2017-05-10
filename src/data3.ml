@@ -19,8 +19,8 @@ let mins = P.min_elts ps
 let maxs = P.max_elts ps
 
 (* min and max values of probs for each member of the algebra *)
-let min_alg = P.min_algebra_elts algs
-let max_alg = P.max_algebra_elts algs
+let min_alg = P.min_algebra_probs algs
+let max_alg = P.max_algebra_probs algs
 
 (* prob values for each member of the algebra computed using (3) in Skulj 
  * The first two are min'ed to produce the third. *)
