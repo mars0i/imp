@@ -156,7 +156,7 @@ let pri_f_field_uppers omega_max atom_mins atom_maxs =
   * and upper values into intervals represented as 2-element lists. *)
 let pri_f_field_intervals lowers uppers =
   let add_elt (event, lower_prob) (_, upper_prob) elts =   (* events s/b same in lower and upper *)
-    (event, [lower_prob; upper_prob]) :: elts
+    (event, (lower_prob, upper_prob)) :: elts
   in L.fold_right2 add_elt lowers uppers []
 
 
@@ -206,15 +206,33 @@ let mult_mats = cross_apply M.dot
 
 (*********** Strings for printing **********)
 
+(* Jane Street Core has a function that does this, too. *)
 let string_of_t_list string_of_t l = 
   "[" ^ String.concat "; " (L.map string_of_t l) ^ "]"
+
+let string_of_pair string_of_t1 string_of_t2 (t1, t2) =
+  "(" ^ string_of_t1 t1 ^ ", " ^ string_of_t2 t2 ^ ")"
 
 let string_of_int_list = string_of_t_list string_of_int
 
 let string_of_float_list = string_of_t_list string_of_float
 
 (* Convert one algebra entry, a record containing a list of indexes
- * and a probibility, into a string. *)
+ * and a probability, into a string. *)
+let string_of_alg_prob = string_of_pair string_of_int_list string_of_float
+
+(* Convert a list of indexes, probability entries into a string. *)
+let string_of_alg_probs = string_of_t_list string_of_alg_prob
+
+(* Convert one algebra interval entry, a record containing a list of indexes
+ * and a list of a lower and an upper probability, into a string. *)
+let string_of_alg_interval = 
+  string_of_pair string_of_int_list (string_of_pair string_of_float string_of_float)
+
+(* Convert a list of indexes, probability interval entries into a string. *)
+let string_of_alg_intervals = string_of_t_list string_of_alg_interval
+
+(* old versions:
 let string_of_alg_prob alg_prob =
   let (k, v) = alg_prob in
   "(" ^ string_of_int_list k ^ ", " ^ string_of_float v ^ ")"
@@ -222,13 +240,7 @@ let string_of_alg_prob alg_prob =
 let string_of_alg_interval alg_interval =
   let (k, v) = alg_interval in
   "(" ^ string_of_int_list k ^  ", " ^ string_of_float_list v ^ ")"
-
-(* Convert a list of indexes, probability entries into a string. *)
-let string_of_alg_probs = string_of_t_list string_of_alg_prob
-
-(* Convert a list of indexes, probability interval entries into a string. *)
-let string_of_alg_intervals = string_of_t_list string_of_alg_interval
-
+*)
 
 (*********** Convenience function for testing **********)
 
