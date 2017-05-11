@@ -206,7 +206,7 @@ let mult_mats = cross_apply M.dot
 
 (*********** Strings for printing **********)
 
-(* Jane Street Core has a function that does this, too. *)
+(* Jane Street Core has a function that does this btw. *)
 let string_of_t_list string_of_t l = 
   "[" ^ String.concat "; " (L.map string_of_t l) ^ "]"
 
@@ -224,10 +224,12 @@ let string_of_alg_prob = string_of_pair string_of_int_list string_of_float
 (* Convert a list of indexes, probability entries into a string. *)
 let string_of_alg_probs = string_of_t_list string_of_alg_prob
 
+let string_of_interval = string_of_pair string_of_float string_of_float
+
 (* Convert one algebra interval entry, a record containing a list of indexes
  * and a list of a lower and an upper probability, into a string. *)
 let string_of_alg_interval = 
-  string_of_pair string_of_int_list (string_of_pair string_of_float string_of_float)
+  string_of_pair string_of_int_list string_of_interval
 
 (* Convert a list of indexes, probability interval entries into a string. *)
 let string_of_alg_intervals = string_of_t_list string_of_alg_interval
