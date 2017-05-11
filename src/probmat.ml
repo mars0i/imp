@@ -187,6 +187,21 @@ let unif_stoch_mat dim =
     passed indexes, e.g: mat_from_fn 4 (fun _ -> Owl.Stats.Rnd.uniform ())  *)
 let mat_from_fn dim f = M.map f (M.empty dim dim)
 
+let vec_from_list l =
+  let dim = L.length l in
+  let v = M.vector dim in
+  L.iteri (fun i e -> M.set v 0 i e) l;
+  v
+
+(* assumes all internal lists are same length *)
+let mat_from_lists ll =
+  (* TODO add test for all internal lists having same length. *)
+  let rows = L.length ll in
+  let cols = L.length (L.hd ll) in
+  let m = M.empty rows cols in
+  let fill_row i l = L.iteri (fun j e -> M.set m i j e) l in
+  L.iteri fill_row ll;
+  m
 
 (*********** Ways to process matrices **********)
 
