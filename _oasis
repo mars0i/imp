@@ -41,3 +41,15 @@ Executable "data4"
   Path: src
   MainIs: data4.ml
   CompiledObject: best
+
+AlphaFeatures: ocamlbuild_more_args
+Document "probmat_api"
+  Type: ocamlbuild (0.4)
+  BuildTools: ocamldoc
+  Title: API reference for Probmat
+  XOCamlbuildPath: .
+  XOCamlbuildExtraArgs:
+    "-docflags '-colorize-code -short-functors -charset utf-8'"
+  XOCamlbuildLibraries: probmat
+
+
