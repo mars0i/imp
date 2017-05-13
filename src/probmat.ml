@@ -22,35 +22,34 @@ let size m = snd (M.shape m)
 (*********** algebras of indexes representing atoms **********)
 
 (** Create a power set of integers from a smaller power set.
-  *
-  * Given a sequence of sequences representing the power set of non-negative
-  * integers up through n-1, returns a pair consisting of the sequence of 
-  * sequences for up through n-1 and one up through n.  (This kind of pair 
-  * is what LazyList.from_loop wants.)  Assumes that the first element of 
-  * the first element of the power set sequence pset passed in is n-1. *)
+    Given a sequence of sequences representing the power set of non-negative
+    integers up through n-1, returns a pair consisting of the sequence of 
+    sequences for up through n-1 and one up through n.  (This kind of pair 
+    is what LazyList.from_loop wants.)  Assumes that the first element of 
+    the first element of the power set sequence pset passed in is n-1. *)
 let next_intsets pset =
   let n = 1 + L.hd (L.hd pset) in  (* Get next integer; previous one must be first in the first element. *)
   let addl_sets = (L.map (fun xs -> n :: xs) pset) in
   (pset, addl_sets @ pset)
 
 (** Generate a list of subsequent integer power sets. 
- *
- *  Return a lazy list of subsequent power sets of integers from 0 to n. 
- *  They can be retreived using e.g., to get the power set of integers
- *  up to 5: LazyList.at intsets 4 .  Note each power set is in the form
- *  of a regular list; only the top level list is lazy. *)
+  
+    Return a lazy list of subsequent power sets of integers from 0 to n. 
+    They can be retreived using e.g., to get the power set of integers
+    up to 5: LazyList.at intsets 4 .  Note each power set is in the form
+    of a regular list; only the top level list is lazy. *)
 let make_intsets () = LL.from_loop [[0]; []] next_intsets
 
 (** A lazy list of integer power sets. *)
 let algebra_sets = make_intsets ()
 
 (** Set difference for ordered lists of integers.
-  *
-  * Given lists xs and ys that are both ordered in the same way (e.g. 
-  * monotonically ordered integers), return a list containing all
-  * elements of xs not in ys (with order preserved).  The elements
-  * in ys must be a (perhaps improper) subset of xs.
-  * This version by RichN at https://codereview.stackexchange.com/a/162407/61384 *)
+   
+    Given lists xs and ys that are both ordered in the same way (e.g. 
+    monotonically ordered integers), return a list containing all
+    elements of xs not in ys (with order preserved).  The elements
+    in ys must be a (perhaps improper) subset of xs.
+    This version by RichN at https://codereview.stackexchange.com/a/162407/61384 *)
 let rec subtract_list xs ys =
   match xs, ys with 
   | [], _ -> []
@@ -59,13 +58,13 @@ let rec subtract_list xs ys =
   | x::xs', _ -> x::(subtract_list xs' ys)
 
 (** Set complement for ordered lists of integers.
-  * i.e. return the atoms representing the negation of the original set.
-  *
-  * Given a maximum element omega_max and a subset of a domain of atoms 
-  * represented by list of integers in decreasing order, return a list
-  * of the integers, between 0 and omega_max inclusive, that are not in
-  * the subset.  The returned list will also be in decreasing order.
-  * Note that omega_max is one less than the size of the domain. *)
+    i.e. return the atoms representing the negation of the original set.
+   
+    Given a maximum element omega_max and a subset of a domain of atoms 
+    represented by list of integers in decreasing order, return a list
+    of the integers, between 0 and omega_max inclusive, that are not in
+    the subset.  The returned list will also be in decreasing order.
+    Note that omega_max is one less than the size of the domain. *)
 let list_complement omega_max subset =
   let omega = L.range omega_max `Downto 0 in
   subtract_list omega subset
@@ -104,7 +103,7 @@ let algebra_probs probs =
 (*********** imprecise probabilities over algebras **********)
 
 (** Given *two* algebra_probs alists, return a similar alist in which values are 
- * the minimum/maximum/etc (according to relat) of the two corresponding probs. *)
+   the minimum/maximum/etc (according to relat) of the two corresponding probs. *)
 let algebra_extrema relat alg_probs1 alg_probs2:((int list * float) list) =  (* compiler needs a little help with types here *)
   let make_entry (event, prob1) (_, prob2) =
     (event, relat prob1 prob2) in (* first elts s/b same *)
@@ -123,7 +122,7 @@ let max_algebra_probs alg_probs_list =
   L.reduce max_combine alg_probs_list
 
 (** Return (1 - the sum of probs of extreme probs) for a set of atoms
-    [for (3) and (4) in Skulj] *)
+    See (3) and (4) in Skulj. *)
 let invert_prob_sum omega_max atom_extrema subset_idxs = 
   1. -. prob_sum atom_extrema (list_complement omega_max subset_idxs)
 
@@ -136,7 +135,7 @@ let inverted_sums omega_max atom_extrema =
   L.map (invert_prob_sum omega_max atom_extrema) (LL.at algebra_sets omega_max)
 
 (** Calculate L values for all members of the algebra and return an
-    (atoms, L-value) alist [(3) in Skulj] *)
+    (atoms, L-value) alist.  See (3) in Skulj. *)
 let pri_f_field_lowers omega_max atom_mins atom_maxs =
   let mins = simple_sums omega_max atom_mins in
   let inverted_maxs = inverted_sums omega_max atom_maxs in
@@ -144,7 +143,7 @@ let pri_f_field_lowers omega_max atom_mins atom_maxs =
   L.combine (LL.at algebra_sets omega_max) minmins
 
 (** Calculate U values for all members of the algebra and return an
-    (atoms, U-value) alist [(4) in Skulj] *)
+    (atoms, U-value) alist.  See (4) in Skulj. *)
 let pri_f_field_uppers omega_max atom_mins atom_maxs =
   let maxs = simple_sums omega_max atom_maxs in
   let inverted_mins = inverted_sums omega_max atom_mins in
@@ -152,8 +151,8 @@ let pri_f_field_uppers omega_max atom_mins atom_maxs =
   L.combine (LL.at algebra_sets omega_max) maxmaxs
 
 (** Given lists of atoms, value pairs from pri_f_field_lowers and
-  * pri_f_field_uppers, return a list of pairs that combine the lower
-  * and upper values into intervals represented as 2-element lists. *)
+    pri_f_field_uppers, return a list of pairs that combine the lower
+    and upper values into intervals represented as 2-element lists. *)
 let pri_f_field_intervals lowers uppers =
   let add_elt (event, lower_prob) (_, upper_prob) elts =   (* events s/b same in lower and upper *)
     (event, (lower_prob, upper_prob)) :: elts
@@ -233,7 +232,7 @@ let string_of_int_list = string_of_t_list string_of_int
 let string_of_float_list = string_of_t_list string_of_float
 
 (* Convert one algebra entry, a record containing a list of indexes
- * and a probability, into a string. *)
+   and a probability, into a string. *)
 let string_of_alg_prob = string_of_pair string_of_int_list string_of_float
 
 (* Convert a list of indexes, probability entries into a string. *)
@@ -242,7 +241,7 @@ let string_of_alg_probs = string_of_t_list string_of_alg_prob
 let string_of_interval = string_of_pair string_of_float string_of_float
 
 (* Convert one algebra interval entry, a record containing a list of indexes
- * and a list of a lower and an upper probability, into a string. *)
+   and a list of a lower and an upper probability, into a string. *)
 let string_of_alg_interval = 
   string_of_pair string_of_int_list string_of_interval
 
