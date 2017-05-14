@@ -17,13 +17,13 @@ let mix m1 m2 p =
   let q = 1. -. p in
   M.( (p $* m1) + (q $* m2) );;
 
-let c0 = mix q1 q2
+let cmix = mix q1 q2
 
-let t' = mix i t
+let tmix = mix i t
 
 let qit = M.((0.5 $* q1 *@ i) + (0.5 $* q2 *@ t));;
 
 let ctmix a b = 
-  M.((c0 a) *@ (t' b))
+  M.((cmix a) *@ (tmix b))
 
 (* Claim: There is no a and no b s.t. ctmix a b = qit *)
