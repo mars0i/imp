@@ -192,6 +192,9 @@ let vec_from_list l =
   L.iteri (fun i e -> M.set v 0 i e) l;
   v
 
+let vec_from_int_list l =
+  vec_from_list (L.map float l)
+
 (* assumes all internal lists are same length *)
 let mat_from_lists ll =
   (* TODO add test for all internal lists having same length. *)
@@ -201,6 +204,9 @@ let mat_from_lists ll =
   let fill_row i l = L.iteri (fun j e -> M.set m i j e) l in
   L.iteri fill_row ll;
   m
+
+let mat_from_int_lists ll =
+  mat_from_lists (L.map (fun l -> L.map float l) ll)
 
 (*********** Ways to process matrices **********)
 
