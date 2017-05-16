@@ -159,7 +159,7 @@ let pri_f_field_intervals lowers uppers =
   in L.fold_right2 add_elt lowers uppers []
 
 
-(*********** Ways to make matrices **********)
+(*********** Ways to create matrices **********)
 
 (** Given a matrix such as a row or column vector, return a version 
     normalized so that elements sum to 1.0. *)
@@ -182,10 +182,6 @@ let unif_stoch_mat dim =
   let rows = A.init dim (fun _ -> unif_stoch_vec dim) in
   M.of_rows rows
 
-(** Make a square matrix initializing it with function f, which is
-    passed indexes, e.g: mat_from_fn 4 (fun _ -> Owl.Stats.Rnd.uniform ())  *)
-let mat_from_fn dim f = M.map f (M.empty dim dim)
-
 let vec_from_list l =
   let dim = L.length l in
   let v = M.vector dim in
@@ -195,15 +191,20 @@ let vec_from_list l =
 let vec_from_int_list l =
   vec_from_list (L.map float l)
 
-(* assumes all internal lists are same length *)
+let check_length cols l = 
+  if cols <> L.length l
+  then raise (Failure "input rows have different lengths")
+
 let mat_from_lists ll =
-  (* TODO add test for all internal lists having same length. *)
-  let rows = L.length ll in
-  let cols = L.length (L.hd ll) in
-  let m = M.empty rows cols in
-  let fill_row i l = L.iteri (fun j e -> M.set m i j e) l in
-  L.iteri fill_row ll;
-  m
+  match ll with
+  | [] -> M.empty 0 0
+  | first::others -> 
+      let rows, cols = L.length ll, L.length first in
+      L.iter (check_length cols) others;
+      let mat = M.empty rows cols in
+      let fill_row i l = L.iteri (fun j e -> M.set mat i j e) l in
+      L.iteri fill_row ll;
+      mat
 
 let mat_from_int_lists ll =
   mat_from_lists (L.map (fun l -> L.map float l) ll)
