@@ -182,19 +182,24 @@ let unif_stoch_mat dim =
   let rows = A.init dim (fun _ -> unif_stoch_vec dim) in
   M.of_rows rows
 
+(** Create a 1xN vector from a list of floats of length N. *)
 let vec_from_list l =
   let dim = L.length l in
   let v = M.vector dim in
   L.iteri (fun i e -> M.set v 0 i e) l;
   v
 
+(** Create a 1xN vector from a list of integers of length N. *)
 let vec_from_int_list l =
   vec_from_list (L.map float l)
 
+(** Throw an exception if the length of list l is not equal to cols. *)
 let check_length cols l = 
   if cols <> L.length l
   then raise (Failure "input rows have different lengths")
 
+(** Create an MxN matrix from a list of M lists of N floats. 
+    Throws an exception if the internal lists have different lengths. *)
 let mat_from_lists ll =
   match ll with
   | [] -> M.empty 0 0
@@ -206,6 +211,8 @@ let mat_from_lists ll =
       L.iteri fill_row ll;
       mat
 
+(** Create an MxN matrix from a list of M lists of N integers. 
+    Throws an exception if the internal lists have different lengths. *)
 let mat_from_int_lists ll =
   mat_from_lists (L.map (fun l -> L.map float l) ll)
 
@@ -228,45 +235,50 @@ let mult_mats = cross_apply M.dot
 (*********** Strings for printing **********)
 
 (* Jane Street Core has a function that does this btw. *)
+(** Given a function that will create strings from the elements of list l,
+    return a string representing l. *)
 let string_of_t_list string_of_t l = 
   "[" ^ String.concat "; " (L.map string_of_t l) ^ "]"
 
+(** Given two functions that will create strings from the elements of the pair,
+    return a string representing it. *)
 let string_of_pair string_of_t1 string_of_t2 (t1, t2) =
   "(" ^ string_of_t1 t1 ^ ", " ^ string_of_t2 t2 ^ ")"
 
+(** Return a string representing a list of integers. *)
 let string_of_int_list = string_of_t_list string_of_int
 
+(** Return a string representing a list of floats. *)
 let string_of_float_list = string_of_t_list string_of_float
 
-(* Convert one algebra entry, a record containing a list of indexes
+(** Convert one algebra entry, a record containing a list of indexes
    and a probability, into a string. *)
 let string_of_alg_prob = string_of_pair string_of_int_list string_of_float
 
-(* Convert a list of indexes, probability entries into a string. *)
+(** Convert a list of indexes, probability entries into a string. *)
 let string_of_alg_probs = string_of_t_list string_of_alg_prob
 
-let string_of_interval = string_of_pair string_of_float string_of_float
+(** Return a string representation of a pair of floats. *)
+let string_of_float_pair = string_of_pair string_of_float string_of_float
 
-(* Convert one algebra interval entry, a record containing a list of indexes
+(** Convert one algebra interval entry, a record containing a list of indexes
    and a list of a lower and an upper probability, into a string. *)
 let string_of_alg_interval = 
-  string_of_pair string_of_int_list string_of_interval
+  string_of_pair string_of_int_list string_of_float_pair
 
-(* Convert a list of indexes, probability interval entries into a string. *)
+(** Convert a list of indexes, probability interval entries into a string. *)
 let string_of_alg_intervals = string_of_t_list string_of_alg_interval
-
-(* old versions:
-let string_of_alg_prob alg_prob =
-  let (k, v) = alg_prob in
-  "(" ^ string_of_int_list k ^ ", " ^ string_of_float v ^ ")"
-
-let string_of_alg_interval alg_interval =
-  let (k, v) = alg_interval in
-  "(" ^ string_of_int_list k ^  ", " ^ string_of_float_list v ^ ")"
-*)
 
 (*********** Convenience function for testing **********)
 
+(** Convenience function for testing.  Should be passed the size of
+    a set of atoms omega and the number of probability distributions
+    over them that is wanted.  Returns
+       ((ps, mins, maxs),
+        (algs, min_alg, max_alg),
+        (f_lowers, f_mins, f_inverted_maxs),
+        (f_uppers, f_maxs, f_inverted_mins),
+        f_intervals) *)
 let generate_system omega_size num_dists =
   let omega_max = omega_size - 1 in
   (* make num_dists atomic dists *)
