@@ -200,21 +200,21 @@ let check_length cols l =
 
 (** Create an MxN matrix from a list of M lists of N floats. 
     Throws an exception if the internal lists have different lengths. *)
-let mat_from_lists ll =
-  match ll with
+let mat_from_lists ls =
+  match ls with
   | [] -> M.empty 0 0
-  | first::others -> 
-      let rows, cols = L.length ll, L.length first in
-      L.iter (check_length cols) others;
+  | l' :: ls' -> 
+      let rows, cols = L.length ls, L.length l' in
+      L.iter (check_length cols) ls';
       let mat = M.empty rows cols in
       let fill_row i l = L.iteri (fun j e -> M.set mat i j e) l in
-      L.iteri fill_row ll;
+      L.iteri fill_row ls;
       mat
 
 (** Create an MxN matrix from a list of M lists of N integers. 
     Throws an exception if the internal lists have different lengths. *)
-let mat_from_int_lists ll =
-  mat_from_lists (L.map (fun l -> L.map float l) ll)
+let mat_from_int_lists ls =
+  mat_from_lists (L.map (fun l -> L.map float l) ls)
 
 (*********** Ways to process matrices **********)
 
