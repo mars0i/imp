@@ -16,13 +16,13 @@ let forall2 pred m1 m2 =
       loop_cols i j && loop_rows (i + 1) j
   in loop_rows 0 0
 
-(** Compare function for matrices that returns zero of all elements of
+(** A compare function for matrices that returns zero of all elements of
     both matrices are equal, and if not returns -1 only if the matrices are 
     not equal and all elements of m1 are less than or equal to corresponding 
     elements of m2, and if not returns 1 only if all elements of m1 are 
     greater than or equal to corresponding elements of m2, and raises an
     exception of none of these relationships hold. (The normal compare
-    function short-circuits on the first non-equal elements.) *)
+    function short-circuits on the first non-equal elements *)
 let compare m1 m2 =
   if m1 = m2 then 0 else
     if forall2 (<=) m1 m2 then -1 else 
