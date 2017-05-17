@@ -28,3 +28,18 @@ let compare m1 m2 =
     if forall2 (<=) m1 m2 then -1 else 
       if forall2 (>=) m1 m2 then 1 
       else raise (Failure "incomparable matrices")
+(* TODO This is inefficient.  It potentially loops through all pairs
+ * of elements three times.  
+ * A new strategy:
+ * Look at this element.  If it's =, then keep looking for anything.
+ * If this element is not zero, then if it's <, all subsequent pairs
+ * must be < or =; else raise an exception.
+ * If this element is >, all subsequent elements must be > or =; else
+ * raise an exception.
+ * If we are still in the = state when we get done, then return 0.
+ * If we are in the < or > state, then return -1 or 1, respectively.
+ * So maybe have two functions or branchs:
+ * The equality function/branch, which is open-minded, but that will
+ * choose the other function/branch if it encounters a non-equal pair.
+ * To this other fn/branch is passed a relation, <= or >=, which is
+ * uses repeatedly. *)
