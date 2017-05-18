@@ -2,6 +2,13 @@
 module M  = Owl.Mat
 module I = Core.Interval;;
 
+(* Something like this is what one wants, I think:
+module Mat_interval = Interval.Make(struct 
+  type t = Owl.Mat.mat
+  let compare = Comparemat.compare
+end);;
+*)
+
 (* TODO is this right? *)
 (** Return true iff pred is true for all corresponding elements of
     matrices m1 and m2. Short-circuits on the first false. *)
