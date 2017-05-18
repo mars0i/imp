@@ -50,3 +50,19 @@ let compare m1 m2 =
  * choose the other function/branch if it encounters a non-equal pair.
  * To this other fn/branch is passed a relation, <= or >=, which is
  * uses repeatedly. *)
+
+(* TODO? An alternative would be to return 1 rather than raising an
+ * exception when the matrices are incomparable.  This is an odd choice,
+ * conceptually, but since when 1, i.e. when m1 > m2, we have no interval--
+ * i.e. the interval creation function will return None, we could just
+ * return None in the incomparable case, too, by returning 1.  i.e. in
+ * general 1 essentially means that you'll get a non-interval, so why not
+ * just piggy-back on this behavior? *)
+(* i.e. how about this function (which is still inefficient, though less so)? *)
+let compare' m1 m2 =
+  if m1 = m2 then 0 else
+    if forall2 (<=) m1 m2 then -1 else 1
+(* or even: *)
+let compare'' m1 m2 =
+  if forall2 (<=) m1 m2 then -1 else 1
+(* That misrepresents when m1 = m1.  Is that a problem? *)
