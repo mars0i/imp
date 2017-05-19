@@ -1,6 +1,6 @@
 
 module M  = Owl.Mat
-module I = Core.Interval;;
+(* module I = Core.Interval;; *)
 
 (* Something like this is what one wants, I think:
 module Mat_interval = Interval.Make(struct 
@@ -66,3 +66,19 @@ let compare' m1 m2 =
 let compare'' m1 m2 =
   if forall2 (<=) m1 m2 then -1 else 1
 (* That misrepresents when m1 = m1.  Is that a problem? *)
+
+let fold f init m1 m2 =
+  let rows, cols as dims = M.shape m1 in
+  if dims <> M.shape m2 then raise (Failure "matrices have different shapes");
+  let apply_f acc i j = 
+    Printf.printf "%f %d %d\n%!" acc i j;
+    f acc (M.get m1 i j) (M.get m2 i j)
+  in
+  let rec loop acc i j =
+    if i < rows && j < cols
+    then loop (apply_f acc i j) (i + 1) j
+    else if j < cols
+         then loop acc 0 (j + 1)
+         else acc
+  in
+  loop init 0 0
