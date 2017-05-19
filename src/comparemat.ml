@@ -23,50 +23,6 @@ let forall2 pred m1 m2 =
       loop_cols i j && loop_rows (i + 1) j
   in loop_rows 0 0
 
-(** A compare function for matrices that returns zero of all elements of
-    both matrices are equal, and if not returns -1 only if the matrices are 
-    not equal and all elements of m1 are less than or equal to corresponding 
-    elements of m2, and if not returns 1 only if all elements of m1 are 
-    greater than or equal to corresponding elements of m2, and raises an
-    exception of none of these relationships hold. (The normal compare
-    function short-circuits on the first non-equal elements *)
-let compare m1 m2 =
-  if m1 = m2 then 0 else
-    if forall2 (<=) m1 m2 then -1 else 
-      if forall2 (>=) m1 m2 then 1 
-      else raise (Failure "incomparable matrices")
-(* TODO This is inefficient.  It potentially loops through all pairs
- * of elements three times.  
- * A new strategy:
- * Look at this element.  If it's =, then keep looking for anything.
- * If this element is not zero, then if it's <, all subsequent pairs
- * must be < or =; else raise an exception.
- * If this element is >, all subsequent elements must be > or =; else
- * raise an exception.
- * If we are still in the = state when we get done, then return 0.
- * If we are in the < or > state, then return -1 or 1, respectively.
- * So maybe have two functions or branchs:
- * The equality function/branch, which is open-minded, but that will
- * choose the other function/branch if it encounters a non-equal pair.
- * To this other fn/branch is passed a relation, <= or >=, which is
- * uses repeatedly. *)
-
-(* TODO? An alternative would be to return 1 rather than raising an
- * exception when the matrices are incomparable.  This is an odd choice,
- * conceptually, but since when 1, i.e. when m1 > m2, we have no interval--
- * i.e. the interval creation function will return None, we could just
- * return None in the incomparable case, too, by returning 1.  i.e. in
- * general 1 essentially means that you'll get a non-interval, so why not
- * just piggy-back on this behavior? *)
-(* i.e. how about this function (which is still inefficient, though less so)? *)
-let compare' m1 m2 =
-  if m1 = m2 then 0 else
-    if forall2 (<=) m1 m2 then -1 else 1
-(* or even: *)
-let compare'' m1 m2 =
-  if forall2 (<=) m1 m2 then -1 else 1
-(* That misrepresents when m1 = m1.  Is that a problem? *)
-
 (* Fold f over matrices m1 and m2 starting with initial value init. *)
 let fold2 f init m1 m2 =
   let rows, cols as dims = M.shape m1 in
@@ -74,27 +30,31 @@ let fold2 f init m1 m2 =
   ;
   let last_col = cols - 1 in
   let apply_f acc i j = 
-    Printf.printf "%f %d %d\n%!" acc i j;
     f acc (M.get m1 i j) (M.get m2 i j)
   in
   let rec loop acc i j =
     if i < rows
     then loop (apply_f acc i j) (i + 1) j
-    else if j < last_col       (* don't start on next col if at final col *)
+    else if j < last_col         (* don't start on next col if at final col *)
          then loop acc 0 (j + 1) (* start over on next col *)
          else acc
   in
   loop init 0 0
 
-
+(** A compare function for matrices that returns zero if all elements of
+    both matrices are equal, and if not returns -1 only if all elements 
+    of m1 are less than or equal to corresponding elements of m2; otherwise
+    returns 1, indicating that at least one element in m1 is greater than 
+    the corresponding element in m2. *)
 let compare2 m1 m2 =
-  let f acc i j =
-    let e1, e2 = M.get m1 i j, M.get m2 i j in
-    if e1 > e2 then 1
-    else match acc with
-    | 0  -> if e1 = e2 then 0 else -1
-    | -1 -> -1
+  let f acc e1 e2 =
+    if acc = 1 then 1        (* at least one pair was e1 > e2 *)
+    else if e1 > e2 then 1   (* henceforth this will never change *)
+    else match acc with      (* at this point we know that e1 <= e2 *)
+    | -1 -> -1               (* all previous pairs were <= *)
+    | 0  -> if e1 = e2
+            then 0
+            else -1          (* i.e. e1 < e2 *)
+    | _ -> 111111            (* makes compiler happy--should never occur *)
   in
-  fold f 0 m1 m2
-
-
+  fold2 f 0 m1 m2
