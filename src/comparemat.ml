@@ -67,18 +67,34 @@ let compare'' m1 m2 =
   if forall2 (<=) m1 m2 then -1 else 1
 (* That misrepresents when m1 = m1.  Is that a problem? *)
 
-let fold f init m1 m2 =
+(* Fold f over matrices m1 and m2 starting with initial value init. *)
+let fold2 f init m1 m2 =
   let rows, cols as dims = M.shape m1 in
-  if dims <> M.shape m2 then raise (Failure "matrices have different shapes");
+  if dims <> M.shape m2 then raise (Failure "matrices have different shapes")
+  ;
+  let last_col = cols - 1 in
   let apply_f acc i j = 
     Printf.printf "%f %d %d\n%!" acc i j;
     f acc (M.get m1 i j) (M.get m2 i j)
   in
   let rec loop acc i j =
-    if i < rows && j < cols
+    if i < rows
     then loop (apply_f acc i j) (i + 1) j
-    else if j < cols
-         then loop acc 0 (j + 1)
+    else if j < last_col       (* don't start on next col if at final col *)
+         then loop acc 0 (j + 1) (* start over on next col *)
          else acc
   in
   loop init 0 0
+
+
+let compare2 m1 m2 =
+  let f acc i j =
+    let e1, e2 = M.get m1 i j, M.get m2 i j in
+    if e1 > e2 then 1
+    else match acc with
+    | 0  -> if e1 = e2 then 0 else -1
+    | -1 -> -1
+  in
+  fold f 0 m1 m2
+
+
