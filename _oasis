@@ -43,7 +43,7 @@ Executable "data4"
   CompiledObject: best
 
 AlphaFeatures: ocamlbuild_more_args
-Document "probmat_api"
+Document "probmat"
   Type: ocamlbuild (0.4)
   BuildTools: ocamldoc
   Title: API reference for Probmat
