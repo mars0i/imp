@@ -2,6 +2,20 @@
     http://github.com/realworldocaml/examples/blob/master/code/functors/main.topscript
     parts 5 & 6 *)
 
+(* utop usage example:
+ *
+ * #require "src/utils.ml";;
+ * #require "src/mat.ml";;
+ * #require src/interval.ml";;
+ *
+ * module MatI = Interval.Make_interval(Mat);;
+ *
+ * <make some matrices>
+ *
+ * MatI.create <a matrix> <another matrix>
+ * ...
+ *)
+
 module type Comparable = sig
     type t
     val compare : t -> t -> int
