@@ -25,6 +25,14 @@ Error: Signature mismatch:
 
 type t = Owl.Mat.mat
 
+(* NOTE The compare function below is complicated by the fact that it returns 0 for 
+ * equivalent matrices.  However, if it's only used interval-creation,
+ * a pair of equal matrices create an Empty interval, at least in
+ * Jane Street-style Interval modules.  So you might as well return 1
+ * for those.  -1 is the only return value that matters. *)
+
+(* QUESTION: Is this running through everything when it could short-circuit? *)
+
 (** A compare function for matrices that returns zero if all elements of
     both matrices are equal, and if not returns -1 only if all elements 
     of m1 are less than or equal to corresponding elements of m2; otherwise
