@@ -8,6 +8,21 @@ module Mat_interval = Interval.Make(struct
 end);;
 *)
 
+(*
+# module MC = Core.Comparable.Make(struct
+  type t = Owl.Mat.mat
+  let compare = Mat.compare end);;
+Error: Signature mismatch:
+       ...
+       The value `sexp_of_t' is required but not provided
+       The value `t_of_sexp' is required but not provided
+# module MC = Core.Comparable.Make(Mat);;
+Error: Signature mismatch:
+       ...
+       The value `sexp_of_t' is required but not provided
+       The value `t_of_sexp' is required but not provided
+*)
+
 type t = Owl.Mat.mat
 
 (** A compare function for matrices that returns zero if all elements of
