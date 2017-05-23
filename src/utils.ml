@@ -14,7 +14,11 @@ let forall2 pred m1 m2 =
       loop_cols i j && loop_rows (i + 1) j
   in loop_rows 0 0
 
-(* Fold f over matrices m1 and m2 starting with initial value init. *)
+(** Fold f over matrices m1 and m2 starting with initial value init: 
+    Folds f through all corresponding pairs of elements of matrices m1 
+    and m2 by repeatedly applying f acc element_from_m1 element_from_m2,
+    where acc is the result of previous applications.  init is the
+    initial value for acc. *)
 let fold2 f init m1 m2 =
   let rows, cols as dims = M.shape m1 in
   if dims <> M.shape m2 then failwith "matrices have different shapes"
@@ -31,7 +35,9 @@ let fold2 f init m1 m2 =
          else acc
   in loop init 0 0
 
-(** Folds f through all corresponding pairs of elements of matrices m1 
+(** Fold f over matrices m1 and m2 starting with initial value init, 
+    short-circuiting if stop_val is encountered:
+    Folds f through all corresponding pairs of elements of matrices m1 
     and m2 by repeatedly applying f acc element_from_m1 element_from_m2,
     where acc is the result of previous applications.  init is the
     initial value for acc.  If f ever returns stop_val, it will be
