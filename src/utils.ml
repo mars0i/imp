@@ -4,7 +4,8 @@ module M  = Owl.Mat
     matrices m1 and m2. Short-circuits on the first false. *)
 let forall2 pred m1 m2 =
   let rows, cols as dims = M.shape m1 in
-  if dims <> M.shape m2 then raise (Failure "matrices have different shapes");
+  if dims <> M.shape m2 then failwith "matrices have different shapes"
+  ;
   let rec loop_cols i j =
     if j >= cols then true else
       pred (M.get m1 i j) (M.get m2 i j) && loop_cols i (j + 1)
@@ -16,7 +17,7 @@ let forall2 pred m1 m2 =
 (* Fold f over matrices m1 and m2 starting with initial value init. *)
 let fold2 f init m1 m2 =
   let rows, cols as dims = M.shape m1 in
-  if dims <> M.shape m2 then raise (Failure "matrices have different shapes")
+  if dims <> M.shape m2 then failwith "matrices have different shapes"
   ;
   let last_col = cols - 1 in
   let apply_f acc i j = 
@@ -37,7 +38,7 @@ let fold2 f init m1 m2 =
     returned immediately. *)
 let short_circuit_fold2 stop_val f init m1 m2 =
   let rows, cols as dims = M.shape m1 in
-  if dims <> M.shape m2 then raise (Failure "matrices have different shapes")
+  if dims <> M.shape m2 then failwith "matrices have different shapes"
   ;
   let last_col = cols - 1 in
   let apply_f acc i j = 
