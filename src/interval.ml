@@ -4,9 +4,9 @@
 
 (* utop usage example:
  *
- * #require "src/utils.ml";;
- * #require "src/mat.ml";;
- * #require src/interval.ml";;
+ * #mod_use "src/utils.ml";;
+ * #mod_use "src/mat.ml";;
+ * #mod_use src/interval.ml";;
  *
  * module MatI = Interval.Make_interval(Mat);;
  *
