@@ -36,15 +36,27 @@ type t = Owl.Mat.mat
     of m1 are less than or equal to corresponding elements of m2; otherwise
     returns 1, indicating that at least one element in m1 is greater than 
     the corresponding element in m2. *)
-let compare m1 m2 =
+let biased_compare m1 m2 =
   let f acc e1 e2 =
-    if e1 > e2 then 1  (* at least one pair has had e1 > e2 *)
-    else match acc with           (* at this point we know that e1 <= e2 *)
-         | -1 -> -1               (* all previous pairs were <= *)
+    if e1 > e2 then 1     (* don't need to check for acc = 1 since fold exits first *)
+    else match acc with   (* at this point we know that e1 <= e2 *)
+         | -1 -> -1       (* all previous pairs were <= *)
          |  0 -> if e1 = e2 then 0 else -1
-         |  _ -> raise (Failure "bug in compare: acc is not -1, 0, or 1")
+         |  _ -> failwith "bug: acc is not -1, 0, or 1" (* avoid match warning *)
   in Utils.short_circuit_fold2 1 f 0 m1 m2
 
+let standard_compare m1 m2 =
+  let f acc e1 e2 =
+    match acc with
+         | -1 -> if e1 < e2 then -1 else failwith "incomparable"
+         |  1 -> if e1 > e2 then  1 else failwith "incomparable"
+         |  0 -> if e1 = e2 then 0
+                 else if e1 < e2 then -1
+                 else 1
+         |  _ -> failwith "bug: acc is not -1, 0, or 1" (* avoid match warning *)
+  in Utils.fold2 f 0 m1 m2
+
+let compare = biased_compare
 
 
 (* debug:
