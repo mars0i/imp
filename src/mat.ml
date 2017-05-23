@@ -31,8 +31,6 @@ type t = Owl.Mat.mat
  * Jane Street-style Interval modules.  So you might as well return 1
  * for those.  -1 is the only return value that matters. *)
 
-(* QUESTION: Is this running through everything when it could short-circuit? *)
-
 (** A compare function for matrices that returns zero if all elements of
     both matrices are equal, and if not returns -1 only if all elements 
     of m1 are less than or equal to corresponding elements of m2; otherwise
@@ -40,9 +38,16 @@ type t = Owl.Mat.mat
     the corresponding element in m2. *)
 let compare m1 m2 =
   let f acc e1 e2 =
-    if acc = 1 || e1 > e2 then 1  (* at least one pair has had e1 > e2 *)
+    if e1 > e2 then 1  (* at least one pair has had e1 > e2 *)
     else match acc with           (* at this point we know that e1 <= e2 *)
          | -1 -> -1               (* all previous pairs were <= *)
          |  0 -> if e1 = e2 then 0 else -1
          |  _ -> raise (Failure "bug in compare: acc is not -1, 0, or 1")
-  in Utils.fold2 f 0 m1 m2
+  in Utils.short_circuit_fold2 1 f 0 m1 m2
+
+
+
+(* debug:
+  let yo = ref 0 in
+    yo := !yo + 1; Printf.printf "%d %d\n" acc !yo;
+*)
