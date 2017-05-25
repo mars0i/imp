@@ -18,28 +18,10 @@ Library "probmat"
   Path: src
   Modules: Probmat
 
-Executable "data1"
+Executable "exampledata"
   BuildDepends: batteries, probmat
   Path: src
-  MainIs: data1.ml
-  CompiledObject: best # make native binary
-
-Executable "data2"
-  BuildDepends: batteries, probmat
-  Path: src
-  MainIs: data2.ml
-  # make bytecode
-
-Executable "data3"
-  BuildDepends: batteries, probmat
-  Path: src
-  MainIs: data3.ml
-  CompiledObject: best # make native binary
-
-Executable "data4"
-  BuildDepends: batteries, probmat
-  Path: src
-  MainIs: data4.ml
+  MainIs: exampledata.ml
   CompiledObject: best
 
 AlphaFeatures: ocamlbuild_more_args
