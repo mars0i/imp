@@ -23,3 +23,4 @@ src/Probmat.*
 configure
 META
 probmat_api*
+*.odocl
