@@ -52,6 +52,18 @@ let biased_compare m1 m2 =
     than or equal to the corresponding element of the second, or 1 if
     each element of the first is greter than or equal to each element
     of the second.  Raises an exception otherwise. *)
+
+let standard_compare m1 m2 =
+  let f acc e1 e2 =
+    match acc with
+         |  0 -> if e1 < e2 then -1 else
+                 if e1 > e2 then 1 else 0
+         | -1 -> if e1 <= e2 then -1 else failwith "incomparable"
+         |  1 -> if e1 >= e2 then  1 else failwith "incomparable"
+         |  _ -> failwith "bug: acc is not -1, 0, or 1" (* avoid match warning *)
+  in Utils.fold2 f 0 m1 m2
+
+(* old version:
 let standard_compare m1 m2 =
   let f acc e1 e2 =
     match acc with
@@ -62,6 +74,7 @@ let standard_compare m1 m2 =
                  else 1
          |  _ -> failwith "bug: acc is not -1, 0, or 1" (* avoid match warning *)
   in Utils.fold2 f 0 m1 m2
+*)
 
 
 let compare = biased_compare
