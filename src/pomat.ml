@@ -45,7 +45,7 @@ let efficient_compare m1 m2 =
                if e1 > e2 then Greater else Equal
     | Lower ->   if e1 <= e2 then Lower else Unknown
     | Greater -> if e1 >= e2 then Greater else Unknown
-    | Unknown -> Unknown (* should never happen, given short circuit *)
+    | Unknown -> Unknown (* should never happen given short circuit *)
   in Utils.short_circuit_fold2 Unknown f Equal m1 m2
 
 
