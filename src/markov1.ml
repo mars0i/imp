@@ -4,14 +4,15 @@
  * wireframe plots and countour heatmaps as well as various 2D plots. *)
 
 module LL = Batteries.LazyList;;
+module P = Probmat;;
 
 let s = P.vec_from_int_list [0; 0; 0; 1; 0;]
 
-let t = P.mat_from_lists [[1.; 0.; 0.; 0.; 0.];
-                          [0.5; 0.3; 0.2; 0.; 0.];
-                          [0.; 0.5; 0.3; 0.2; 0.];
-                          [0.; 0.; 0.5; 0.3; 0.2];
-                          [0.; 0.; 0.; 0.; 1.]]
+let t = P.mat_from_lists [[1.0; 0.0; 0.0; 0.0; 0.0];
+                          [0.5; 0.3; 0.2; 0.0; 0.0];
+                          [0.0; 0.5; 0.3; 0.2; 0.0];
+                          [0.0; 0.0; 0.5; 0.3; 0.2];
+                          [0.0; 0.0; 0.0; 0.0; 1.0]]
 
 let next v = M.(v *@ t)
 
