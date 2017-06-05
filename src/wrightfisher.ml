@@ -16,12 +16,14 @@ let weight_i popsize fitnesses freq =
                           w22 *. i' *. i' in
   (a_hom +. het) /. (a_hom +. 2. *. het +. b_hom)
 
+(* TODO seems to work for small pops but not large.  Is there a problem
+ * with Math.combination?? *)
+
 (* TODO inefficiently calls weight_i multiple times with same args. *)
 (** Wright-Fisher transition probability from frequency = i to frequency = j *)
 let prob_ij popsize fitnesses prev_freq next_freq =
   let alleles = 2 * popsize in
   let wt = weight_i popsize fitnesses prev_freq in
-  print_float wt; print_string "\n";
   let other_wt = 1. -. wt in
   let j = float next_freq in
   let j' = float (alleles - next_freq) in
@@ -35,6 +37,6 @@ let prob_ijf popsize fitnesses prev_freq next_freq ignored_float =
 *)
 
 let tranmat popsize fitnesses =
-  let dim = popsize + 1 in
+  let dim = 2 * popsize + 1 in
   let m = Mat.empty dim dim  in
   Mat.mapi (fun row col _ -> prob_ij popsize fitnesses row col) m
