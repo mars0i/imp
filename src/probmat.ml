@@ -33,7 +33,6 @@ let next_intsets pset =
   (pset, addl_sets @ pset)
 
 (** Generate a list of subsequent integer power sets. 
-  
     Return a lazy list of subsequent power sets of integers from 0 to n. 
     They can be retreived using e.g., to get the power set of integers
     up to 5: LazyList.at intsets 4 .  Note each power set is in the form
