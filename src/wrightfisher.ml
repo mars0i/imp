@@ -4,6 +4,15 @@
     equations 1.58, 1.59, and 1.25, though similar formulas can be 
     found in many places. *)
 
+(* Example:
+ * module LL = Batteries.LazyList;;
+ * open Owl;;
+ * let xs = Mat.sequential 1 1001;;
+ * let s = make_init_state 1000 500;;
+ * let t = make_tranmat 1000 (0.3, 0.3, 0.4);;
+ * let h = Plot.create "yo.pdf" in Plot.scatter ~h xs (LL.at states 10); Plot.output h;;
+ *)
+
 module Mat = Owl.Mat
 module Math = Owl.Maths (* note British->US translation *)
 module LL = Batteries.LazyList
@@ -61,3 +70,4 @@ let next_state tranmat state =
 
 let make_states tranmat init_state =
   LL.from_loop init_state (next_state tranmat)
+
