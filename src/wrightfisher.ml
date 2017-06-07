@@ -79,9 +79,9 @@ let length m = snd (M.shape m)
 let make_pdfs basename states n =
   let state_length = length (LL.at states 0) in
   let xs = Mat.sequential 1 state_length in (* vector of x-axis indices *)
-  let f i state =
+  let make_pdf i state =
     let filename = basename ^ (string_of_int i) ^ ".pdf" in
     let h = Plot.create filename in 
       Plot.scatter ~h xs state; 
       Plot.output h
-  in LL.iteri f (LL.take n states)
+  in LL.iteri make_pdf (LL.take n states)
