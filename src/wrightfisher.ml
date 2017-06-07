@@ -15,6 +15,7 @@
 
 module Mat = Owl.Mat
 module Math = Owl.Maths (* note British->US translation *)
+module Plot = Owl.Plot
 module LL = Batteries.LazyList
 
 let ( *@ ) = Mat.( *@ )  (* = dot: matrix multiplication *)
@@ -29,8 +30,7 @@ let ( *@ ) = Mat.( *@ )  (* = dot: matrix multiplication *)
 (* Owl.Math.combination just wraps the following in a conversion to int.
  * This produces odd results for larger coefficients because of OCaml's unsafe,
  * limited-precision integers.  I need a float in the end anyway. *)
-let combination_float n k = 
-  Gsl.Sf.choose n k
+let combination_float = Gsl.Sf.choose
 
 let make_init_state allele_popsize num_alleles =
   let m = Mat.zeros 1 (allele_popsize + 1) in
@@ -54,7 +54,7 @@ let prob_ij fitns allele_popsize prev_freq next_freq =
   let other_wt = 1. -. wt in
   let j = float next_freq in
   let j' = float (allele_popsize - next_freq) in
-  let comb = combination_float allele_popsize next_freq in
+  let comb = memo_comb allele_popsize next_freq in
   comb  *.  wt ** j  *.  other_wt ** j'
 
 (** prob_ij with an extra ignored argument; can be used mapi to
