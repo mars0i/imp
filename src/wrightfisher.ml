@@ -32,9 +32,9 @@ let ( *@ ) = Mat.( *@ )  (* = dot: matrix multiplication *)
  * limited-precision integers.  I need a float in the end anyway. *)
 let combination_float = Gsl.Sf.choose
 
-let make_init_state allele_popsize num_alleles =
+let make_init_state allele_popsize a1count =
   let m = Mat.zeros 1 (allele_popsize + 1) in
-  Mat.set m 0 num_alleles 1.0;
+  Mat.set m 0 a1count 1.0;
   m
 
 type fitnesses = {w11 : float; w12 : float; w22 : float}
@@ -54,7 +54,7 @@ let prob_ij fitns allele_popsize prev_freq next_freq =
   let other_wt = 1. -. wt in
   let j = float next_freq in
   let j' = float (allele_popsize - next_freq) in
-  let comb = memo_comb allele_popsize next_freq in
+  let comb = combination_float allele_popsize next_freq in
   comb  *.  wt ** j  *.  other_wt ** j'
 
 (** prob_ij with an extra ignored argument; can be used mapi to
@@ -70,7 +70,7 @@ let make_tranmat allele_popsize fitns =
 let next_state tranmat state = 
   (state, state *@ tranmat)
 
-let make_states tranmat init_state =
+let make_states init_state tranmat =
   LL.from_loop init_state (next_state tranmat)
 
 let length m = snd (M.shape m)
@@ -80,8 +80,9 @@ let make_pdfs basename states n =
   let state_length = length (LL.at states 0) in
   let xs = Mat.sequential 1 state_length in (* vector of x-axis indices *)
   let make_pdf i state =
-    let filename = basename ^ (string_of_int i) ^ ".pdf" in
+    let filename = basename ^ (Printf.sprintf "%03d" i) ^ ".pdf" in
     let h = Plot.create filename in 
-      Plot.scatter ~h xs state; 
-      Plot.output h
+    Plot.set_yrange h 0.0 0.25;
+    Plot.scatter ~h xs state; 
+    Plot.output h
   in LL.iteri make_pdf (LL.take n states)
