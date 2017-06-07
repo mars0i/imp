@@ -39,7 +39,7 @@ let make_init_state allele_popsize num_alleles =
 
 type fitnesses = {w11 : float; w12 : float; w22 : float}
 
-(** 1.59 *)
+(** 1.59 in Ewens *)
 let weight_i {w11; w12; w22} allele_popsize freq  =
   let i, i' = float freq, float (allele_popsize - freq) in
   let a_hom = w11 *. i *. i in
