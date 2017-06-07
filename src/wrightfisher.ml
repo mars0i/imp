@@ -47,7 +47,8 @@ let weight_i {w11; w12; w22} allele_popsize freq  =
   let b_hom = w22 *. i' *. i' in
   (a_hom +. het) /. (a_hom +. 2. *. het +. b_hom)
 
-(** Wright-Fisher transition probability from frequency = i to frequency = j *)
+(** Wright-Fisher transition probability from frequency prev_freq (row index)
+    to frequency next_freq (column index). *)
 let prob_ij fitns allele_popsize prev_freq next_freq =
   let wt = weight_i fitns allele_popsize prev_freq in
   let other_wt = 1. -. wt in
