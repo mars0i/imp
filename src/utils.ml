@@ -1,4 +1,20 @@
 module M  = Owl.Mat
+module L = Batteries.List
+
+(** Returns a memoizing version of function f of one argument.
+    By Andrej Bauer: https://stackoverflow.com/a/14503530/1455243
+    Caveats: 
+    Only works for one arg.
+    Not designed for recursive functions.  See above URL if you want that.
+    Uses an association list, so if you have a lot of different results,
+    could be inefficient.  Consider replacing with a Map or HashTable
+    in that case. *)
+let memo f =
+  let m = ref [] in
+    fun x -> try L.assoc x !m with 
+              Not_found -> let y = f x in
+              m := (x, y) :: !m ;
+              y
 
 (** Return true iff pred is true for all corresponding elements of
     matrices m1 and m2. Short-circuits on the first false. *)
