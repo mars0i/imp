@@ -20,16 +20,6 @@ module LL = Batteries.LazyList
 
 let ( *@ ) = Mat.( *@ )  (* = dot: matrix multiplication *)
 
-(* TODO prob_ij inefficiently calls weight_i multiple times with same args,
- * i.e.  within each row. *)
-
-(* TODO Also there's no need to calculate the combinations again for each
- * row in tranmat; they're the same in each row. *)
-
-(* TODO Replace with Owl.Maths.combination_float when I get newer version. *)
-(* Owl.Math.combination just wraps the following in a conversion to int.
- * This produces odd results for larger coefficients because of OCaml's unsafe,
- * limited-precision integers.  I need a float in the end anyway. *)
 let combination_float = Gsl.Sf.choose
 
 let make_init_state allele_popsize a1count =
