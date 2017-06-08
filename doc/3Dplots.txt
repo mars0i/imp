@@ -70,3 +70,37 @@ but is whatever you want.  Maybe make each column sequential from 0 to M-1.
 
 Step 5: Pass x, y, and z to Plot.mesh or Plot.surf on plot handle h, and
 then call Plot.output on the plot handle.
+
+-----------------
+
+Probability plane examples:
+
+
+(* triangular plane function *)
+let f x y = if x +. y > 1. then 0. else 1. -. x -. y;;
+
+(* triangular plane function from opposite direction *)
+ let g x y = if x +. y < 1. then 0. else 1. -. (1. -. x) -. (1. -. y);;
+
+(* make x, y coord matrices *)
+let xs, ys = Mat.meshgrid 0. 1. 0. 1. 100 100;;
+
+(* make z coord matrix *)
+let zs = Mat.map2 f xs ys;;
+
+(* create pdf file *)
+let h = Plot.create "probplane.pdf" in
+  Plot.mesh ~h ~contour:true xs ys zs;
+  Plot.output h;;
+
+
+(* versions with optional predicates to include only some points *)
+(* not working? *)
+
+let f ?(keep = (fun x' y' z' -> true)) x y = let z = 1. -. x -. y in if x +. y < 1. && keep x y z then 1. -. x -. y else 0.;;
+
+let g ?(keep = (fun x' y' z' -> true)) x y = let z = 1. -. x -. y in if x +. y >  1. && keep x y z then x +. y -. 1. else 0.;;
+
+(* failed attempt to use this method *)
+let h = Plot.create "probplane.pdf" in Plot.mesh ~h xs ys (Mat.map2 (g ~keep:(fun x y z -> x > 0.2 && x < 0.4 && y > 0.4 && y < 0.6 && z > 0.5 && z < 0.9)) xs ys); Plot.output h;;
+
