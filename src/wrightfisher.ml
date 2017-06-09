@@ -16,6 +16,7 @@
 module Mat = Owl.Mat
 module Math = Owl.Maths (* note British->US translation *)
 module Plot = Owl.Plot
+module L = Batteries.List
 module LL = Batteries.LazyList
 
 let ( *@ ) = Mat.( *@ )  (* = dot: matrix multiplication *)
@@ -76,3 +77,14 @@ let make_pdfs basename states n =
     Plot.scatter ~h xs state; 
     Plot.output h
   in LL.iteri make_pdf (LL.take n states)
+
+(** Return a triple containing x-coord, y-coord, and z-coord matrices.
+   state_list is a list of row vectors representing prob dists that will
+   be concatenated into z coords.  *)
+let make_coords state_list =
+  let (_, width) = Mat.shape (L.hd state_list) in
+  let height = L.length state_list in
+  let xs = Mat.repeat ~axis:0 (Mat.sequential 1 width) height in
+  let ys = Mat.repeat ~axis:1 (Mat.sequential height 1) width in
+  let zs = L.reduce Mat.concat_vertical state_list in
+  (xs, ys, zs)
