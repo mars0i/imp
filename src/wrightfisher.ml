@@ -79,12 +79,14 @@ let make_pdfs basename states n =
   in LL.iteri make_pdf (LL.take n states)
 
 (** Return a triple containing x-coord, y-coord, and z-coord matrices.
-   state_list is a list of row vectors representing prob dists that will
-   be concatenated into z coords.  *)
+    state_list is a list of row vectors representing prob dists that will
+    be concatenated into z coords.  Note that the x and y coord matrices
+    will have the same shape, which will be transposed/rotated wrt the z
+    coord matrix that results. That's what Owl.Plot.{mesh,surf} need. *)
 let make_coords state_list =
   let (_, width) = Mat.shape (L.hd state_list) in
   let height = L.length state_list in
-  let xs = Mat.repeat ~axis:0 (Mat.sequential 1 width) height in
-  let ys = Mat.repeat ~axis:1 (Mat.sequential height 1) width in
+  let xs = Mat.repeat ~axis:0 (Mat.sequential 1 height) width in
+  let ys = Mat.repeat ~axis:1 (Mat.sequential width 1) height in
   let zs = L.reduce Mat.concat_vertical state_list in
   (xs, ys, zs)
