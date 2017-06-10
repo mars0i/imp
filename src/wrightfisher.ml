@@ -62,7 +62,11 @@ let next_state tranmat state =
   (state, state *@ tranmat)
 
 let make_states init_state tranmat =
-  LL.from_loop init_state (next_state tranmat)
+  LL.drop 1 (LL.from_loop init_state (next_state tranmat))
+
+(** take n elements from a LazyList and convert the result to a List. *)
+let take_to_list n ll = 
+  LL.to_list (LL.take n ll)
 
 let length m = snd (M.shape m)
 
