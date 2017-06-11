@@ -8,9 +8,9 @@
  * module LL = Batteries.LazyList;;
  * open Owl;;
  * let xs = Mat.sequential 1 1001;;
- * let s = make_init_state 1000 500;;
+ * let s = make_init_dist 1000 500;;
  * let t = make_tranmat 1000 (0.3, 0.3, 0.4);;
- * let h = Plot.create "yo.pdf" in Plot.scatter ~h xs (LL.at states 10); Plot.output h;;
+ * let h = Plot.create "yo.pdf" in Plot.scatter ~h xs (LL.at dists 10); Plot.output h;;
  *)
 
 module Mat = Owl.Mat
@@ -23,7 +23,7 @@ let ( *@ ) = Mat.( *@ )  (* = dot: matrix multiplication *)
 
 let combination_float = Gsl.Sf.choose
 
-let make_init_state allele_popsize a1count =
+let make_init_dist allele_popsize a1count =
   let m = Mat.zeros 1 (allele_popsize + 1) in
   Mat.set m 0 a1count 1.0;
   m
@@ -58,11 +58,16 @@ let make_tranmat allele_popsize fitns =
   let m = Mat.empty dim dim  in
   Mat.mapi (prob_ijf fitns allele_popsize) m
 
-let next_state tranmat state = 
-  (state, state *@ tranmat)
+let next_dist tranmat dist = 
+  (dist, dist *@ tranmat)
 
-let make_states init_state tranmat =
-  LL.drop 1 (LL.from_loop init_state (next_state tranmat))
+(** Returns a LazyList of probability distributions that are the result of 
+    a stationary Markov chain with initial distribution (usually with 1 at 
+    one entry and zero elsewhere, representing that the population has that 
+    initial frequency) and a transition matrix. The initial distribution is 
+    not included in the list.*)
+let make_dists tranmat init_dist =
+  LL.drop 1 (LL.from_loop init_dist (next_dist tranmat))
 
 (** take n elements from a LazyList and convert the result to a List. *)
 let take_to_list n ll = 
@@ -70,27 +75,36 @@ let take_to_list n ll =
 
 let length m = snd (M.shape m)
 
-(* Make a series of n plot pdfs from states using basename. *)
-let make_pdfs basename states n =
-  let state_length = length (LL.at states 0) in
-  let xs = Mat.sequential 1 state_length in (* vector of x-axis indices *)
-  let make_pdf i state =
+(* Make a series of n plot pdfs from dists using basename. *)
+let make_pdfs basename dists n =
+  let dist_length = length (LL.at dists 0) in
+  let xs = Mat.sequential 1 dist_length in (* vector of x-axis indices *)
+  let make_pdf i dist =
     let filename = basename ^ (Printf.sprintf "%03d" i) ^ ".pdf" in
     let h = Plot.create filename in 
     Plot.set_yrange h 0.0 0.25;
-    Plot.scatter ~h xs state; 
+    Plot.scatter ~h xs dist; 
     Plot.output h
-  in LL.iteri make_pdf (LL.take n states)
+  in LL.iteri make_pdf (LL.take n dists)
 
 (** Return a triple containing x-coord, y-coord, and z-coord matrices.
-    state_list is a list of row vectors representing prob dists that will
+    dist_list is a list of row vectors representing prob dists that will
     be concatenated into z coords.  Note that the x and y coord matrices
     will have the same shape, which will be transposed/rotated wrt the z
     coord matrix that results. That's what Owl.Plot.{mesh,surf} need. *)
-let make_coords state_list =
-  let (_, width) = Mat.shape (L.hd state_list) in
-  let height = L.length state_list in
+let make_coords dist_list =
+  let (_, width) = Mat.shape (L.hd dist_list) in
+  let height = L.length dist_list in
   let xs = Mat.repeat ~axis:0 (Mat.sequential 1 height) width in
   let ys = Mat.repeat ~axis:1 (Mat.sequential width 1) height in
-  let zs = L.reduce Mat.concat_vertical state_list in
+  let zs = L.reduce Mat.concat_vertical dist_list in
   (xs, ys, zs)
+
+
+(** Given a list of transition matrices, mats, and a list of
+    probability distributions, dists, returns a new list of
+    probability distributions produced by multiplying all
+    distributions by all matrices. *)
+let next_dists dists mats=
+  L.concat (L.map (fun dist -> L.map (M.dot dist) mats)
+                  dists)
