@@ -105,6 +105,19 @@ let make_coords dist_list =
     probability distributions, dists, returns a new list of
     probability distributions produced by multiplying all
     distributions by all matrices. *)
-let next_dists dists mats=
-  L.concat (L.map (fun dist -> L.map (M.dot dist) mats)
-                  dists)
+let next_dists tranmats dists =
+  (dists, L.concat (L.map (fun dist -> L.map (M.dot dist) tranmats)
+                          dists))
+
+let make_dist_lists tranmats init_dists =
+  LL.drop 1 (LL.from_loop init_dists (next_dists tranmats))
+
+
+(*
+let t0 = make_tranmat 50 {w11=0.7; w12=0.8; w22=1.0};;
+let t1 = make_tranmat 50 {w11=0.7; w12=0.3; w22=1.0};;
+
+let t0 = make_tranmat 50 {w11=1.0; w12=0.8; w22=0.7};;
+let t1 = make_tranmat 50 {w11=0.7; w12=0.3; w22=1.0};;
+*)
+  
