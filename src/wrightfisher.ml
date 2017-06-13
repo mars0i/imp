@@ -109,15 +109,47 @@ let next_dists tranmats dists =
   (dists, L.concat (L.map (fun dist -> L.map (M.dot dist) tranmats)
                           dists))
 
+(** Given a list of transition matrices and a list of initial distributions
+    (often one distribution with all weight on one frequency) 
+    Note this function does not not drop the first element. That way, the 
+    number of dists in the nth distlist = (length tranmats)**n for one 
+    initial distribution.  e.g. with
+    two transition matrices and one initial distribution,
+       LL.at distlists 1
+    will produce 2**1 = 2 dists.  Or with more initial distributions, the
+    number of dists at n is (length init_dists) * (length tranmats)**n . *)
 let make_dist_lists tranmats init_dists =
-  LL.drop 1 (LL.from_loop init_dists (next_dists tranmats))
+  LL.from_loop init_dists (next_dists tranmats)
 
 
 (*
+ 
+Note this is a small pop below, with big effects from initial frequencies.
+Better to use at least N=100, or more depending on intensity of selection.
+
 let t0 = make_tranmat 50 {w11=0.7; w12=0.8; w22=1.0};;
 let t1 = make_tranmat 50 {w11=0.7; w12=0.3; w22=1.0};;
 
+let s = make_init_dist 50 25;;
 let t0 = make_tranmat 50 {w11=1.0; w12=0.8; w22=0.7};;
-let t1 = make_tranmat 50 {w11=0.7; w12=0.3; w22=1.0};;
+let t1 = make_tranmat 50 {w11=0.7; w12=0.8; w22=1.0};;
+let distlists = make_dist_lists [t0; t1] [s];;
+let xs, ys, zs = make_coords (LL.at distlists 2) in let h = Plot.create "yo.pdf" in Plot.mesh ~h xs ys zs; Plot.output h;;
+
+i.e.:
+let xs, ys, zs = make_coords (LL.at distlists 2) in
+let h = Plot.create "yo.pdf" in
+   Plot.mesh ~h xs ys zs;
+  Plot.output h
+
+or:
+let n = 3 in let xs, ys, zs = make_coords (LL.at distlists2 n) in let h = Plot.create "yo.pdf" in Plot.mesh ~h xs ys zs; Plot.output h;;
+i.e.:
+let gen = 3 in
+let xs, ys, zs = make_coords (LL.at distlists2 gen) in
+let h = Plot.create "yo.pdf" in
+  Plot.mesh ~h xs ys zs;
+  Plot.output h;;
+
 *)
   
