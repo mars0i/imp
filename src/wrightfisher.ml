@@ -122,6 +122,9 @@ let make_dist_lists tranmats init_dists =
   LL.from_loop init_dists (next_dists tranmats)
 
 
+let sort_dists dists = L.sort Utils.difference_compare dists
+
+
 (*
  
 Note this is a small pop below, with big effects from initial frequencies.
