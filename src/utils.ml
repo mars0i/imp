@@ -74,3 +74,61 @@ let short_circuit_fold2 stop_val f init m1 m2 =
          then loop acc 0 (j + 1) (* start over on next col *)
          else acc
   in loop init 0 0
+
+(* NOTE The compare function below is complicated by the fact that it returns 0 for 
+ * equivalent matrices.  However, if it's only used interval-creation,
+ * a pair of equal matrices create an Empty interval, at least in
+ * Jane Street-style Interval modules.  So you might as well return 1
+ * for those.  -1 is the only return value that matters. *)
+
+
+(** A compare function for matrices that returns zero if all elements of
+    both matrices are equal, and if not returns -1 only if all elements 
+    of m1 are less than or equal to corresponding elements of m2; otherwise
+    returns 1, indicating that at least one element in m1 is greater than 
+    the corresponding element in m2. *)
+let biased_compare m1 m2 =
+  let f acc e1 e2 =
+    if e1 > e2 then 1     (* don't need to check for acc = 1 since fold exits first *)
+    else match acc with   (* at this point we know that e1 <= e2 *)
+         | -1 -> -1       (* all previous pairs were <= *)
+         |  0 -> if e1 = e2 then 0 else -1
+         |  _ -> failwith "bug: acc is not -1, 0, or 1" (* avoid match warning *)
+  in short_circuit_fold2 1 f 0 m1 m2
+
+
+(** A compare function for matrices that returns zero if all elements of
+    both matrices are equal, -1 if each element of the first is less
+    than or equal to the corresponding element of the second, or 1 if
+    each element of the first is greater than or equal to each element
+    of the second.  Raises an exception otherwise.  Note that the size
+    of the differences between the values has no effect. *)
+let standard_compare m1 m2 =
+  let f acc e1 e2 =
+    match acc with
+         |  0 -> if e1 < e2 then -1 else
+                 if e1 > e2 then 1 else 0
+         | -1 -> if e1 <= e2 then -1 else failwith "incomparable"
+         |  1 -> if e1 >= e2 then  1 else failwith "incomparable"
+         |  _ -> failwith "bug: acc is not -1, 0, or 1" (* avoid match warning *)
+  in fold2 f 0 m1 m2
+
+(* Owl.Mat.signum, which converts each element into its sign, i.e.
+ * -1, 0, or 1, might also be useful below. *)
+
+(** Subtract mat2 from mat1 and sum the result.  A sort of poor person's
+    non-normalized integral of the difference between the matrices
+    (which might be vectors). *)
+let sumdist mat1 mat2 = M.(sum (mat1 - mat2))
+
+(** A compare function for matrices that determines whether the summed
+    differences between corresponding matrix elements is negative, zero, 
+    or positive.  This differs from standard_compare, which ignores sizes of
+    differences.  With this compare function, by contrast, a large
+    difference on one value can override smaller differences on other
+    values. *)
+let difference_compare m1 m2 =
+  let dif = sumdist m1 m2 in
+  if dif > 0.0 then 1
+  else if dif < 0.0 then -1
+  else 0
