@@ -154,5 +154,8 @@ let h = Plot.create "yo.pdf" in
   Plot.mesh ~h xs ys zs;
   Plot.output h;;
 
+Optionally wrap the LL.at expression in sort_dists to arrange similar
+distributions near each other in the plot.
+
 *)
   
