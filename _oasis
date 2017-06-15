@@ -13,25 +13,25 @@ Plugins: META (0.4), DevFiles (0.4)
 
 # The "sections":
 
-Library "probmat"
+Library "probutils"
   BuildDepends: batteries, owl
   Path: src
-  Modules: Probmat
+  Modules: Probmat, Utils
 
 Executable "exampledata"
-  BuildDepends: batteries, probmat
+  BuildDepends: batteries, probutils
   Path: src
   MainIs: exampledata.ml
   CompiledObject: best
 
 AlphaFeatures: ocamlbuild_more_args
-Document "probmat"
+Document "probutils"
   Type: ocamlbuild (0.4)
   BuildTools: ocamldoc
-  Title: API reference for Probmat
+  Title: API reference for Probutils
   XOCamlbuildPath: .
   XOCamlbuildExtraArgs:
     "-docflags '-colorize-code -short-functors -charset utf-8'"
-  XOCamlbuildLibraries: probmat
+  XOCamlbuildLibraries: probutils
 
 
