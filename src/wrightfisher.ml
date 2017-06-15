@@ -15,7 +15,7 @@
 
 module Mat = Owl.Mat
 module Math = Owl.Maths (* note British->US translation *)
-module Plot = Owl.Plot
+module Pl = Owl.Plot
 module L = Batteries.List
 module LL = Batteries.LazyList
 
@@ -75,16 +75,16 @@ let take_to_list n ll =
 
 let length m = snd (M.shape m)
 
-(* Make a series of n plot pdfs from dists using basename. *)
-let make_pdfs basename dists n =
+(* Make a series of n 2D plot pdfs from dists using basename. *)
+let make_2D_pdfs basename dists n =
   let dist_length = length (LL.at dists 0) in
   let xs = Mat.sequential 1 dist_length in (* vector of x-axis indices *)
   let make_pdf i dist =
     let filename = basename ^ (Printf.sprintf "%03d" i) ^ ".pdf" in
-    let h = Plot.create filename in 
-    Plot.set_yrange h 0.0 0.25;
-    Plot.scatter ~h xs dist; 
-    Plot.output h
+    let h = Pl.create filename in 
+    Pl.set_yrange h 0.0 0.25;
+    Pl.scatter ~h xs dist; 
+    Pl.output h
   in LL.iteri make_pdf (LL.take n dists)
 
 (** Return a triple containing x-coord, y-coord, and z-coord matrices.
@@ -118,12 +118,32 @@ let next_dists tranmats dists =
        LL.at distlists 1
     will produce 2**1 = 2 dists.  Or with more initial distributions, the
     number of dists at n is (length init_dists) * (length tranmats)**n . *)
-let make_dist_lists tranmats init_dists =
+let make_distlists tranmats init_dists =
   LL.from_loop init_dists (next_dists tranmats)
 
+let make_distlists_from_scratch size init_freqs fitn_list =
+  let init_dists = L.map (make_init_dist size) init_freqs in
+  let tranmats = L.map (make_tranmat size) fitn_list in
+  make_distlists tranmats init_dists
 
 let sort_dists dists = L.sort Utils.difference_compare dists
 
+(** Make a series of n 3D plot pdfs from distlists using basename.
+    Example:
+    let distlists = make_distlists_from_scratch 500 [200] 
+                  [{w11=1.0; w12=0.8; w22=0.7}; {w11=1.0; w12=0.3; w22=0.7}];;
+    make_3D_pdfs "distsN=500init=200w11=1w22=0.7w12=0.8or0.3gen" distlists 9;;
+ *)
+let make_3D_pdfs basename distlists n =
+  let make_pdf i dists =  (* i = t-1; dists = prob dists at t *)
+    let filename = basename ^ (Printf.sprintf "%03d" (i + 1)) ^ ".pdf" in
+    let xs, ys, zs = make_coords (sort_dists dists) in
+    let h = Pl.create filename in
+      Pl.set_background_color h 255 255 255;
+      Pl.set_foreground_color h 150 150 150; (* grid lines *)
+      Pl.mesh ~h xs ys zs;
+      Pl.output h
+  in LL.iteri make_pdf (LL.take n (LL.drop 1 distlists)) (* skip first single-freq dists; they don't plot *)
 
 (*
  
@@ -136,23 +156,24 @@ let t1 = make_tranmat 50 {w11=0.7; w12=0.3; w22=1.0};;
 let s = make_init_dist 50 25;;
 let t0 = make_tranmat 50 {w11=1.0; w12=0.8; w22=0.7};;
 let t1 = make_tranmat 50 {w11=0.7; w12=0.8; w22=1.0};;
-let distlists = make_dist_lists [t0; t1] [s];;
-let xs, ys, zs = make_coords (LL.at distlists 2) in let h = Plot.create "yo.pdf" in Plot.mesh ~h xs ys zs; Plot.output h;;
+let distlists = make_distlists [t0; t1] [s];;
+(* or summarize the above using make_distlists_from_scratch *)
+let xs, ys, zs = make_coords (LL.at distlists 2) in let h = Pl.create "yo.pdf" in Pl.mesh ~h xs ys zs; Pl.output h;;
 
 i.e.:
 let xs, ys, zs = make_coords (LL.at distlists 2) in
-let h = Plot.create "yo.pdf" in
-   Plot.mesh ~h xs ys zs;
-  Plot.output h
+let h = Pl.create "yo.pdf" in
+   Pl.mesh ~h xs ys zs;
+  Pl.output h
 
 or:
-let n = 3 in let xs, ys, zs = make_coords (LL.at distlists2 n) in let h = Plot.create "yo.pdf" in Plot.mesh ~h xs ys zs; Plot.output h;;
+let n = 3 in let xs, ys, zs = make_coords (LL.at distlists2 n) in let h = Pl.create "yo.pdf" in Pl.mesh ~h xs ys zs; Pl.output h;;
 i.e.:
 let gen = 3 in
 let xs, ys, zs = make_coords (LL.at distlists2 gen) in
-let h = Plot.create "yo.pdf" in
-  Plot.mesh ~h xs ys zs;
-  Plot.output h;;
+let h = Pl.create "yo.pdf" in
+  Pl.mesh ~h xs ys zs;
+  Pl.output h;;
 
 Optionally wrap the LL.at expression in sort_dists to arrange similar
 distributions near each other in the plot.
