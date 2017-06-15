@@ -24,3 +24,5 @@ configure
 META
 probmat_api*
 *.odocl
+*.mldylib
+*.mllib
