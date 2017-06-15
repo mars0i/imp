@@ -134,16 +134,42 @@ let sort_dists dists = L.sort Utils.difference_compare dists
                   [{w11=1.0; w12=0.8; w22=0.7}; {w11=1.0; w12=0.3; w22=0.7}];;
     make_3D_pdfs "distsN=500init=200w11=1w22=0.7w12=0.8or0.3gen" distlists 9;;
  *)
-let make_3D_pdfs basename distlists n =
+let make_3D_pdfs basename distlists start_gen last_gen =
   let make_pdf i dists =  (* i = t-1; dists = prob dists at t *)
-    let filename = basename ^ (Printf.sprintf "%03d" (i + 1)) ^ ".pdf" in
+    let gen = i + start_gen in
+    let filename = basename ^ (Printf.sprintf "%03d" gen) ^ ".pdf" in 
     let xs, ys, zs = make_coords (sort_dists dists) in
     let h = Pl.create filename in
       Pl.set_background_color h 255 255 255;
       Pl.set_foreground_color h 150 150 150; (* grid lines *)
+      Pl.set_ylabel h "frequency of A allele";
+      Pl.set_xlabel h "possible distributions";
+      Pl.set_zlabel h "probability";
       Pl.mesh ~h xs ys zs;
-      Pl.output h
-  in LL.iteri make_pdf (LL.take n (LL.drop 1 distlists)) (* skip first single-freq dists; they don't plot *)
+      Pl.output h;
+      Printf.printf "%s\n%!" filename
+  in let num_gens = last_gen - start_gen + 1 in
+  LL.iteri make_pdf (LL.take num_gens (LL.drop start_gen distlists))
+
+(* title doesn't seem to work for 3D plots 
+    let title = (Printf.sprintf "Erratically determined probability at t = %d"
+                                gen) in
+      Pl.set_title h title;
+*)
+
+(* Thought this might erase the floats on the x axis when only 2 dists, but no:
+      Pl.set_xticklabels h [(0.2, ""); (0.4, ""); (0.6, ""); (0.8, "")];
+*)
+
+(* Or use subplots?? *)
+
+(* Other plot config options:
+   Pl.set_zrange
+   Pl.set_font_size
+   Pl.set_pen_size
+   Pl.set_page_size
+
+*)
 
 (*
  
