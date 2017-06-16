@@ -46,17 +46,17 @@ let prob_ij fitns allele_popsize prev_freq next_freq =
   let j = float next_freq in
   let j' = float (allele_popsize - next_freq) in
   let comb = combination_float allele_popsize next_freq in
-  comb  *.  wt ** j  *.  other_wt ** j'
+  comb  *.  wt**j  *.  other_wt**j'
 
 (** prob_ij with an extra ignored argument; can be used mapi to
     initialize a matrix. *)
-let prob_ijf fitns allele_popsize prev_freq next_freq _ =
+let prob_ij_ fitns allele_popsize prev_freq next_freq _ =
   prob_ij fitns allele_popsize prev_freq next_freq
 
 let make_tranmat allele_popsize fitns =
   let dim = allele_popsize + 1 in
   let m = Mat.empty dim dim  in
-  Mat.mapi (prob_ijf fitns allele_popsize) m
+  Mat.mapi (prob_ij_ fitns allele_popsize) m
 
 let next_dist tranmat dist = 
   (dist, dist *@ tranmat)
@@ -159,6 +159,8 @@ let make_3D_pdfs basename distlists start_gen last_gen =
 
 (* Thought this might erase the floats on the x axis when only 2 dists, but no:
       Pl.set_xticklabels h [(0.2, ""); (0.4, ""); (0.6, ""); (0.8, "")];
+      What it's supposed to do, apparently, is that at each number,
+      print the tickmark given there.
 *)
 
 (* Or use subplots?? *)
