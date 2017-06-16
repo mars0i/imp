@@ -21,7 +21,12 @@ module LL = Batteries.LazyList
 
 let ( *@ ) = Mat.( *@ )  (* = dot: matrix multiplication *)
 
-let combination_float = Gsl.Sf.choose
+let combination_float = Gsl.Sf.choose (* replace with Owl built-in when I get the next release *)
+
+(** Return a lazy list that's a sublist of the argument, from element start 
+    (zero-based) to element finish, inclusive. *)
+let sub_lazy_list start finish ll =
+  LL.take (finish - start + 1) (LL.drop start ll)
 
 let make_init_dist allele_popsize a1count =
   let m = Mat.zeros 1 (allele_popsize + 1) in
@@ -48,7 +53,7 @@ let prob_ij fitns allele_popsize prev_freq next_freq =
   let comb = combination_float allele_popsize next_freq in
   comb  *.  wt**j  *.  other_wt**j'
 
-
+(** Make a transition matrix from fitnesses *)
 let make_tranmat allele_popsize fitns =
   (* prob_ij with an extra ignored argument: *)
   let prob_ij_ fitns allele_popsize prev_freq next_freq _ =
@@ -58,6 +63,9 @@ let make_tranmat allele_popsize fitns =
   let m = Mat.empty dim dim  in
   Mat.mapi (prob_ij_ fitns allele_popsize) m
 
+(** Return pair of old distribution vector (i.e. the second argument) and
+    distribution vector (i.e. the product of the two arguments), for use 
+    as an element in a Batteries.LazyList *)
 let next_dist tranmat dist = 
   (dist, dist *@ tranmat)
 
@@ -65,14 +73,16 @@ let next_dist tranmat dist =
     a stationary Markov chain with initial distribution (usually with 1 at 
     one entry and zero elsewhere, representing that the population has that 
     initial frequency) and a transition matrix. The initial distribution is 
-    not included in the list.*)
+    included in the list.*)
 let make_dists tranmat init_dist =
-  LL.drop 1 (LL.from_loop init_dist (next_dist tranmat))
+  LL.from_loop init_dist (next_dist tranmat)
 
-(** take n elements from a LazyList and convert the result to a List. *)
-let take_to_list n ll = 
-  LL.to_list (LL.take n ll)
+(** Convenience function: Takes elements from start to finish, inclusive, 
+    from a LazyList, and convert the result to a List. *)
+let take_to_list start finish ll = 
+  LL.to_list (sub_lazy_list start finish ll)
 
+(** Return second dimension of a matrix or vector. *)
 let length m = snd (M.shape m)
 
 (* Make a series of n 2D plot pdfs from dists using basename. *)
@@ -121,11 +131,20 @@ let next_dists tranmats dists =
 let make_distlists tranmats init_dists =
   LL.from_loop init_dists (next_dists tranmats)
 
+(** Like make_distlists, but uses basic parameters to generate the transition
+    matrices and initial distributions that are arguments to make_distslists.
+    Arg 1, size is the number of alleles, i.e. 2N; arg 2, init_freqs, is a 
+    list of all initial frequencies for the population (usually there is only
+    one, so the list will have only one element); arg 3, fitn_list is a list
+    of fitness structures. *)
 let make_distlists_from_scratch size init_freqs fitn_list =
   let init_dists = L.map (make_init_dist size) init_freqs in
   let tranmats = L.map (make_tranmat size) fitn_list in
   make_distlists tranmats init_dists
 
+(* Given a list of probability distribution vectors, tries to sort them
+   so that similar lists are close in the order.  
+   Uses Utils.difference_compare. *)
 let sort_dists dists = L.sort Utils.difference_compare dists
 
 (** Make a series of n 3D plot pdfs from distlists using basename.
@@ -148,8 +167,7 @@ let make_3D_pdfs basename distlists start_gen last_gen =
       Pl.mesh ~h xs ys zs;
       Pl.output h;
       Printf.printf "%s\n%!" filename
-  in let num_gens = last_gen - start_gen + 1 in
-  LL.iteri make_pdf (LL.take num_gens (LL.drop start_gen distlists))
+  in LL.iteri make_pdf (sub_lazy_list start_gen last_gen distlists)
 
 (* title doesn't seem to work for 3D plots 
     let title = (Printf.sprintf "Erratically determined probability at t = %d"
