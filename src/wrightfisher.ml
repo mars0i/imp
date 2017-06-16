@@ -48,12 +48,12 @@ let prob_ij fitns allele_popsize prev_freq next_freq =
   let comb = combination_float allele_popsize next_freq in
   comb  *.  wt**j  *.  other_wt**j'
 
-(** prob_ij with an extra ignored argument; can be used mapi to
-    initialize a matrix. *)
-let prob_ij_ fitns allele_popsize prev_freq next_freq _ =
-  prob_ij fitns allele_popsize prev_freq next_freq
 
 let make_tranmat allele_popsize fitns =
+  (* prob_ij with an extra ignored argument: *)
+  let prob_ij_ fitns allele_popsize prev_freq next_freq _ =
+    prob_ij fitns allele_popsize prev_freq next_freq
+  in
   let dim = allele_popsize + 1 in
   let m = Mat.empty dim dim  in
   Mat.mapi (prob_ij_ fitns allele_popsize) m
