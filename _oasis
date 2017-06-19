@@ -18,6 +18,12 @@ Library "probutils"
   Path: src
   Modules: Probmat, Utils
 
+Executable "wrightfisher"
+  BuildDepends: core,batteries,owl,probutils
+  Path: src
+  MainIs: wrightfisher.ml
+  CompiledObject: best
+
 Executable "exampledata"
   BuildDepends: batteries, probutils
   Path: src
