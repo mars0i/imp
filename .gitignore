@@ -17,7 +17,6 @@ setup.data
 setup.log
 setup.ml
 .*.swp
-_tags
 myocamlbuild.ml
 src/Probmat.*
 configure
