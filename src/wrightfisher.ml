@@ -83,7 +83,7 @@ let take_to_list start finish ll =
   LL.to_list (sub_lazy_list start finish ll)
 
 (** Return second dimension of a matrix or vector. *)
-let length m = snd (M.shape m)
+let length m = snd (Mat.shape m)
 
 (* Make a series of n 2D plot pdfs from dists using basename. *)
 let make_2D_pdfs basename dists n =
@@ -116,7 +116,7 @@ let make_coords dist_list =
     probability distributions produced by multiplying all
     distributions by all matrices. *)
 let next_dists tranmats dists =
-  (dists, L.concat (L.map (fun dist -> L.map (M.dot dist) tranmats)
+  (dists, L.concat (L.map (fun dist -> L.map (Mat.dot dist) tranmats)
                           dists))
 
 (** Given a list of transition matrices and a list of initial distributions
@@ -128,19 +128,19 @@ let next_dists tranmats dists =
        LL.at distlists 1
     will produce 2**1 = 2 dists.  Or with more initial distributions, the
     number of dists at n is (length init_dists) * (length tranmats)**n . *)
-let make_distlists tranmats init_dists =
+let make_distlists_from_mats tranmats init_dists =
   LL.from_loop init_dists (next_dists tranmats)
 
-(** Like make_distlists, but uses basic parameters to generate the transition
+(** Like make_distlists_from_mats, but uses basic parameters to generate the transition
     matrices and initial distributions that are arguments to make_distslists.
     Arg 1, size is the number of alleles, i.e. 2N; arg 2, init_freqs, is a 
     list of all initial frequencies for the population (usually there is only
     one, so the list will have only one element); arg 3, fitn_list is a list
     of fitness structures. *)
-let make_distlists_from_scratch size init_freqs fitn_list =
+let make_distlists size init_freqs fitn_list =
   let init_dists = L.map (make_init_dist size) init_freqs in
   let tranmats = L.map (make_tranmat size) fitn_list in
-  make_distlists tranmats init_dists
+  make_distlists_from_mats tranmats init_dists
 
 (* Given a list of probability distribution vectors, tries to sort them
    so that similar lists are close in the order.  
@@ -149,7 +149,7 @@ let sort_dists dists = L.sort Utils.difference_compare dists
 
 (** Make a series of n 3D plot pdfs from distlists using basename.
     Example:
-    let distlists = make_distlists_from_scratch 500 [200] 
+    let distlists = make_distlists 500 [200] 
                   [{w11=1.0; w12=0.8; w22=0.7}; {w11=1.0; w12=0.3; w22=0.7}];;
     make_3D_pdfs "distsN=500init=200w11=1w22=0.7w12=0.8or0.3gen" distlists 9;;
  *)
@@ -168,3 +168,41 @@ let make_3D_pdfs basename distlists start_gen last_gen =
       Pl.output h;
       Printf.printf "%s\n%!" filename
   in LL.iteri make_pdf (sub_lazy_list start_gen last_gen distlists)
+
+
+(* Commandline processing for standalone executable using Jane Street Core. *)
+
+module Command = Core.Command
+module Spec = Core.Command.Spec
+
+let rec group_fitns fitns acc =
+  match fitns with
+  | [] -> acc
+  | w11::w12::w22::tl -> group_fitns tl ({w11=w11; w12=w12; w22=w22}::acc)
+  | _ -> raise (Failure "Missing/extra fitness(es)")
+
+let command =
+  Command.basic
+    ~summary:"Make 3D pdfs for multiple generations with multiple probability distributions."
+    ~readme:(fun () -> "(Add detailed doc here.)")
+    Spec.(empty +> anon ("basename" %: string)
+                +> anon ("pop_size" %: int)
+                +> anon ("initial_freq" %: int)
+                +> anon ("start_generation" %: int)
+                +> anon ("last_generation" %: int)
+                +> anon (sequence ("fitness_triple" %: float)))
+    (fun pop_size init_freq start_gen last_gen fitns () ->
+      Printf.printf "Base name for pdfs: %s\n" basename;
+      Printf.printf "Population size N = %d\n" pop_size;
+      Printf.printf "Initial frequency = %d\n" init_freq;
+      Printf.printf "Starting generation = %d\n" start_gen;
+      Printf.printf "Final generation = %d\n" last_gen;
+      Printf.printf "Fitnesses:\n";
+      List.iter fitns ~f:(fun fitn -> Printf.printf "%f\n" fitn);
+      let fitn_recs = group_fitns fitns [] in
+      let distlists = make_distlists pop_size [init_freq] fitn_recs in
+      make_3D_pdfs basename distlists start_gen last_gen
+    )
+
+let () = Command.run ~version:"0.1" ~build_info:"imp wrightfisher" command
+
