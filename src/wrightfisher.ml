@@ -18,6 +18,8 @@ module Math = Owl.Maths (* note British->US translation *)
 module Pl = Owl.Plot
 module L = Batteries.List
 module LL = Batteries.LazyList
+module Command = Core.Command
+module Spec = Core.Command.Spec
 
 let ( *@ ) = Mat.( *@ )  (* = dot: matrix multiplication *)
 
@@ -172,16 +174,19 @@ let make_3D_pdfs basename distlists start_gen last_gen =
 
 (* Commandline processing for standalone executable using Jane Street Core. *)
 
-module Command = Core.Command
-module Spec = Core.Command.Spec
+(** Given a list of float fitness values, which should be in the order
+       w11, w12, w22, w11, w12, w22, ...
+    eat them in groups of three, using each three to create a
+    fitness record and return a list of these records in order *)
+let group_fitns fitn_float_list =
+  let rec loop l acc =
+    match l with
+    | [] -> acc
+    | w11::w12::w22::tl -> loop tl ({w11=w11; w12=w12; w22=w22}::acc)
+    | _ -> raise (Failure "Missing/extra fitness(es)")
+  in L.rev (loop fitn_float_list [])
 
-let rec group_fitns fitns acc =
-  match fitns with
-  | [] -> acc
-  | w11::w12::w22::tl -> group_fitns tl ({w11=w11; w12=w12; w22=w22}::acc)
-  | _ -> raise (Failure "Missing/extra fitness(es)")
-
-let command =
+let commandline =
   Command.basic
     ~summary:"Make 3D pdfs for multiple generations with multiple probability distributions."
     ~readme:(fun () -> "(Add detailed doc here.)")
@@ -190,19 +195,20 @@ let command =
                 +> anon ("initial_freq" %: int)
                 +> anon ("start_generation" %: int)
                 +> anon ("last_generation" %: int)
-                +> anon (sequence ("fitness_triple" %: float)))
-    (fun pop_size init_freq start_gen last_gen fitns () ->
+                +> anon (sequence ("fitness" %: float)))
+    (fun basename pop_size init_freq start_gen last_gen fitn_floats () ->
+      let fitn_recs = group_fitns fitn_floats in
+      let distlists = make_distlists pop_size [init_freq] fitn_recs in
+      make_3D_pdfs basename distlists start_gen last_gen)
+
+let () = Command.run ~version:"0.1" ~build_info:"imp wrightfisher" commandline
+
+(* test code for commandline:
       Printf.printf "Base name for pdfs: %s\n" basename;
       Printf.printf "Population size N = %d\n" pop_size;
       Printf.printf "Initial frequency = %d\n" init_freq;
       Printf.printf "Starting generation = %d\n" start_gen;
       Printf.printf "Final generation = %d\n" last_gen;
       Printf.printf "Fitnesses:\n";
-      List.iter fitns ~f:(fun fitn -> Printf.printf "%f\n" fitn);
-      let fitn_recs = group_fitns fitns [] in
-      let distlists = make_distlists pop_size [init_freq] fitn_recs in
-      make_3D_pdfs basename distlists start_gen last_gen
-    )
-
-let () = Command.run ~version:"0.1" ~build_info:"imp wrightfisher" command
-
+      L.iter (fun fitn -> Printf.printf "%f\n" fitn) fitns;
+*)
