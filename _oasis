@@ -16,12 +16,12 @@ Plugins: META (0.4), DevFiles (0.4)
 Library "probutils"
   BuildDepends: batteries, owl
   Path: src
-  Modules: Probmat, Utils
+  Modules: Probmat, Utils, Wrightfisher
 
-Executable "wrightfisher"
+Executable "wrightfisherPDFs"
   BuildDepends: core,batteries,owl,probutils
   Path: src
-  MainIs: wrightfisher.ml
+  MainIs: wrightfisherPDFs.ml
   CompiledObject: best
 
 Executable "exampledata"

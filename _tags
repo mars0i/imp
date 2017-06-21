@@ -1,5 +1,5 @@
 # OASIS_START
-# DO NOT EDIT (digest: be33436b209598a4503658f2e9c6ad97)
+# DO NOT EDIT (digest: b121fd37bda5403cd898396f0038d9b4)
 # Ignore VCS directories, you can use the same kind of rule outside
 # OASIS_START/STOP if you want to exclude directories that contains
 # useless stuff for the build process
@@ -16,11 +16,11 @@ true: annot, bin_annot
 "_darcs": not_hygienic
 # Library probutils
 "src/probutils.cmxs": use_probutils
-# Executable wrightfisher
-<src/wrightfisher.{native,byte}>: pkg_batteries
-<src/wrightfisher.{native,byte}>: pkg_core
-<src/wrightfisher.{native,byte}>: pkg_owl
-<src/wrightfisher.{native,byte}>: use_probutils
+# Executable wrightfisherPDFs
+<src/wrightfisherPDFs.{native,byte}>: pkg_batteries
+<src/wrightfisherPDFs.{native,byte}>: pkg_core
+<src/wrightfisherPDFs.{native,byte}>: pkg_owl
+<src/wrightfisherPDFs.{native,byte}>: use_probutils
 <src/*.ml{,i,y}>: pkg_core
 # Executable exampledata
 <src/exampledata.{native,byte}>: pkg_batteries

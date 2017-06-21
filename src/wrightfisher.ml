@@ -1,29 +1,20 @@
 
-(** Calculate Wright-Fisher transition probabilities with selection.
+(** Wrightfisher:
+    Calculate Wright-Fisher transition probabilities with selection and
+    create plots of probabilities of population frequencies.
+
     Based on Ewens _Mathematical Population Genetics I, 2nd ed, 
     equations 1.58, 1.59, and 1.25, though similar formulas can be 
     found in many places. *)
-
-(* Example:
- * module LL = Batteries.LazyList;;
- * open Owl;;
- * let xs = Mat.sequential 1 1001;;
- * let s = make_init_dist 1000 500;;
- * let t = make_tranmat 1000 (0.3, 0.3, 0.4);;
- * let h = Plot.create "yo.pdf" in Plot.scatter ~h xs (LL.at dists 10); Plot.output h;;
- *)
 
 module Mat = Owl.Mat
 module Math = Owl.Maths (* note British->US translation *)
 module Pl = Owl.Plot
 module L = Batteries.List
 module LL = Batteries.LazyList
-module Command = Core.Command
-module Spec = Core.Command.Spec
 
 let ( *@ ) = Mat.( *@ )  (* = dot: matrix multiplication *)
 
-let combination_float = Gsl.Sf.choose (* replace with Owl built-in when I get the next release *)
 
 (** Return a lazy list that's a sublist of the argument, from element start 
     (zero-based) to element finish, inclusive. *)
@@ -52,7 +43,7 @@ let prob_ij fitns allele_popsize prev_freq next_freq =
   let other_wt = 1. -. wt in
   let j = float next_freq in
   let j' = float (allele_popsize - next_freq) in
-  let comb = combination_float allele_popsize next_freq in
+  let comb = Math.combination_float allele_popsize next_freq in
   comb  *.  wt**j  *.  other_wt**j'
 
 (** Make a transition matrix from fitnesses *)
@@ -171,11 +162,11 @@ let make_3D_pdfs basename distlists start_gen last_gen =
       Printf.printf "%s\n%!" filename
   in LL.iteri make_pdf (sub_lazy_list start_gen last_gen distlists)
 
-
 (** Given a list of float fitness values, which should be in the order
        w11, w12, w22, w11, w12, w22, ...
     eat them in groups of three, using each three to create a
-    fitness record and return a list of these records in order *)
+    fitness record and return a list of these records in order. 
+    This can be used for commandline processing. *)
 let group_fitns fitn_float_list =
   let rec loop l acc =
     match l with
@@ -183,20 +174,3 @@ let group_fitns fitn_float_list =
     | w11::w12::w22::tl -> loop tl ({w11=w11; w12=w12; w22=w22}::acc)
     | _ -> raise (Failure "Missing/extra fitness(es)")
   in L.rev (loop fitn_float_list [])
-
-let commandline =
-  Command.basic
-    ~summary:"Make 3D pdfs for multiple generations with multiple probability distributions."
-    ~readme:(fun () -> "(Add detailed doc here.)")
-    Spec.(empty +> anon ("basename" %: string)
-                +> anon ("pop_size" %: int)
-                +> anon ("initial_freq" %: int)
-                +> anon ("start_generation" %: int)
-                +> anon ("last_generation" %: int)
-                +> anon (sequence ("fitness" %: float)))
-    (fun basename pop_size init_freq start_gen last_gen fitn_floats () ->
-      let fitn_recs = group_fitns fitn_floats in
-      let distlists = make_distlists pop_size [init_freq] fitn_recs in
-      make_3D_pdfs basename distlists start_gen last_gen)
-
-let () = Command.run ~version:"0.1" ~build_info:"imp wrightfisher" commandline
