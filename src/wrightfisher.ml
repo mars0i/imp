@@ -172,8 +172,6 @@ let make_3D_pdfs basename distlists start_gen last_gen =
   in LL.iteri make_pdf (sub_lazy_list start_gen last_gen distlists)
 
 
-(* Commandline processing for standalone executable using Jane Street Core. *)
-
 (** Given a list of float fitness values, which should be in the order
        w11, w12, w22, w11, w12, w22, ...
     eat them in groups of three, using each three to create a
@@ -202,13 +200,3 @@ let commandline =
       make_3D_pdfs basename distlists start_gen last_gen)
 
 let () = Command.run ~version:"0.1" ~build_info:"imp wrightfisher" commandline
-
-(* test code for commandline:
-      Printf.printf "Base name for pdfs: %s\n" basename;
-      Printf.printf "Population size N = %d\n" pop_size;
-      Printf.printf "Initial frequency = %d\n" init_freq;
-      Printf.printf "Starting generation = %d\n" start_gen;
-      Printf.printf "Final generation = %d\n" last_gen;
-      Printf.printf "Fitnesses:\n";
-      L.iter (fun fitn -> Printf.printf "%f\n" fitn) fitns;
-*)
