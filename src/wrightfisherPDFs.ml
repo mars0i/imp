@@ -37,7 +37,7 @@ distribution over frequencies at one generation in order to generate the
 probability distributions at the next generation.
 
 Example:
-<executablename> \"twodirs\"  1000 500   2 8   1.0 0.95 0.8   0.8 0.95 1.0
+<executablename> twodirs  1000 500   2 8   1.0 0.95 0.8   0.8 0.95 1.0
 "
 
 let commandline =
