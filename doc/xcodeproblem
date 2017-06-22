@@ -1,3 +1,5 @@
+ON MBP:
+
 ~/docs/src/ml/imp[master]*$ make
 ocaml setup.ml -build
 Finished, 1 target (0 cached) in 00:00:00.
@@ -16,3 +18,11 @@ Trace/BPT trap: 5
 ~/docs/src/ml/imp[master]*$ xcodebuild -version
 Xcode 8.1
 Build version 8B62
+
+---------
+
+On the MBA, no such problem.
+
+Xcode 7.3.1
+Build version 7D1014
+
