@@ -24,11 +24,11 @@ Executable "wrightfisherPDFs"
   MainIs: wrightfisherPDFs.ml
   CompiledObject: best
 
-Executable "exampledata"
-  BuildDepends: batteries, probutils
-  Path: src
-  MainIs: exampledata.ml
-  CompiledObject: best
+# Executable "exampledata"
+#   BuildDepends: batteries, probutils
+#   Path: src
+#   MainIs: exampledata.ml
+#   CompiledObject: best
 
 AlphaFeatures: ocamlbuild_more_args
 Document "probutils"
