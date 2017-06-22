@@ -157,6 +157,10 @@ let make_3D_pdfs basename distlists start_gen last_gen =
       Pl.set_ylabel h "frequency of A allele";
       Pl.set_xlabel h "possible distributions";
       Pl.set_zlabel h "probability";
+   (*
+      Pl.set_altitude h 80.;
+      Pl.set_altitude h 75.;
+   *)
       Pl.mesh ~h xs ys zs;
       Pl.output h;
       Printf.printf "%s\n%!" filename
