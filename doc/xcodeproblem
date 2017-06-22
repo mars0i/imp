@@ -1,0 +1,18 @@
+~/docs/src/ml/imp[master]*$ make
+ocaml setup.ml -build
+Finished, 1 target (0 cached) in 00:00:00.
+Finished, 20 targets (0 cached) in 00:00:02.
+~/docs/src/ml/imp[master]*$ ./wrightfisherPDFs.native
+dyld: lazy symbol binding failed: Symbol not found: _clock_gettime
+  Referenced from: /Users/mabrams/docs/src/ml/imp/./wrightfisherPDFs.native (which was built for Mac OS X 10.12)
+  Expected in: /usr/lib/libSystem.B.dylib
+
+dyld: Symbol not found: _clock_gettime
+  Referenced from: /Users/mabrams/docs/src/ml/imp/./wrightfisherPDFs.native (which was built for Mac OS X 10.12)
+  Expected in: /usr/lib/libSystem.B.dylib
+
+Trace/BPT trap: 5
+
+~/docs/src/ml/imp[master]*$ xcodebuild -version
+Xcode 8.1
+Build version 8B62
