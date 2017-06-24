@@ -1,4 +1,5 @@
 
+
 (* NOT equation (3) in Skulj ?? *)
 let flowers max_n min_alg max_alg =
   let flower (idxs, lower) = 
@@ -116,3 +117,21 @@ let compare'' m1 m2 =
   if forall2 (<=) m1 m2 then -1 else 1
 (* That misrepresents when m1 = m1.  Is that a problem? *)
 
+
+let make_3D_pdfs ?(altitude=45.) ?(azimuth=125.) basename start_gen last_gen distlists =
+  let make_pdf i dists =  (* i = t-1; dists = prob dists at t *)
+    let gen = i + start_gen in
+    let filename = basename ^ (Printf.sprintf "%03d" gen) ^ ".pdf" in 
+    let xs, ys, zs = make_coords (sort_dists dists) in
+    let h = Pl.create filename in
+      Pl.set_background_color h 255 255 255;
+      Pl.set_foreground_color h 150 150 150; (* grid lines *)
+      Pl.set_ylabel h "frequency of A allele";
+      Pl.set_xlabel h "possible distributions";
+      Pl.set_zlabel h "probability";
+      Pl.set_altitude h altitude;
+      Pl.set_azimuth h azimuth;
+      Pl.mesh ~h xs ys zs;
+      Pl.output h;
+      Printf.printf "%s\n%!" filename
+  in LL.iteri make_pdf (sub_lazy_list start_gen last_gen distlists)
