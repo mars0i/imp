@@ -11,6 +11,7 @@ module Mat = Owl.Mat
 module Math = Owl.Maths (* note British->US translation *)
 module Pl = Owl.Plot
 module L = Batteries.List
+module A = Batteries.Array
 module LL = Batteries.LazyList
 
 let ( *@ ) = Mat.( *@ )  (* = dot: matrix multiplication *)
@@ -113,7 +114,8 @@ let next_dists tranmats dists =
                           dists))
 
 (** Given a list of transition matrices and a list of initial distributions
-    (often one distribution with all weight on one frequency) 
+    (often one distribution with all weight on one frequency),
+    return a lazy list of lists of probability distributions.
     Note this function does not not drop the first element. That way, the 
     number of dists in the nth distlist = (length tranmats)**n for one 
     initial distribution.  e.g. with
@@ -146,7 +148,7 @@ let sort_dists dists = L.sort Utils.difference_compare dists
                   [{w11=1.0; w12=0.8; w22=0.7}; {w11=1.0; w12=0.3; w22=0.7}];;
     make_3D_pdfs "distsN=500init=200w11=1w22=0.7w12=0.8or0.3gen" distlists 9;;
  *)
-let make_3D_pdfs ?(altitude=45.) ?(azimuth=125.) basename distlists start_gen last_gen =
+let make_3D_pdfs ?(altitude=45.) ?(azimuth=125.) basename start_gen last_gen distlists =
   let make_pdf i dists =  (* i = t-1; dists = prob dists at t *)
     let gen = i + start_gen in
     let filename = basename ^ (Printf.sprintf "%03d" gen) ^ ".pdf" in 
@@ -164,10 +166,37 @@ let make_3D_pdfs ?(altitude=45.) ?(azimuth=125.) basename distlists start_gen la
       Printf.printf "%s\n%!" filename
   in LL.iteri make_pdf (sub_lazy_list start_gen last_gen distlists)
 
-  (*
-      match altitude with Some a -> Pl.set_altitude h a | None -> ();
-      match azimuth  with Some a -> Pl.set_azimuth  h a | None -> ();
-  *)
+
+let make_3D_lattice_pdfs ?(rows=1) ?(cols=1) ?(altitude=45.) ?(azimuth=125.)
+                         basename start_gen last_gen distlists =
+  let max_row, max_col = rows - 1, cols - 1 in
+  let finite_lazy_distlists = sub_lazy_list start_gen last_gen distlists in
+  let list_groups = L.ntake (rows * cols) (LL.to_list finite_lazy_distlists) in
+  let page_groups = L.map A.of_list list_groups in
+  let make_pdf i (page_group : Mat.mat list array)  =  (* i = t-1; dists = prob dists at t *)
+    let gen = i + start_gen in
+    let filename = basename ^ (Printf.sprintf "%03d" gen) ^ ".pdf" in 
+    let h = Pl.create filename in
+    Pl.set_background_color h 255 255 255;
+    Pl.set_foreground_color h 150 150 150; (* grid lines *)
+    Pl.set_ylabel h "frequency of A allele";
+    Pl.set_xlabel h "possible distributions";
+    Pl.set_zlabel h "probability";
+    Pl.set_altitude h altitude;
+    Pl.set_azimuth h azimuth;
+    for row = 0 to max_row do
+      for col = 0 to max_col do
+        let idx = row * col in
+        let dists = page_group.(idx) in
+        let xs, ys, zs = make_coords (sort_dists dists) in
+        Pl.subplot h row col;
+        Pl.mesh ~h xs ys zs;
+      done
+    done;
+    Pl.output h;
+    Printf.printf "%s\n%!" filename
+  in L.iteri make_pdf page_groups
+
 
 (** Given a list of float fitness values, which should be in the order
        w11, w12, w22, w11, w12, w22, ...
