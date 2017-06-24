@@ -182,8 +182,8 @@ let make_3D_pdfs ?(rows=1) ?(cols=1) ?(altitude=45.) ?(azimuth=125.)
           (Pl.set_foreground_color h 150 150 150; (* grid color *)
            Pl.set_altitude h altitude;
            Pl.set_azimuth h azimuth;
-           Pl.set_ylabel h "frequency of A allele";
-           Pl.set_xlabel h "possible distributions";
+           Pl.set_ylabel h "freq of A allele";
+           Pl.set_xlabel h "poss distributions";
            Pl.set_zlabel h "probability";
            let xs, ys, zs = make_coords (sort_dists page_group.(idx)) in
            Pl.mesh ~h xs ys zs;)
