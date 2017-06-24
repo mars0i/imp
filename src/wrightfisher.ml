@@ -175,13 +175,11 @@ let make_3D_pdfs ?(rows=1) ?(cols=1) ?(altitude=45.) ?(azimuth=125.)
     Pl.set_background_color h 255 255 255; (* applies to all subplots *)
     for row = 0 to max_row do
       for col = 0 to max_col do
+        Pl.subplot h row col;
         let idx = (row * cols) + col in  (* not rowS*cols *)
-        if idx < group_len then
-          (Pl.subplot h row col;
-           (* let gen = start_gen + group_idx + idx in *)
-           (* Pl.set_title h (Printf.sprintf "generation %d" gen); *) (* doesn't work with 3D plots *)
-           (* These have to be repeated for each subplot: *)
-           Pl.set_foreground_color h 150 150 150; (* grid color *)
+        if idx < group_len then  (* don't index past end of a short group *)
+          (* These have to be repeated for each subplot: *)
+          (Pl.set_foreground_color h 150 150 150; (* grid color *)
            Pl.set_altitude h altitude;
            Pl.set_azimuth h azimuth;
            Pl.set_ylabel h "frequency of A allele";
@@ -189,14 +187,21 @@ let make_3D_pdfs ?(rows=1) ?(cols=1) ?(altitude=45.) ?(azimuth=125.)
            Pl.set_zlabel h "probability";
            let xs, ys, zs = make_coords (sort_dists page_group.(idx)) in
            Pl.mesh ~h xs ys zs;)
-        else 
-           () (* do something here to get rid of empty plot border? *)
+        else (* short group *)
+          (* Dummy plot to prevent plplot from leaving a spurious border: *)
+          (Pl.set_foreground_color h 255 255 255; (* s/b same color as bg *)
+           Pl.plot_fun ~h (fun x -> x) 0. 1.;)     (* y values must change *)
       done
     done;
     Pl.output h;
     Printf.printf "%s\n%!" filename
   in L.iteri make_pdf page_groups
 
+(* Use this if Owl starts adding titles to 3D plots:
+
+           let gen = start_gen + group_idx + idx in
+           Pl.set_title h (Printf.sprintf "generation %d" gen);
+ *) 
 
 (** Given a list of float fitness values, which should be in the order
        w11, w12, w22, w11, w12, w22, ...
