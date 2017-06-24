@@ -148,26 +148,9 @@ let sort_dists dists = L.sort Utils.difference_compare dists
                   [{w11=1.0; w12=0.8; w22=0.7}; {w11=1.0; w12=0.3; w22=0.7}];;
     make_3D_pdfs "distsN=500init=200w11=1w22=0.7w12=0.8or0.3gen" distlists 9;;
  *)
-let make_3D_pdfs ?(altitude=45.) ?(azimuth=125.) basename start_gen last_gen distlists =
-  let make_pdf i dists =  (* i = t-1; dists = prob dists at t *)
-    let gen = i + start_gen in
-    let filename = basename ^ (Printf.sprintf "%03d" gen) ^ ".pdf" in 
-    let xs, ys, zs = make_coords (sort_dists dists) in
-    let h = Pl.create filename in
-      Pl.set_background_color h 255 255 255;
-      Pl.set_foreground_color h 150 150 150; (* grid lines *)
-      Pl.set_ylabel h "frequency of A allele";
-      Pl.set_xlabel h "possible distributions";
-      Pl.set_zlabel h "probability";
-      Pl.set_altitude h altitude;
-      Pl.set_azimuth h azimuth;
-      Pl.mesh ~h xs ys zs;
-      Pl.output h;
-      Printf.printf "%s\n%!" filename
-  in LL.iteri make_pdf (sub_lazy_list start_gen last_gen distlists)
 
 
-let make_3D_lattice_pdfs ?(rows=1) ?(cols=1) ?(altitude=45.) ?(azimuth=125.)
+let make_3D_pdfs ?(rows=1) ?(cols=1) ?(altitude=45.) ?(azimuth=125.)
                          basename start_gen last_gen distlists =
   let plots_per_page = rows * cols in
   let max_row, max_col = rows - 1, cols - 1 in

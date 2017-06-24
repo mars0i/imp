@@ -33,11 +33,13 @@ Example: %s foo 500 250 2 6  1.0 0.95 0.8  0.8 0.95 1.0
 " (Filename.basename(Sys.executable_name))
 
 
-let default_alt = 50
+let default_alt = 30
 let default_az = 100
 
-let alt_docstring = sprintf "integer aLtitude: degrees in [0,90] (default: %d)"  default_alt
-let az_docstring =  sprintf "integer aZimuth: degrees in in [0,360] (default: %d)" default_az
+let alt_docstring = sprintf "integer aLtitude of perspective: degrees in [0,90] (default: %d)"  default_alt
+let az_docstring =  sprintf "integer aZimuth of perspective: degrees in in [0,360] (default: %d)" default_az
+let rows_docstring = sprintf "integer number of rows for multi-plot pages (default %d)" 1
+let cols_docstring = sprintf "integer number of columns for multi-plot pages (default %d)" 1
 
 let commandline =
   Command.basic
@@ -45,17 +47,19 @@ let commandline =
     ~readme:(fun () -> description)
     Spec.(empty +> flag "-l" (optional_with_default default_alt int) ~doc:alt_docstring
                 +> flag "-z" (optional_with_default default_az int)  ~doc:az_docstring
+                +> flag "-r" (optional_with_default 1 int) ~doc:rows_docstring
+                +> flag "-c" (optional_with_default 1 int) ~doc:cols_docstring
                 +> anon ("basename" %: string)
                 +> anon ("popsize" %: int)
                 +> anon ("initfreq" %: int)
                 +> anon ("startgen" %: int)
                 +> anon ("lastgen" %: int)
                 +> anon (sequence ("fitn" %: float)))
-    (fun alt_int az_int basename popsize initfreq startgen lastgen fitn_floats () ->
+    (fun alt_int az_int rows cols basename popsize initfreq startgen lastgen fitn_floats () ->
       let altitude = float alt_int in
       let azimuth = float az_int in
       let fitn_recs = WF.group_fitns fitn_floats in
       let distlists = WF.make_distlists popsize [initfreq] fitn_recs in
-      WF.make_3D_pdfs ~altitude ~azimuth basename startgen lastgen distlists)
+      WF.make_3D_pdfs ~altitude ~azimuth ~rows ~cols basename startgen lastgen distlists)
 
-let () = Command.run ~version:"1.0" ~build_info:"wrightfisherPDFS, (c) 2017 Marshall Abrams" commandline
+let () = Command.run ~version:"1.1" ~build_info:"wrightfisherPDFS, (c) 2017 Marshall Abrams" commandline
