@@ -175,24 +175,27 @@ let make_3D_lattice_pdfs ?(rows=1) ?(cols=1) ?(altitude=45.) ?(azimuth=125.)
   let page_groups = L.map A.of_list list_groups in
   let make_pdf i (page_group : Mat.mat list array)  =  (* i = t-1; dists = prob dists at t *)
     let gen = i + start_gen in
+    let group_len = A.length page_group in
     let filename = basename ^ (Printf.sprintf "%03d" gen) ^ ".pdf" in 
-    let h = Pl.create filename in
-    Pl.set_background_color h 255 255 255;
-    Pl.set_foreground_color h 150 150 150; (* grid lines *)
-    Pl.set_ylabel h "frequency of A allele";
-    Pl.set_xlabel h "possible distributions";
-    Pl.set_zlabel h "probability";
+    let h = Pl.create ~m:rows ~n:cols filename in
+    Pl.set_background_color h 255 255 255; (* applies to all subplots *)
     Pl.set_altitude h altitude;
     Pl.set_azimuth h azimuth;
     for row = 0 to max_row do
       for col = 0 to max_col do
-        let idx = (row * rows) + col in
-        Printf.printf "row=%d, col=%d; idx=%d\n" row col idx; (* DEBUG *)
-        let dists = page_group.(idx) in
-        Printf.printf "made dists\n";
-        let xs, ys, zs = make_coords (sort_dists dists) in
-        Pl.subplot h row col;
-        Pl.mesh ~h xs ys zs;
+        let idx = (row * cols) + col in
+        if idx < group_len then (* kludge: just keep looping if no more *)
+          let dists = page_group.(idx) in
+          let xs, ys, zs = make_coords (sort_dists dists) in
+          Pl.subplot h row col;
+          (* these have to be repeated for each subplot: *)
+          Pl.set_foreground_color h 150 150 150; (* grid color *)
+          Pl.set_ylabel h "frequency of A allele";
+          Pl.set_xlabel h "possible distributions";
+          Pl.set_zlabel h "probability";
+          Pl.mesh ~h xs ys zs;
+        else 
+           () (* do something here to get rid of empty plot border *)
       done
     done;
     Pl.output h;
