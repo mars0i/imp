@@ -186,8 +186,10 @@ let make_3D_lattice_pdfs ?(rows=1) ?(cols=1) ?(altitude=45.) ?(azimuth=125.)
     Pl.set_azimuth h azimuth;
     for row = 0 to max_row do
       for col = 0 to max_col do
-        let idx = row * col in
+        let idx = (row * rows) + col in
+        Printf.printf "row=%d, col=%d; idx=%d\n" row col idx; (* DEBUG *)
         let dists = page_group.(idx) in
+        Printf.printf "made dists\n";
         let xs, ys, zs = make_coords (sort_dists dists) in
         Pl.subplot h row col;
         Pl.mesh ~h xs ys zs;
