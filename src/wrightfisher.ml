@@ -170,29 +170,30 @@ let make_3D_pdfs ?(altitude=45.) ?(azimuth=125.) basename start_gen last_gen dis
 let make_3D_lattice_pdfs ?(rows=1) ?(cols=1) ?(altitude=45.) ?(azimuth=125.)
                          basename start_gen last_gen distlists =
   let max_row, max_col = rows - 1, cols - 1 in
-  let finite_lazy_distlists = sub_lazy_list start_gen last_gen distlists in
-  let list_groups = L.ntake (rows * cols) (LL.to_list finite_lazy_distlists) in
-  let page_groups = L.map A.of_list list_groups in
-  let make_pdf i (page_group : Mat.mat list array)  =  (* i = t-1; dists = prob dists at t *)
-    let gen = i + start_gen in
+  let finite_lazy_distlists = sub_lazy_list start_gen last_gen distlists in     (* lazy list of only those gens we want *)
+  let list_groups = L.ntake (rows * cols) (LL.to_list finite_lazy_distlists) in (* make previous into list and partition *)
+  let page_groups = L.map A.of_list list_groups in  (* make sublists into arrays for easy indexing *)
+  let make_pdf i page_group = 
     let group_len = A.length page_group in
-    let filename = basename ^ (Printf.sprintf "%03d" gen) ^ ".pdf" in 
+    let filename = basename ^ (Printf.sprintf "%03d" i) ^ ".pdf" in
     let h = Pl.create ~m:rows ~n:cols filename in
     Pl.set_background_color h 255 255 255; (* applies to all subplots *)
-    Pl.set_altitude h altitude;
-    Pl.set_azimuth h azimuth;
     for row = 0 to max_row do
       for col = 0 to max_col do
         let idx = (row * cols) + col in
         if idx < group_len then (* kludge: just keep looping if no more *)
+          let gen = start_gen + i + idx in
           let dists = page_group.(idx) in
           let xs, ys, zs = make_coords (sort_dists dists) in
           Pl.subplot h row col;
           (* these have to be repeated for each subplot: *)
           Pl.set_foreground_color h 150 150 150; (* grid color *)
+          Pl.set_altitude h altitude;
+          Pl.set_azimuth h azimuth;
           Pl.set_ylabel h "frequency of A allele";
           Pl.set_xlabel h "possible distributions";
           Pl.set_zlabel h "probability";
+          (* Pl.set_title h (Printf.sprintf "generation %d" gen); *) (* doesn't work with 3D plots *)
           Pl.mesh ~h xs ys zs;
         else 
            () (* do something here to get rid of empty plot border *)
