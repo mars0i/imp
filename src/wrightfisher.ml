@@ -169,34 +169,45 @@ let make_3D_pdfs ?(altitude=45.) ?(azimuth=125.) basename start_gen last_gen dis
 
 let make_3D_lattice_pdfs ?(rows=1) ?(cols=1) ?(altitude=45.) ?(azimuth=125.)
                          basename start_gen last_gen distlists =
+  let plots_per_page = rows * cols in
   let max_row, max_col = rows - 1, cols - 1 in
+  (* Next convert distlists--an infinite lazylist of lists of vectors--
+   * into a list of arrays of lists of vectors, where the elements of each 
+   * rows*cols-length array are lists of vectors for one plot on a
+   * rows by cols sized page of plots. *)
   let finite_lazy_distlists = sub_lazy_list start_gen last_gen distlists in     (* lazy list of only those gens we want *)
   let list_groups = L.ntake (rows * cols) (LL.to_list finite_lazy_distlists) in (* make previous into list and partition *)
   let page_groups = L.map A.of_list list_groups in  (* make sublists into arrays for easy indexing *)
-  let make_pdf i page_group = 
-    let group_len = A.length page_group in
-    let filename = basename ^ (Printf.sprintf "%03d" i) ^ ".pdf" in
+  (* fn to be applied to each array of lists of vectors to create a page: *)
+  let make_pdf group_idx page_group = 
+    (* Construct filename from basename and generation numbers: *)
+    let group_len = A.length page_group in  (* differs if last group is short *)
+    let group_start = start_gen + group_idx * plots_per_page in
+    let group_last  = group_start + group_len - 1 in
+    let filename = basename ^ 
+                   (Printf.sprintf "%02dto%02d" group_start group_last ) ^
+                   ".pdf"
+    in
     let h = Pl.create ~m:rows ~n:cols filename in
     Pl.set_background_color h 255 255 255; (* applies to all subplots *)
     for row = 0 to max_row do
       for col = 0 to max_col do
-        let idx = (row * cols) + col in
-        if idx < group_len then (* kludge: just keep looping if no more *)
-          let gen = start_gen + i + idx in
-          let dists = page_group.(idx) in
-          let xs, ys, zs = make_coords (sort_dists dists) in
-          Pl.subplot h row col;
-          (* these have to be repeated for each subplot: *)
-          Pl.set_foreground_color h 150 150 150; (* grid color *)
-          Pl.set_altitude h altitude;
-          Pl.set_azimuth h azimuth;
-          Pl.set_ylabel h "frequency of A allele";
-          Pl.set_xlabel h "possible distributions";
-          Pl.set_zlabel h "probability";
-          (* Pl.set_title h (Printf.sprintf "generation %d" gen); *) (* doesn't work with 3D plots *)
-          Pl.mesh ~h xs ys zs;
+        let idx = (row * cols) + col in  (* not rowS*cols *)
+        if idx < group_len then
+          (Pl.subplot h row col;
+           (* let gen = start_gen + group_idx + idx in *)
+           (* Pl.set_title h (Printf.sprintf "generation %d" gen); *) (* doesn't work with 3D plots *)
+           (* These have to be repeated for each subplot: *)
+           Pl.set_foreground_color h 150 150 150; (* grid color *)
+           Pl.set_altitude h altitude;
+           Pl.set_azimuth h azimuth;
+           Pl.set_ylabel h "frequency of A allele";
+           Pl.set_xlabel h "possible distributions";
+           Pl.set_zlabel h "probability";
+           let xs, ys, zs = make_coords (sort_dists page_group.(idx)) in
+           Pl.mesh ~h xs ys zs;)
         else 
-           () (* do something here to get rid of empty plot border *)
+           () (* do something here to get rid of empty plot border? *)
       done
     done;
     Pl.output h;
