@@ -57,11 +57,11 @@ let commandline =
                 +> anon ("startgen" %: int)
                 +> anon ("lastgen" %: int)
                 +> anon (sequence ("fitn" %: float)))
-    (fun alt_int az_int rows cols basename popsize initfreq startgen lastgen fitn_floats () ->
+    (fun alt_int az_int rows cols every basename popsize initfreq startgen lastgen fitn_floats () ->
       let altitude = float alt_int in
       let azimuth = float az_int in
       let fitn_recs = WF.group_fitns fitn_floats in
       let distlists = WF.make_distlists popsize [initfreq] fitn_recs in
-      WF.make_3D_pdfs ~altitude ~azimuth ~rows ~cols basename startgen lastgen distlists)
+      WF.make_3D_pdfs ~altitude ~azimuth ~rows ~cols ~every basename startgen lastgen distlists)
 
 let () = Command.run ~version:"1.1" ~build_info:"wrightfisherPDFS, (c) 2017 Marshall Abrams" commandline
