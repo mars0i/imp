@@ -14,6 +14,8 @@ module L = Batteries.List
 module A = Batteries.Array
 module LL = Batteries.LazyList
 
+module U = Utils
+
 let ( *@ ) = Mat.( *@ )  (* = dot: matrix multiplication *)
 
 
@@ -94,14 +96,20 @@ let make_2D_pdfs basename dists n =
 (** Return a triple containing x-coord, y-coord, and z-coord matrices.
     dist_list is a list of row vectors representing prob dists that will
     be concatenated into z coords.  Note that the x and y coord matrices
-    will have the same shape, which will be transposed/rotated wrt the z
-    coord matrix that results. That's what Owl.Plot.{mesh,surf} need. *)
-let make_coords dist_list =
-  let (_, width) = Mat.shape (L.hd dist_list) in
-  let height = L.length dist_list in
+    will have the same shape as each other, but with values increasing
+    in different directions.  This shape will be transposed/rotated wrt the
+    z coord matrix that results. That's what Owl.Plot.{mesh,surf} need.
+    For Wright-Fisher pdfs, I use y as frequency; x indexes probability
+    distributions.
+    *)
+let make_coords ?(every=1) dist_list =
+  let dist_list' = L.map (U.subsample_in_rows every) dist_list in (* identical if every=1 *)
+  let (_, width) = Mat.shape (L.hd dist_list') in
+  let height = L.length dist_list' in
+  let everyf = float every in
   let xs = Mat.repeat ~axis:0 (Mat.sequential 1 height) width in
-  let ys = Mat.repeat ~axis:1 (Mat.sequential width 1) height in
-  let zs = L.reduce Mat.concat_vertical dist_list in
+  let ys = Mat.repeat ~axis:1 (Mat.sequential ~step:everyf width 1) height in (* step so freqs match z vals if every>1 *)
+  let zs = L.reduce Mat.concat_vertical dist_list' in
   (xs, ys, zs)
 
 
@@ -140,7 +148,7 @@ let make_distlists size init_freqs fitn_list =
 (* Given a list of probability distribution vectors, tries to sort them
    so that similar lists are close in the order.  
    Uses Utils.difference_compare. *)
-let sort_dists dists = L.sort Utils.difference_compare dists
+let sort_dists dists = L.sort U.difference_compare dists
 
 (** Make a series of n 3D plot pdfs from distlists using basename.
     Example:
@@ -150,7 +158,7 @@ let sort_dists dists = L.sort Utils.difference_compare dists
  *)
 
 
-let make_3D_pdfs ?(rows=1) ?(cols=1) ?(altitude=45.) ?(azimuth=125.)
+let make_3D_pdfs ?(rows=1) ?(cols=1) ?(altitude=45.) ?(azimuth=125.) ?(every=1)
                          basename start_gen last_gen distlists =
   let plots_per_page = rows * cols in
   let max_row, max_col = rows - 1, cols - 1 in
@@ -185,7 +193,7 @@ let make_3D_pdfs ?(rows=1) ?(cols=1) ?(altitude=45.) ?(azimuth=125.)
            Pl.set_ylabel h "freq of A allele";
            Pl.set_xlabel h "poss distributions";
            Pl.set_zlabel h "probability";
-           let xs, ys, zs = make_coords (sort_dists page_group.(idx)) in
+           let xs, ys, zs = make_coords ~every (sort_dists page_group.(idx)) in
            Pl.mesh ~h xs ys zs;)
         else (* short group *)
           (* Dummy plot to prevent plplot from leaving a spurious border: *)

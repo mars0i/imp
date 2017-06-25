@@ -40,6 +40,7 @@ let alt_docstring = sprintf "integer aLtitude of perspective: degrees in [0,90] 
 let az_docstring =  sprintf "integer aZimuth of perspective: degrees in in [0,360] (default: %d)" default_az
 let rows_docstring = sprintf "integer number of rows for multi-plot pages (default %d)" 1
 let cols_docstring = sprintf "integer number of columns for multi-plot pages (default %d)" 1
+let every_docstring = sprintf "integer plot at only every nth frequency (default %d)" 1
 
 let commandline =
   Command.basic
@@ -49,6 +50,7 @@ let commandline =
                 +> flag "-z" (optional_with_default default_az int)  ~doc:az_docstring
                 +> flag "-r" (optional_with_default 1 int) ~doc:rows_docstring
                 +> flag "-c" (optional_with_default 1 int) ~doc:cols_docstring
+                +> flag "-e" (optional_with_default 1 int) ~doc:every_docstring
                 +> anon ("basename" %: string)
                 +> anon ("popsize" %: int)
                 +> anon ("initfreq" %: int)
