@@ -132,3 +132,18 @@ let difference_compare m1 m2 =
   if dif > 0.0 then 1
   else if dif < 0.0 then -1
   else 0
+
+(** Given a matrix return a narrower matrix in which each every_nth element
+    in each row is present.  The intervening elements are ignored.  *)
+let subsample_rows every_nth old_mat =
+  if every_nth <= 1 then old_mat
+  else 
+  let (height, width) = M.shape old_mat in
+  let new_width = width / every_nth in (* WHAT ABOUT if doesn't divide evenly? *)
+  let new_mat = M.empty height new_width in
+  for i = 0 to height - 1 do
+    for j = 0 to new_width - 1 do
+      new_mat.{i,j} <- old_mat.{i, j*every_nth}
+    done
+  done;
+  new_mat
