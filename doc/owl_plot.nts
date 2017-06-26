@@ -1,0 +1,17 @@
+notes on how things work/how to change things in owl_plot.ml
+
+What makes mesh and surf display color variation?  For the non-contour
+versions, I believe it's these lines:
+
+862	| false -> [ PL_FACETED; PL_MAG_COLOR ]
+
+892	let opt1 = [ PL_DRAW_LINEXY; PL_MAG_COLOR; PL_MESH ] in
+
+
+These are passed to plsurf3d and plmesh, respectively.  I think
+PL_MAG_COLOR is what does it.  See e.g.
+http://plplot.sourceforge.net/examples.php?demo=08&lbind=Ocaml
+and
+http://plplot.sourceforge.net/examples.php?demo=11&lbind=Ocaml
+
+
