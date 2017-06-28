@@ -3,36 +3,18 @@
 module L = Batteries.List
 module A = Batteries.Array
 
-let vertices_wrt_i i p q =
-  let size = A.length p in
-  if size != A.length q then raise (Failure "vectors have different lengths")
-  else if i >= size || i < 0 then raise (Failure "index negative or too large")
-  else let pl, ql = A.to_list p, A.to_list q in
-  let p_unfree, q_unfree = L.remove_at i pl, L.remove_at i ql in
-  (* TODO here generate a list of lists with all possible combinations of
-   * one element from either p or q at each unfree index *)
-  (* Then for each such vector/list, compute 1 - (sum of values in it).
-   * if this value is >= 0, then add to the output list the vector
-   * containing this value inserted into the vector/list at the
-   * missing position.  If the new value is < 0, then simply move on. *)
-
-
-let vertices p q =
-  (* concatenate the results of vertices_wrt_i for each i *)
-
-
-
-
-
-(*
-let vertices p q =
-  let idxs = L.range 0 `To (L.length p) in
-  let verts free =
-    let unfree = L.remove idxs free in
-    L.concat (L.map (fun i -> [L.at p i; L.at q i]) unfree
-
-  L.concat 
-  (L.init
-*)
-
-
+(** Given two lists of length n, return a list containing the 2^n lists
+    containing each combination of elements from p and q at the same indices.
+    e.g.
+       vertices [1; 2; 3] [100; 200; 300]
+    returns
+       [[1; 2; 3];   [1; 2; 300];   [1; 200; 3];   [1; 200; 300];
+        [100; 2; 3]; [100; 2; 300]; [100; 200; 3]; [100; 200; 300]] *)
+let rec vertices p q =
+  match p, q with
+  | [], [] -> []
+  | hp::[], hq::[] -> [[hp];[hq]]
+  | hp::tp, hq::tq -> 
+      let tailverts = vertices tp tq in
+      L.concat [L.map (L.cons hp) tailverts; L.map (L.cons hq) tailverts]
+  | _, _ -> raise (Failure "lists are not the same length")
