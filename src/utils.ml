@@ -1,5 +1,7 @@
 module M  = Owl.Mat
 module L = Batteries.List
+module F = Core.Float
+
 
 (** Returns a memoizing version of function f of one argument.
     By Andrej Bauer: https://stackoverflow.com/a/14503530/1455243
@@ -159,3 +161,12 @@ let insert_before n new_elt l =
     (fun i elt acc -> if n = i then new_elt::elt::acc
                       else elt::acc)
     l []
+
+let mapmap f outer = L.map (fun inner -> L.map f inner) outer
+
+let roundto ?digits x =
+  match digits with
+  | None -> F.round x
+  | Some n -> 
+    let scale = F.int_pow 10. n in
+    (F.round (scale *. x)) /. scale
