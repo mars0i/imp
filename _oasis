@@ -14,7 +14,7 @@ Plugins: META (0.4), DevFiles (0.4)
 # The "sections":
 
 Library "probutils"
-  BuildDepends: batteries, owl
+  BuildDepends: batteries, core, owl
   Path: src
   Modules: Probmat, Utils, Wrightfisher
 
