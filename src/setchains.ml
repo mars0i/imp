@@ -1,6 +1,7 @@
 (** Functions inspired by Hartfiel's _Markov Set-Chains_, Springer 1998.
     Please see this book for definitions of terms, proofs, algorithms. *)
 
+module B = Batteries
 module L = Batteries.List
 module A = Batteries.Array
 module M = Owl.Mat
@@ -22,7 +23,8 @@ let rec sequences p q =
   | _, _ -> raise (Failure "lists are not the same length")
 
 (** Converts a 1xN matrix, i.e. row vector, into a list. *)
-let vec_to_list m = A.to_list (M.to_array m)
+let vec_to_list = B.(A.to_list % M.to_array)
+let list_to_vec = B.(M.of_array % A.of_list)
 
 (** Converts an MxN matrix into a list of M lists of length N. *)
 let mat_to_lists m =
@@ -30,24 +32,39 @@ let mat_to_lists m =
   A.to_list (A.map (A.to_list % M.to_array) (M.to_rows m))
 
 let insert_after n new_elt l = 
-  if n = 0 then new_elt::l else
+  if n = -1 then new_elt::l else
   L.fold_righti 
     (fun i elt acc -> if n = i then elt::new_elt::acc else elt::acc)
     l []
 
-  
-(** Given the vector boundaries of an interval, lists its vertices assuming 
-    it is tight. *)
-let list_vertices p q =
-  let vertices_at i p q =
-    let p', q' = L.remove_at i p, L.remove_at i q in
-    let seqs = sequences p' q' in
-    let sums = L.map (fun seq -> 1. -. (L.fsum seq)) seqs in
-    let add_vertex sum seq acc =
-      if sum > 0. then (insert_after i sum seq)::acc
-      else acc
-    in L.fold_right2 add_vertex sums seqs []
-  in
-  L.concat (L.map2i vertices_at p q)
+let insert_before n new_elt l = 
+  if n = L.length l then l @ [new_elt]
+  else L.fold_righti 
+    (fun i elt acc -> if n = i then new_elt::elt::acc
+                      else elt::acc)
+    l []
 
-let mat_vertices p q = list_vertices (mat_to_lists p) (mat_to_lists q)
+let slop = 0.0000001
+
+(** List vertices in which the ith element is free *)
+let vertices_at p q i =
+  let min_at, max_at = (L.at p i) -. slop, (L.at q i) +. slop in
+  let p', q' = L.remove_at i p, L.remove_at i q in
+  let seqs = sequences p' q' in
+  let sums = L.map (fun seq -> 1. -. (L.fsum seq)) seqs in
+  let add_vertex sum seq acc =
+    if sum >= min_at && sum <= max_at  (* assume min_at >= 0 *)
+    then (insert_before i sum seq)::acc else acc
+  in L.fold_right2 add_vertex sums seqs []
+
+(* TODO Make me more efficient *)
+(** Given the vector boundaries of an interval, lists its vertices assuming 
+    it is tight.  Might return two variants of the same vertex that
+    differ only by float rounding errors.  *)
+let list_vertices p q =
+  let idxs = L.range 0 `To ((L.length p) - 1) in (* kludge *)
+  L.concat (L.map (vertices_at p q) idxs)
+
+(* TODO broken *)
+let mat_vertices p q = 
+ L.map list_to_vec (list_vertices (vec_to_list p) (vec_to_list q))
