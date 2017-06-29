@@ -146,3 +146,16 @@ let subsample_in_rows every old_mat =
          done
        done;
        new_mat
+
+let insert_after n new_elt l = 
+  if n = -1 then new_elt::l else
+  L.fold_righti 
+    (fun i elt acc -> if n = i then elt::new_elt::acc else elt::acc)
+    l []
+
+let insert_before n new_elt l = 
+  if n = L.length l then l @ [new_elt]
+  else L.fold_righti 
+    (fun i elt acc -> if n = i then new_elt::elt::acc
+                      else elt::acc)
+    l []

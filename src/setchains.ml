@@ -5,6 +5,7 @@ module B = Batteries
 module L = Batteries.List
 module A = Batteries.Array
 module M = Owl.Mat
+module U = Utils
 
 (** Given two lists of length n, return a list containing the 2^n lists
     containing each combination of elements from p and q at the same indices.
@@ -31,19 +32,6 @@ let mat_to_lists m =
   let open Batteries in
   A.to_list (A.map (A.to_list % M.to_array) (M.to_rows m))
 
-let insert_after n new_elt l = 
-  if n = -1 then new_elt::l else
-  L.fold_righti 
-    (fun i elt acc -> if n = i then elt::new_elt::acc else elt::acc)
-    l []
-
-let insert_before n new_elt l = 
-  if n = L.length l then l @ [new_elt]
-  else L.fold_righti 
-    (fun i elt acc -> if n = i then new_elt::elt::acc
-                      else elt::acc)
-    l []
-
 let slop = 0.0000001
 
 (** List vertices in which the ith element is free *)
@@ -54,7 +42,7 @@ let vertices_at p q i =
   let sums = L.map (fun seq -> 1. -. (L.fsum seq)) seqs in
   let add_vertex sum seq acc =
     if sum >= min_at && sum <= max_at  (* assume min_at >= 0 *)
-    then (insert_before i sum seq)::acc else acc
+    then (U.insert_before i sum seq)::acc else acc
   in L.fold_right2 add_vertex sums seqs []
 
 (* TODO Make me more efficient *)
