@@ -62,6 +62,9 @@ let list_vertices ?(digits) ?uniq p q =
   | None | Some false -> verts'
   | Some true -> L.unique_cmp verts'
 
+(** Convenience alias for list_vertices ~digits:3 ~uniq:true *)
+let verts3 = list_vertices ~digits:3 ~uniq:true
+
 (* Alternatives to Batteries.List.unique_cmp:
  * Batteries.List.unique (slower),
  * Core.List.dedup
