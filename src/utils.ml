@@ -164,9 +164,7 @@ let insert_before n new_elt l =
 
 let mapmap f outer = L.map (fun inner -> L.map f inner) outer
 
-let roundto ?digits x =
-  match digits with
-  | None -> F.round x
-  | Some n -> 
-    let scale = F.int_pow 10. n in
-    (F.round (scale *. x)) /. scale
+(** Rounds second arg to number of decimal digits specified by first arg. *)
+let roundto digits x =
+  let scale = F.int_pow 10. digits in
+  (F.round (scale *. x)) /. scale
