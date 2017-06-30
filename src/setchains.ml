@@ -32,20 +32,21 @@ let mat_to_lists m =
   let open Batteries in
   A.to_list (A.map (A.to_list % M.to_array) (M.to_rows m))
 
+(** Try to avoid inequality comparisons that are incorrect due to
+    inherent floating point fudgeyness.  Used in vertices_at. *)
 let slop = 0.0000001
 
 (** List vertices in which the ith element is free *)
 let vertices_at p q i =
-  let min_at, max_at = (L.at p i) -. slop, (L.at q i) +. slop in
+  let min_at, max_at =  (L.at p i) -. slop,  (L.at q i) +. slop in
   let p', q' = L.remove_at i p, L.remove_at i q in
   let seqs = sequences p' q' in
   let sums = L.map (fun seq -> 1. -. (L.fsum seq)) seqs in
   let add_vertex sum seq acc =
-    if sum >= min_at && sum <= max_at  (* assume min_at >= 0 *)
+    if sum >= min_at && sum <= max_at (* assume min >= 0, but note slop above. *)
     then (U.insert_before i sum seq)::acc else acc
   in L.fold_right2 add_vertex sums seqs []
 
-(* TODO Make me more efficient? *)
 (** Given the vector boundaries of an interval, lists its vertices assuming 
     it is tight.  Might return two variants of the same vertex that
     differ only by float rounding errors.  If ~digits:digs is provided, 
@@ -53,7 +54,7 @@ let vertices_at p q i =
     is provided, duplicate vertices are combined.  Doing this usually
     makes sense only if ~digits is also provided. *)
 let list_vertices ?(digits) ?uniq p q =
-  let idxs = L.range 0 `To ((L.length p) - 1) in (* kludgey *)
+  let idxs = L.range 0 `To ((L.length p) - 1) in
   let verts = L.concat (L.map (vertices_at p q) idxs) in
   let verts' = match digits with
                | None -> verts
@@ -62,13 +63,13 @@ let list_vertices ?(digits) ?uniq p q =
   | None | Some false -> verts'
   | Some true -> L.unique_cmp verts'
 
+(* Alternatives to Batteries.List.unique_cmp:
+ *   Batteries.List.unique (slower, though wouldn't matter for small lists),
+ *   Core.List.dedup
+ *   Core.List.stable_dedup *)
+
 (** Convenience alias for list_vertices ~digits:3 ~uniq:true *)
 let verts3 = list_vertices ~digits:3 ~uniq:true
-
-(* Alternatives to Batteries.List.unique_cmp:
- * Batteries.List.unique (slower),
- * Core.List.dedup
- * Core.List.stable_dedup *)
 
 
 (* FIXME broken *)
