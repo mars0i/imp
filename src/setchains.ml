@@ -45,14 +45,29 @@ let vertices_at p q i =
     then (U.insert_before i sum seq)::acc else acc
   in L.fold_right2 add_vertex sums seqs []
 
-(* TODO Make me more efficient *)
+(* TODO Make me more efficient? *)
 (** Given the vector boundaries of an interval, lists its vertices assuming 
     it is tight.  Might return two variants of the same vertex that
-    differ only by float rounding errors.  *)
-let list_vertices p q =
-  let idxs = L.range 0 `To ((L.length p) - 1) in (* kludge *)
-  L.concat (L.map (vertices_at p q) idxs)
+    differ only by float rounding errors.  If ~digits:digs is provided, 
+    digs will specify number of decimal digits to round to.  If ~uniq:true
+    is provided, duplicate vertices are combined.  Doing this usually
+    makes sense only if ~digits is also provided. *)
+let list_vertices ?(digits) ?uniq p q =
+  let idxs = L.range 0 `To ((L.length p) - 1) in (* kludgey *)
+  let verts = L.concat (L.map (vertices_at p q) idxs) in
+  let verts' = match digits with
+               | None -> verts
+               | Some digs -> U.mapmap (U.roundto digs) verts
+  in match uniq with
+  | None | Some false -> verts'
+  | Some true -> L.unique_cmp verts'
 
-(* TODO broken *)
+(* Alternatives to Batteries.List.unique_cmp:
+ * Batteries.List.unique (slower),
+ * Core.List.dedup
+ * Core.List.stable_dedup *)
+
+
+(* FIXME broken *)
 let mat_vertices p q = 
  L.map list_to_vec (list_vertices (vec_to_list p) (vec_to_list q))
