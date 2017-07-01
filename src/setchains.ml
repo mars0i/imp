@@ -25,7 +25,10 @@ let rec sequences p q =
 
 (** Converts a 1xN matrix, i.e. row vector, into a list. *)
 let vec_to_list = B.(A.to_list % M.to_array)
-let list_to_vec = B.(M.of_array % A.of_list)
+
+let list_to_vec l =
+  let a = A.of_list l in
+  M.of_array a 1 (A.length a)
 
 (** Converts an MxN matrix into a list of M lists of length N. *)
 let mat_to_lists m =
@@ -53,7 +56,7 @@ let vertices_at p q i =
     digs will specify number of decimal digits to round to.  If ~uniq:true
     is provided, duplicate vertices are combined.  Doing this usually
     makes sense only if ~digits is also provided. *)
-let list_vertices ?(digits) ?uniq p q =
+let list_vertices ?digits ?uniq p q =
   let idxs = L.range 0 `To ((L.length p) - 1) in
   let verts = L.concat (L.map (vertices_at p q) idxs) in
   let verts' = match digits with
@@ -63,15 +66,22 @@ let list_vertices ?(digits) ?uniq p q =
   | None | Some false -> verts'
   | Some true -> L.unique_cmp verts'
 
-(* Alternatives to Batteries.List.unique_cmp:
- *   Batteries.List.unique (slower, though wouldn't matter for small lists),
- *   Core.List.dedup
- *   Core.List.stable_dedup *)
+(* Alternative uniq'ers: Batteries.List.unique_cmp, Batteries.List.unique, Core.List.dedup, Core.List.stable_dedup *)
 
 (** Convenience alias for list_vertices ~digits:3 ~uniq:true *)
 let verts3 = list_vertices ~digits:3 ~uniq:true
 
+(* Return a list of vertices in the form of Owl vectors. See documentation
+ * for list_vertices for additional information, including info on optional
+ * args. *)
+let vec_vertices ?digits ?uniq p q =
+  L.map list_to_vec (list_vertices ?digits ?uniq p q)
 
-(* FIXME broken *)
-let mat_vertices p q = 
- L.map list_to_vec (list_vertices (vec_to_list p) (vec_to_list q))
+let vec2vec_vertices ?digits ?uniq p q =
+  vec_vertices ?digits ?uniq (vec_to_list p) (vec_to_list q)
+
+let mat_vertices ?digits ?uniq p q =
+  let p_rows, q_rows = A.to_list (M.to_rows p), A.to_list (M.to_rows q) in
+  let vec_verts = L.map2 (vec2vec_vertices ?digits ?uniq) p_rows q_rows in
+  vec_verts (* A list of lists of vectors. Each list reps row vertices for one row *)
+  (* TODO now create matrices from Cartesian products of the rows. *)
