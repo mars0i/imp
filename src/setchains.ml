@@ -80,8 +80,10 @@ let vec_vertices ?digits ?uniq p q =
 let vec2vec_vertices ?digits ?uniq p q =
   vec_vertices ?digits ?uniq (vec_to_list p) (vec_to_list q)
 
+(** Given a min and max matrices p and q for a tight interval, return a list of
+    vertex matrices.  See documentation for list_vertices for additional info *)
 let mat_vertices ?digits ?uniq p q =
-  let p_rows, q_rows = A.to_list (M.to_rows p), A.to_list (M.to_rows q) in
-  let vec_verts = L.map2 (vec2vec_vertices ?digits ?uniq) p_rows q_rows in
-  vec_verts (* A list of lists of vectors. Each list reps row vertices for one row *)
-  (* TODO now create matrices from Cartesian products of the rows. *)
+  let p_rows, q_rows = A.to_list (M.to_rows p), A.to_list (M.to_rows q) in   (* lists of the row vectors from p and q *)
+  let vec_verts = L.map2 (vec2vec_vertices ?digits ?uniq) p_rows q_rows in   (* A list of lists of vectors. Each list reps row vertices for one row *)
+  let vec_vert_arrays = L.map A.of_list (L.n_cartesian_product vec_verts) in (* list of (ordered) arrays of vectors rep'ing rows of vertex matrices *)
+  L.map M.of_rows vec_vert_arrays
