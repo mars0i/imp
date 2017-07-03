@@ -194,7 +194,8 @@ let make_3D_pdfs ?(rows=1) ?(cols=1) ?(altitude=45.) ?(azimuth=125.) ?(every=1)
            Pl.set_xlabel h "poss distributions";
            Pl.set_zlabel h "probability";
            let xs, ys, zs = make_coords ~every (sort_dists page_group.(idx)) in
-           Pl.mesh ~h xs ys zs;)
+           (* Pl.mersh ~h xs ys zs;) *)
+           Pl.mersh ~h ~opt:Plplot.([PL_DRAW_LINEY]) xs ys zs;) (* EXPERIMENTAL VERSION using my hacked mesh function *)
         else (* short group *)
           (* Dummy plot to prevent plplot from leaving a spurious border: *)
           (Pl.set_foreground_color h 255 255 255; (* s/b same color as bg *)
