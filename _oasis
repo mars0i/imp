@@ -19,16 +19,10 @@ Library "probutils"
   Modules: Probmat, Utils, Wrightfisher
 
 Executable "wrightfisherPDFs"
-  BuildDepends: core,batteries,owl,probutils
+  BuildDepends: core, batteries, owl, probutils
   Path: src
   MainIs: wrightfisherPDFs.ml
   CompiledObject: best
-
-# Executable "exampledata"
-#   BuildDepends: batteries, probutils
-#   Path: src
-#   MainIs: exampledata.ml
-#   CompiledObject: best
 
 AlphaFeatures: ocamlbuild_more_args
 Document "probutils"
