@@ -14,4 +14,38 @@ http://plplot.sourceforge.net/examples.php?demo=08&lbind=Ocaml
 and
 http://plplot.sourceforge.net/examples.php?demo=11&lbind=Ocaml
 
+------------------------------
 
+set_foreground_color just stores an RGB value in the page structure.
+
+It's retrieved in _prepare_page, which sets the color for all
+subsequent writes with this line
+
+	let _ = plscol0 1 r g b; plcol0 1 in
+
+Those are plplot functions.
+plscol0 sets the color at index 1 in colormap 0.  
+pcol0 chooses the index for subsequent writes.
+So the whole line sets color #1 to the values r, g, b, and then
+chooses that color for subsequent writes by whatever writes to the
+screen.
+
+The reason that the gride lines and the plot lines are the same color
+in mesh output is that _prepare_page sets the color before it calls
+plbox3, which writes the axes and gridlines (I think).  AND THEN
+this color index is left unchanged when the plotting takes place.
+
+As an experiment, I set colors for two different color indexes, and
+then selected the second one after plbox3 was called.  This indeed
+led to the plot lines having a different color.
+
+So to change this, the right thing would probably be to add an
+additional element to the page structure, and then add functiosn to
+set them separately, and then maybe set each in _prepare_page--one
+before all of the writing is done in prepare page, and one after that.
+
+OH--most of the plot functions have a ~color argument that does this.
+OK, that's good enough.  I just need to add it to mesh and surf.
+
+(There's also colormap 1, which is designed for e.g. varying color by
+height.)
