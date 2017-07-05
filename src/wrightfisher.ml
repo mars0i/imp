@@ -187,14 +187,14 @@ let make_3D_pdfs ?(rows=1) ?(cols=1) ?(altitude=30.) ?(azimuth=125.) ?(every=1)
         let idx = (row * cols) + col in  (* not rowS*cols *)
         if idx < group_len then  (* don't index past end of a short group *)
           (* These have to be repeated for each subplot: *)
-          (Pl.set_foreground_color h 160 160 160; (* grid color *)
+          (Pl.set_foreground_color h 170 170 170; (* grid color *)
            Pl.set_altitude h altitude;
            Pl.set_azimuth h azimuth;
            Pl.set_ylabel h "freq of A allele";
            Pl.set_xlabel h "poss distributions";
            Pl.set_zlabel h "probability";
            let xs, ys, zs = make_coords ~every (sort_dists page_group.(idx)) in
-           Pl.plots2d_in_3d ~h ~color:(0, 0, 50) xs ys zs;) (* plot color *)
+           Pl.plots2d_in_3d ~h ~color:(120, 40, 0) xs ys zs;) (* plot color *)
            (* Pl.mersh ~h xs ys zs;) *)
            (* Pl.mersh ~h ~opt:Plplot.([PL_DRAW_LINEY]) xs ys zs;) *) (* EXPERIMENTAL VERSION using my hacked mesh function *)
         else (* short group *)
