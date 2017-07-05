@@ -62,6 +62,6 @@ let commandline =
       let azimuth = float az_int in
       let fitn_recs = WF.group_fitns fitn_floats in
       let distlists = WF.make_distlists popsize [initfreq] fitn_recs in
-      WF.make_3D_pdfs ~altitude ~azimuth ~rows ~cols ~every basename startgen lastgen distlists)
+      WF.make_3D_pdfs ~rows ~cols ~altitude ~azimuth ~every basename startgen lastgen distlists)
 
 let () = Command.run ~version:"1.1" ~build_info:"wrightfisherPDFS, (c) 2017 Marshall Abrams" commandline
