@@ -158,7 +158,7 @@ let sort_dists dists = L.sort U.difference_compare dists
  *)
 
 
-let make_3D_pdfs ?(rows=1) ?(cols=1) ?(altitude=45.) ?(azimuth=125.) ?(every=1)
+let make_3D_pdfs ?(rows=1) ?(cols=1) ?(altitude=40.) ?(azimuth=125.) ?(every=1)
                          basename start_gen last_gen distlists =
   let plots_per_page = rows * cols in
   let max_row, max_col = rows - 1, cols - 1 in
@@ -194,7 +194,7 @@ let make_3D_pdfs ?(rows=1) ?(cols=1) ?(altitude=45.) ?(azimuth=125.) ?(every=1)
            Pl.set_xlabel h "poss distributions";
            Pl.set_zlabel h "probability";
            let xs, ys, zs = make_coords ~every (sort_dists page_group.(idx)) in
-           Pl.plots2d_in_3d ~h ~color:(150, 40, 40) xs ys zs;)
+           Pl.plots2d_in_3d ~h ~color:(0, 0, 0) xs ys zs;)
            (* Pl.mersh ~h xs ys zs;) *)
            (* Pl.mersh ~h ~opt:Plplot.([PL_DRAW_LINEY]) xs ys zs;) *) (* EXPERIMENTAL VERSION using my hacked mesh function *)
         else (* short group *)
