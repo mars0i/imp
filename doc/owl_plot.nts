@@ -49,3 +49,35 @@ OK, that's good enough.  I just need to add it to mesh and surf.
 
 (There's also colormap 1, which is designed for e.g. varying color by
 height.)
+
+----------------------------
+
+I've added a `~color` parameter to `mesh` in my fork
+[here](https://github.com/mars0i/owl/blob/master/lib/owl_plot.ml#L878).
+
+There was an unexpected problem, though.  The axes and tick marks were
+had the color specified by `set_foreground_color`, but the grid lines
+that run behind the plot had the same color as the plot, i.e. the color
+specified by the `~color` argument to `mesh.
+
+A solution is to use `plcol0` index 2 instead of 1, which is what's used
+throughout owl_plot.ml.  This is what I have done in my fork:
+https://github.com/mars0i/owl/blob/master/lib/owl_plot.ml#L255 This
+seems weird to have to do this.  Everywhere else in owl_plot.ml, the
+code just uses index 1, and saves and restores the rgb values to col0
+index 1 as needed.  However, using index 1 in `_prepare_page` results in
+the grid lines having the color of the plot, while using index 2 in
+`_prepare_page` causes the grid lines to have the same color as the axes
+and tick marks.
+
+The axes, ticks, and grid lines are drawn by `plbox3`.  However,
+`plbox3` draws the axes and tick marks immediately (i.e. during the
+execution of `_prepare_page`, but doesn't draw the grid lines until the
+plot is drawn.  The [documentation for
+`plbox3`](http://plplot.sourceforge.net/docbook-manual/plplot-html-5.12.0/plbox3.html)
+says "These lines are not drawn until after plot3d or plmesh are called
+because of the need for hidden line removal. "  `plbox3` apparently
+remembers the col0 index that was in scope when it was called, and gets
+the RGB value from it at the time of plotting to figure out what color
+to use.  So the col0 index at the time of the `plbox3` call has to be
+different from the one used as the plotting color.
