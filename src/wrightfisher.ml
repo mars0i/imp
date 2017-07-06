@@ -151,14 +151,24 @@ let l2_sort_dists dists = L.sort U.l2_compare dists
 let simple_sort_dists dists = L.sort U.difference_compare dists
 let abs_sort_dists dists = L.sort U.absdiff_compare dists
 
+(** Given a list of float fitness values, which should be in the order
+       w11, w12, w22, w11, w12, w22, ...
+    eat them in groups of three, using each three to create a
+    fitness record and return a list of these records in order. 
+    This can be used for commandline processing. *)
+let group_fitns fitn_float_list =
+  let rec loop l acc =
+    match l with
+    | [] -> acc
+    | w11::w12::w22::tl -> loop tl ({w11=w11; w12=w12; w22=w22}::acc)
+    | _ -> raise (Failure "Missing/extra fitness(es)")
+  in L.rev (loop fitn_float_list [])
+
 (** Make a series of n 3D plot pdfs from distlists using basename.
     Example:
     let distlists = make_distlists 500 [200] 
                   [{w11=1.0; w12=0.8; w22=0.7}; {w11=1.0; w12=0.3; w22=0.7}];;
-    make_3D_pdfs "distsN=500init=200w11=1w22=0.7w12=0.8or0.3gen" distlists 9;;
- *)
-
-
+    make_3D_pdfs "distsN=500init=200w11=1w22=0.7w12=0.8or0.3gen" distlists 9;; *)
 let make_3D_pdfs ?(rows=1) ?(cols=1) ?(altitude=30.) ?(azimuth=125.) ?(every=1)
                          basename start_gen last_gen distlists =
   let plots_per_page = rows * cols in
@@ -214,15 +224,18 @@ let make_3D_pdfs ?(rows=1) ?(cols=1) ?(altitude=30.) ?(azimuth=125.) ?(every=1)
            Pl.set_title h (Printf.sprintf "generation %d" gen);
  *) 
 
-(** Given a list of float fitness values, which should be in the order
-       w11, w12, w22, w11, w12, w22, ...
-    eat them in groups of three, using each three to create a
-    fitness record and return a list of these records in order. 
-    This can be used for commandline processing. *)
-let group_fitns fitn_float_list =
-  let rec loop l acc =
-    match l with
-    | [] -> acc
-    | w11::w12::w22::tl -> loop tl ({w11=w11; w12=w12; w22=w22}::acc)
-    | _ -> raise (Failure "Missing/extra fitness(es)")
-  in L.rev (loop fitn_float_list [])
+(* 2D on 2D multiple plot example: *)
+(*
+let distlists = Wrightfisher.make_distlists 500 [250] [{w11=1.0; w12=0.6; w22=0.5}; {w11=0.9; w12=0.7; w22=0.5}];;
+
+let xs, ys, zs = Wrightfisher.make_coords (Wrightfisher.l2_sort_dists (Batteries.LazyList.at distlists 7));;
+
+let h = Pl.create "foo.pdf" in
+  Pl.set_background_color h 255 255 255;
+  Pl.set_foreground_color h 0 0 0;
+  let _,n = Mat.shape ys in
+  for i=0 to (n-1) do 
+    Plot.plot ~h (Mat.col ys i) (Mat.row zs i)
+  done;
+  Pl.output h;;
+*)
