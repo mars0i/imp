@@ -146,9 +146,10 @@ let make_distlists size init_freqs fitn_list =
   make_distlists_from_mats tranmats init_dists
 
 (* Given a list of probability distribution vectors, tries to sort them
-   so that similar lists are close in the order.  
-   Uses Utils.difference_compare. *)
-let sort_dists dists = L.sort U.difference_compare dists
+   so that similar lists are close in the order. *) 
+let l2_sort_dists dists = L.sort U.l2_compare dists
+let simple_sort_dists dists = L.sort U.difference_compare dists
+let abs_sort_dists dists = L.sort U.absdiff_compare dists
 
 (** Make a series of n 3D plot pdfs from distlists using basename.
     Example:
@@ -193,7 +194,7 @@ let make_3D_pdfs ?(rows=1) ?(cols=1) ?(altitude=30.) ?(azimuth=125.) ?(every=1)
            Pl.set_ylabel h "freq of A allele";
            Pl.set_xlabel h "poss distributions";
            Pl.set_zlabel h "probability";
-           let xs, ys, zs = make_coords ~every (sort_dists page_group.(idx)) in
+           let xs, ys, zs = make_coords ~every (abs_sort_dists page_group.(idx)) in
            Pl.plots2d3d ~h ~color:(120, 40, 0) xs ys zs;) (* plot color *)
            (* Pl.mersh ~h xs ys zs;) *)
            (* Pl.mersh ~h ~opt:Plplot.([PL_DRAW_LINEY]) xs ys zs;) *) (* EXPERIMENTAL VERSION using my hacked mesh function *)
