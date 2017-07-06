@@ -118,10 +118,16 @@ let standard_compare m1 m2 =
 (* Owl.Mat.signum, which converts each element into its sign, i.e.
  * -1, 0, or 1, might also be useful below. *)
 
+let make_compare diff m1 m2 = 
+  let dif = diff m1 m2 in
+  if dif > 0.0 then 1
+  else if dif < 0.0 then -1
+  else 0
+
 (** Subtract mat2 from mat1 and sum the result.  A sort of poor person's
     non-normalized integral of the difference between the matrices
     (which might be vectors). *)
-let sumdist mat1 mat2 = M.(sum (mat1 - mat2))
+let sumdiff mat1 mat2 = M.(sum (mat1 - mat2))
 
 (** A compare function for matrices that determines whether the summed
     differences between corresponding matrix elements is negative, zero, 
@@ -129,11 +135,17 @@ let sumdist mat1 mat2 = M.(sum (mat1 - mat2))
     differences.  With this compare function, by contrast, a large
     difference on one value can override smaller differences on other
     values. *)
-let difference_compare m1 m2 =
-  let dif = sumdist m1 m2 in
-  if dif > 0.0 then 1
-  else if dif < 0.0 then -1
-  else 0
+let difference_compare = make_compare sumdiff
+
+let absdiff mat1 mat2 = M.(sum (abs (mat1 - mat2)))
+let absdiff_compare = make_compare absdiff
+
+(** L2 distance between mat1 and mat2: Subtract corresponding elements,
+    square the results, sum those, and take the square root of the sum. *)
+let l2diff mat1 mat2 = M.(l2norm (mat1 - mat2))
+
+(** A compare function for matrices based on the L2 distance. *)
+let l2_compare = make_compare l2diff
 
 (** Given a matrix return a narrower matrix in which each every_nth element
     in each row is present.  The intervening elements are ignored.  *)
