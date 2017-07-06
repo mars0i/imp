@@ -194,7 +194,7 @@ let make_3D_pdfs ?(rows=1) ?(cols=1) ?(altitude=30.) ?(azimuth=125.) ?(every=1)
            Pl.set_xlabel h "poss distributions";
            Pl.set_zlabel h "probability";
            let xs, ys, zs = make_coords ~every (sort_dists page_group.(idx)) in
-           Pl.plots2d_in_3d ~h ~color:(120, 40, 0) xs ys zs;) (* plot color *)
+           Pl.plots2d3d ~h ~color:(120, 40, 0) xs ys zs;) (* plot color *)
            (* Pl.mersh ~h xs ys zs;) *)
            (* Pl.mersh ~h ~opt:Plplot.([PL_DRAW_LINEY]) xs ys zs;) *) (* EXPERIMENTAL VERSION using my hacked mesh function *)
         else (* short group *)
