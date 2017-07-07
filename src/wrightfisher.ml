@@ -164,12 +164,35 @@ let group_fitns fitn_float_list =
     | _ -> raise (Failure "Missing/extra fitness(es)")
   in L.rev (loop fitn_float_list [])
 
+let plot_color = (120, 40, 0)
+
+(** Add a single 3D plot to handle h. To be used with make_3D_pdfs.  *)
+let add_3D_plot h altitude azimuth xs ys zs =
+  Pl.set_altitude h altitude;
+  Pl.set_azimuth h azimuth;
+  Pl.set_ylabel h "freq of A allele";
+  Pl.set_xlabel h "poss distributions";
+  Pl.set_zlabel h "probability";
+  Pl.plots2d3d ~h ~color:plot_color xs ys zs
+
+(** Add a single 2D plot to handle h. To be used with make_pdfs.  *)
+let add_2D_plot h ys zs =
+  Pl.set_xlabel h "freq of A allele";
+  Pl.set_ylabel h "probability";
+  let _, n = Mat.shape ys in
+  for i=0 to (n - 1) do 
+    Pl.plot ~h ~color:plot_color (Mat.col ys i) (Mat.row zs i)
+  done
+
+type pdfdims = TwoD | ThreeD | BothDs
+
 (** Make a series of n 3D plot pdfs from distlists using basename.
     Example:
     let distlists = make_distlists 500 [200] 
                   [{w11=1.0; w12=0.8; w22=0.7}; {w11=1.0; w12=0.3; w22=0.7}];;
-    make_3D_pdfs "distsN=500init=200w11=1w22=0.7w12=0.8or0.3gen" distlists 9;; *)
-let make_3D_pdfs ?(rows=1) ?(cols=1) ?(altitude=30.) ?(azimuth=125.) ?(every=1)
+    make_pdfs "distsN=500init=200w11=1w22=0.7w12=0.8or0.3gen" distlists 9;; *)
+(* Turned into spaghetti when I tried to add option of two different plots.  needs redoing. *)
+let make_pdfs ?(pdfdim=ThreeD) ?(rows=1) ?(cols=1) ?(altitude=30.) ?(azimuth=300.) ?(every=1)
                          basename start_gen last_gen distlists =
   let plots_per_page = rows * cols in
   let max_row, max_col = rows - 1, cols - 1 in
@@ -192,22 +215,32 @@ let make_3D_pdfs ?(rows=1) ?(cols=1) ?(altitude=30.) ?(azimuth=125.) ?(every=1)
     in
     let h = Pl.create ~m:rows ~n:cols filename in
     Pl.set_background_color h 255 255 255; (* applies to all subplots *)
+    let dum = Mat.create 1 1 0. in
+    let xs', ys', zs' = ref dum, ref dum, ref dum in
+    let idx = ref 0 in
+    let first_of_two = ref true in
     for row = 0 to max_row do
       for col = 0 to max_col do
         Pl.subplot h row col;
-        let idx = (row * cols) + col in  (* not rowS*cols *)
-        if idx < group_len then  (* don't index past end of a short group *)
-          (* These have to be repeated for each subplot: *)
+        if !idx < group_len then  (* don't index past end of a short group *)
           (Pl.set_foreground_color h 170 170 170; (* grid color *)
-           Pl.set_altitude h altitude;
-           Pl.set_azimuth h azimuth;
-           Pl.set_ylabel h "freq of A allele";
-           Pl.set_xlabel h "poss distributions";
-           Pl.set_zlabel h "probability";
-           let xs, ys, zs = make_coords ~every (abs_sort_dists page_group.(idx)) in
-           Pl.plots2d3d ~h ~color:(120, 40, 0) xs ys zs;) (* plot color *)
-           (* Pl.mersh ~h xs ys zs;) *)
-           (* Pl.mersh ~h ~opt:Plplot.([PL_DRAW_LINEY]) xs ys zs;) *) (* EXPERIMENTAL VERSION using my hacked mesh function *)
+             let xs, ys, zs = 
+               if !first_of_two then 
+                 make_coords ~every (abs_sort_dists page_group.(!idx))
+               else !xs', !ys', !zs' (* !xs' always contains a 1x1 dummy matrix in this case *)
+             in
+             match pdfdim, !first_of_two with
+             | BothDs, true -> ys' := ys; zs' := zs;
+                               add_3D_plot h altitude azimuth xs ys zs;
+                               first_of_two := false
+             | BothDs, false -> add_2D_plot h ys zs;
+                                first_of_two := true;
+                                idx := !idx + 1
+             | TwoD, _ -> add_2D_plot h ys zs;
+                          idx := !idx + 1
+             | ThreeD, _ -> add_3D_plot h altitude azimuth xs ys zs;
+                            idx := !idx + 1
+           )
         else (* short group *)
           (* Dummy plot to prevent plplot from leaving a spurious border: *)
           (Pl.set_foreground_color h 255 255 255; (* s/b same color as bg *)
@@ -218,24 +251,7 @@ let make_3D_pdfs ?(rows=1) ?(cols=1) ?(altitude=30.) ?(azimuth=125.) ?(every=1)
     Printf.printf "%s\n%!" filename
   in L.iteri make_pdf page_groups
 
-(* Use this if Owl starts adding titles to 3D plots:
-
+(* Use this if Owl starts adding titles to 3D plots (write now that doesn't work):
            let gen = start_gen + group_idx + idx in
            Pl.set_title h (Printf.sprintf "generation %d" gen);
  *) 
-
-(* 2D on 2D multiple plot example: *)
-(*
-let distlists = Wrightfisher.make_distlists 500 [250] [{w11=1.0; w12=0.6; w22=0.5}; {w11=0.9; w12=0.7; w22=0.5}];;
-
-let xs, ys, zs = Wrightfisher.make_coords (Wrightfisher.l2_sort_dists (Batteries.LazyList.at distlists 7));;
-
-let h = Pl.create "foo.pdf" in
-  Pl.set_background_color h 255 255 255;
-  Pl.set_foreground_color h 0 0 0;
-  let _,n = Mat.shape ys in
-  for i=0 to (n-1) do 
-    Plot.plot ~h (Mat.col ys i) (Mat.row zs i)
-  done;
-  Pl.output h;;
-*)
