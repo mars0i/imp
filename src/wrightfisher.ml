@@ -18,6 +18,9 @@ module U = Utils
 
 let ( *@ ) = Mat.( *@ )  (* = dot: matrix multiplication *)
 
+let is_odd n = n mod 2 <> 0
+let is_even n = n mod 2 = 0
+
 
 (** Return a lazy list that's a sublist of the argument, from element start 
     (zero-based) to element finish, inclusive. *)
@@ -186,6 +189,18 @@ let add_2D_plot h ys zs =
 
 type pdfdims = TwoD | ThreeD | BothDs
 
+let make_page_groups pdfdim plots_per_page finite_lazy_distlists =
+  let distlists = LL.to_list finite_lazy_distlists in
+  let distlists' = 
+    match pdfdim with (* if BothDs, we'll make 2 plots for each generation, so duplicate 'em *)
+    | BothDs -> L.concat (L.fold_right (fun e acc -> [e;e]::acc) 
+                                       distlists [])
+    | _ -> distlists
+  in
+  let page_group_lists = L.ntake plots_per_page distlists'
+  in L.map A.of_list page_group_lists  (* make sublists into arrays for easy indexing *)
+
+
 (** Make a series of n 3D plot pdfs from distlists using basename.
     Example:
     let distlists = make_distlists 500 [200] 
@@ -196,51 +211,46 @@ let make_pdfs ?(pdfdim=ThreeD) ?(rows=1) ?(cols=1) ?(altitude=30.) ?(azimuth=300
                          basename start_gen last_gen distlists =
   let plots_per_page = rows * cols in
   let max_row, max_col = rows - 1, cols - 1 in
-  (* Next convert distlists--an infinite lazylist of lists of vectors--
-   * into a list of arrays of lists of vectors, where the elements of each 
-   * rows*cols-length array are lists of vectors for one plot on a
-   * rows by cols sized page of plots. *)
+  let gens_per_page = match pdfdim with  (* BothDs means two different plots per generation *)
+                      | BothDs -> if is_odd plots_per_page 
+                                  then raise (Invalid_argument "Two plots per generation (pdfdim=BothDs) with odd plots per page.")
+                                  else plots_per_page / 2        (* Rarely makes sense and I don't want to handle the case: *)
+                      | _ -> plots_per_page
+  in
+  (* Next convert distlists--an infinite lazylist of lists of vectors--into a 
+   * list of arrays of lists of vectors, where the elements of each rows*cols
+   * length array are lists of vectors for a plot on rowsXcols sized page of plots. *)
   let finite_lazy_distlists = sub_lazy_list start_gen last_gen distlists in     (* lazy list of only those gens we want *)
-  let list_groups = L.ntake (rows * cols) (LL.to_list finite_lazy_distlists) in (* make previous into list and partition *)
-  let page_groups = L.map A.of_list list_groups in  (* make sublists into arrays for easy indexing *)
+  let page_groups = make_page_groups pdfdim plots_per_page finite_lazy_distlists in
   (* fn to be applied to each array of lists of vectors to create a page: *)
   let make_pdf group_idx page_group = 
     (* Construct filename from basename and generation numbers: *)
     let group_len = A.length page_group in  (* differs if last group is short *)
-    let group_start = start_gen + group_idx * plots_per_page in
-    let group_last  = group_start + group_len - 1 in
+    let group_start = start_gen + group_idx * gens_per_page in
+    let group_last  = group_start + gens_per_page - 1 in
     let filename = basename ^ 
                    (Printf.sprintf "%02dto%02d" group_start group_last ) ^
                    ".pdf"
     in
     let h = Pl.create ~m:rows ~n:cols filename in
     Pl.set_background_color h 255 255 255; (* applies to all subplots *)
-    let dum = Mat.create 1 1 0. in
-    let xs', ys', zs' = ref dum, ref dum, ref dum in
-    let idx = ref 0 in
     let first_of_two = ref true in
     for row = 0 to max_row do
       for col = 0 to max_col do
+        let idx = (row * cols) + col in  (* row not rows *)
         Pl.subplot h row col;
-        if !idx < group_len then  (* don't index past end of a short group *)
+        if idx < group_len then  (* don't index past end of a short group *)
           (Pl.set_foreground_color h 170 170 170; (* grid color *)
-             let xs, ys, zs = 
-               if !first_of_two then 
-                 make_coords ~every (abs_sort_dists page_group.(!idx))
-               else !xs', !ys', !zs' (* !xs' always contains a 1x1 dummy matrix in this case *)
-             in
-             match pdfdim, !first_of_two with
-             | BothDs, true -> ys' := ys; zs' := zs;
-                               add_3D_plot h altitude azimuth xs ys zs;
-                               first_of_two := false
-             | BothDs, false -> add_2D_plot h ys zs;
-                                first_of_two := true;
-                                idx := !idx + 1
-             | TwoD, _ -> add_2D_plot h ys zs;
-                          idx := !idx + 1
-             | ThreeD, _ -> add_3D_plot h altitude azimuth xs ys zs;
-                            idx := !idx + 1
-           )
+           let xs, ys, zs = make_coords ~every (l2_sort_dists page_group.(idx))
+           in
+           match pdfdim, !first_of_two with
+           | BothDs, true -> add_3D_plot h altitude azimuth xs ys zs;
+                             first_of_two := false
+           | BothDs, false -> add_2D_plot h ys zs;
+                              first_of_two := true;
+           | TwoD, _ -> add_2D_plot h ys zs;
+           | ThreeD, _ -> add_3D_plot h altitude azimuth xs ys zs;
+         )
         else (* short group *)
           (* Dummy plot to prevent plplot from leaving a spurious border: *)
           (Pl.set_foreground_color h 255 255 255; (* s/b same color as bg *)
