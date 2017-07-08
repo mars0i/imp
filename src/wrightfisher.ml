@@ -241,16 +241,23 @@ let make_pdfs ?(pdfdim=ThreeD) ?(rows=1) ?(cols=1) ?(altitude=30.) ?(azimuth=300
         Pl.subplot h row col;
         if idx < group_len then  (* don't index past end of a short group *)
           (Pl.set_foreground_color h 170 170 170; (* grid color *)
-           let xs, ys, zs = make_coords ~every (l2_sort_dists page_group.(idx))
-           in
-           match pdfdim, !first_of_two with
-           | BothDs, true -> add_3D_plot h altitude azimuth xs ys zs;
-                             first_of_two := false
-           | BothDs, false -> add_2D_plot h ys zs;
-                              first_of_two := true;
-           | TwoD, _ -> add_2D_plot h ys zs;
-           | ThreeD, _ -> add_3D_plot h altitude azimuth xs ys zs;
-         )
+           let xs, ys, zs = make_coords ~every (l2_sort_dists page_group.(idx)) in
+           (* gen: calculate generation, which I'm not providing elsewhere.
+            * pre_title: either a newline (for 3D) plots or an empty string, so that
+            * titles on 3D plots will be pushed down a bit.*)
+           let gen, pre_title = match pdfdim, !first_of_two with
+                               | BothDs, true -> add_3D_plot h altitude azimuth xs ys zs;
+                                                 first_of_two := false;
+                                                 group_start + (idx / 2), "\n"
+                               | BothDs, false -> add_2D_plot h ys zs;
+                                                  first_of_two := true;
+                                                 group_start + (idx / 2), ""
+                               | TwoD, _ -> add_2D_plot h ys zs;
+                                            group_start + idx, ""
+                               | ThreeD, _ -> add_3D_plot h altitude azimuth xs ys zs;
+                                              group_start + idx, "\n"
+           in Pl.set_title h (pre_title ^ (Printf.sprintf "Generation %d" gen))
+          )
         else (* short group *)
           (* Dummy plot to prevent plplot from leaving a spurious border: *)
           (Pl.set_foreground_color h 255 255 255; (* s/b same color as bg *)
