@@ -84,18 +84,6 @@ let take_to_list start finish ll =
 (** Return second dimension of a matrix or vector. *)
 let length m = snd (Mat.shape m)
 
-(* Make a series of n 2D plot pdfs from dists using basename. *)
-let make_2D_pdfs basename dists n =
-  let dist_length = length (LL.at dists 0) in
-  let xs = Mat.sequential 1 dist_length in (* vector of x-axis indices *)
-  let make_pdf i dist =
-    let filename = basename ^ (Printf.sprintf "%03d" i) ^ ".pdf" in
-    let h = Pl.create filename in 
-    Pl.set_yrange h 0.0 0.25;
-    Pl.scatter ~h xs dist; 
-    Pl.output h
-  in LL.iteri make_pdf (LL.take n dists)
-
 (** Return a triple containing x-coord, y-coord, and z-coord matrices.
     dist_list is a list of row vectors representing prob dists that will
     be concatenated into z coords.  Note that the x and y coord matrices
@@ -167,7 +155,7 @@ let group_fitns fitn_float_list =
     | _ -> raise (Failure "Missing/extra fitness(es)")
   in L.rev (loop fitn_float_list [])
 
-let plot_color = (120, 40, 0)
+let plot_color = Pl.RGB (120, 40, 0)
 
 (** Add a single 3D plot to handle h. To be used with make_3D_pdfs.  *)
 let add_3D_plot h altitude azimuth xs ys zs =
@@ -176,7 +164,7 @@ let add_3D_plot h altitude azimuth xs ys zs =
   Pl.set_ylabel h "freq of A allele";
   Pl.set_xlabel h "poss distributions";
   Pl.set_zlabel h "probability";
-  Pl.plots2d3d ~h ~color:plot_color xs ys zs
+  Pl.plots2d3d ~h ~spec:[plot_color] xs ys zs
 
 (** Add a single 2D plot to handle h. To be used with make_pdfs.  *)
 let add_2D_plot h ys zs =
@@ -184,7 +172,7 @@ let add_2D_plot h ys zs =
   Pl.set_ylabel h "probability";
   let _, n = Mat.shape ys in
   for i=0 to (n - 1) do 
-    Pl.plot ~h ~color:plot_color (Mat.col ys i) (Mat.row zs i)
+    Pl.plot ~h ~spec:[plot_color] (Mat.col ys i) (Mat.row zs i)
   done
 
 type pdfdims = TwoD | ThreeD | BothDs
@@ -268,7 +256,14 @@ let make_pdfs ?(pdfdim=ThreeD) ?(rows=1) ?(cols=1) ?(altitude=30.) ?(azimuth=300
     Printf.printf "%s\n%!" filename
   in L.iteri make_pdf page_groups
 
-(* Use this if Owl starts adding titles to 3D plots (write now that doesn't work):
-           let gen = start_gen + group_idx + idx in
-           Pl.set_title h (Printf.sprintf "generation %d" gen);
- *) 
+(* Make a series of n 2D plot pdfs from dists using basename. [DEPRECATED] *)
+let make_2D_pdfs basename dists n =
+  let dist_length = length (LL.at dists 0) in
+  let xs = Mat.sequential 1 dist_length in (* vector of x-axis indices *)
+  let make_pdf i dist =
+    let filename = basename ^ (Printf.sprintf "%03d" i) ^ ".pdf" in
+    let h = Pl.create filename in 
+    Pl.set_yrange h 0.0 0.25;
+    Pl.scatter ~h xs dist; 
+    Pl.output h
+  in LL.iteri make_pdf (LL.take n dists)
