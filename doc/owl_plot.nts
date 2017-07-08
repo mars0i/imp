@@ -81,3 +81,10 @@ remembers the col0 index that was in scope when it was called, and gets
 the RGB value from it at the time of plotting to figure out what color
 to use.  So the col0 index at the time of the `plbox3` call has to be
 different from the one used as the plotting color.
+
+================================
+
+re that Owl is plotting the z axis labels in wierd scientific notation
+in 2D plots.  I think this is because the returned numbers have many
+float bits.  Ways to control it might include plbox, plgzax and maybe
+others.
