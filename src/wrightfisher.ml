@@ -155,24 +155,46 @@ let group_fitns fitn_float_list =
     | _ -> raise (Failure "Missing/extra fitness(es)")
   in L.rev (loop fitn_float_list [])
 
-let plot_color = Pl.RGB (120, 40, 0)
+(*
+let plots2d3d h ?(spec=[]) x y z =
+  let new_spec = (Pl.Style3D [Plplot.PL_DRAW_LINEY])::spec in
+  Pl.mesh ~h ~spec:new_spec x y z
+
+let plots2d3d ?(h=_default_handle) ?(spec=[]) x y z =
+  let new_spec = (Style3D [Plplot.PL_DRAW_LINEY])::spec in
+  mesh ~h ~spec:new_spec x y z
+val plots2d3d : ?h:handle -> ?spec:spec list -> dsmat -> dsmat -> dsmat -> unit
+(** [plots2d3d] is a convenience function that treats [x] as indexes to
+    different 2D plots with domain in [y] and range in [z].  This allows 
+    one to display related 2D plots separated in space rather than overlaid
+    on a plane.  Can be recreated by adding [Style3D Plplot.([PL_DRAW_LINEY])] 
+    to [mesh]'s [spec] argument. 
+  
+    Parameters: [Contour], [Altitude], [Azimuth], [Style3D].
+ *)
+*)
+
+let plot_color = Pl.RGB (160, 40, 0)
 
 (** Add a single 3D plot to handle h. To be used with make_3D_pdfs.  *)
 let add_3D_plot h altitude azimuth xs ys zs =
-  Pl.set_altitude h altitude;
-  Pl.set_azimuth h azimuth;
-  Pl.set_ylabel h "freq of A allele";
-  Pl.set_xlabel h "poss distributions";
-  Pl.set_zlabel h "probability";
-  Pl.plots2d3d ~h ~spec:[plot_color] xs ys zs
+  let open Pl in
+  (* set_altitude h altitude; *)
+  (* set_azimuth h azimuth; *)
+  set_ylabel h "freq of A allele";
+  set_xlabel h "poss distributions";
+  set_zlabel h "probability";
+  mesh ~h ~spec:[plot_color; NoMagColor; ZLine Y; 
+                 Altitude altitude; Azimuth azimuth] xs ys zs
 
 (** Add a single 2D plot to handle h. To be used with make_pdfs.  *)
 let add_2D_plot h ys zs =
-  Pl.set_xlabel h "freq of A allele";
-  Pl.set_ylabel h "probability";
+  let open Pl in
+  set_xlabel h "freq of A allele";
+  set_ylabel h "probability";
   let _, n = Mat.shape ys in
   for i=0 to (n - 1) do 
-    Pl.plot ~h ~spec:[plot_color] (Mat.col ys i) (Mat.row zs i)
+    plot ~h ~spec:[plot_color] (Mat.col ys i) (Mat.row zs i)
   done
 
 type pdfdims = TwoD | ThreeD | BothDs
@@ -228,7 +250,7 @@ let make_pdfs ?(pdfdim=ThreeD) ?(rows=1) ?(cols=1) ?(altitude=30.) ?(azimuth=300
         let idx = (row * cols) + col in  (* row not rows *)
         Pl.subplot h row col;
         if idx < group_len then  (* don't index past end of a short group *)
-          (Pl.set_foreground_color h 170 170 170; (* grid color *)
+          (Pl.set_foreground_color h 100 100 100; (* grid color *)
            let xs, ys, zs = make_coords ~every (l2_sort_dists page_group.(idx)) in
            (* gen: calculate generation, which I'm not providing elsewhere.
             * pre_title: either a newline (for 3D) plots or an empty string, so that
