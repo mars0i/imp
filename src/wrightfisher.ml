@@ -210,14 +210,24 @@ let make_page_groups pdfdim plots_per_page finite_lazy_distlists =
   in L.map A.of_list page_group_lists  (* make sublists into arrays for easy indexing *)
 
 
+(* Turned into spaghetti when I tried to add option of two different plots.  needs redoing.
+ *)
 (** Make a series of n 3D plot pdfs from distlists using basename.
     Example:
-    let distlists = make_distlists 500 [200] 
-                  [{w11=1.0; w12=0.8; w22=0.7}; {w11=1.0; w12=0.3; w22=0.7}];;
-    make_pdfs "distsN=500init=200w11=1w22=0.7w12=0.8or0.3gen" distlists 9;; *)
-(* Turned into spaghetti when I tried to add option of two different plots.  needs redoing. *)
-let make_pdfs ?(pdfdim=ThreeD) ?(rows=1) ?(cols=1) ?(altitude=20.) ?(azimuth=300.) ?(every=1)
-                         basename start_gen last_gen distlists =
+      let distlists = make_distlists 500 [200] 
+                    [{w11=1.0; w12=0.8; w22=0.7}; {w11=1.0; w12=0.3; w22=0.7}];;
+      make_pdfs "foo" 4 5 distlists;; 
+    
+    leftright-true Lay out plots from left to right before down, vs down first
+    pdfdim=ThreeD  Make 3D plots, vs. TwoD for 2D or BothDs for both 3D and 2D
+    rows=1         Number of rows of plots in PDF
+    cols=1         Number of columns of plots in PDF
+    altitude=20.   Viewing position: altitude parameter to mesh, plmesh
+    azimuth=300.   Viewing position: azimuth parameter to mesh, plmesh
+    every=1        Sample data every k frequencies rather than all frequencies *)
+let make_pdfs ?(leftright=true) ?(pdfdim=ThreeD) ?(rows=1) ?(cols=1) 
+              ?(altitude=20.) ?(azimuth=300.) ?(every=1)
+              basename start_gen last_gen distlists =
   let plots_per_page = rows * cols in
   let max_row, max_col = rows - 1, cols - 1 in
   let gens_per_page = match pdfdim with  (* BothDs means two different plots per generation *)
@@ -237,19 +247,20 @@ let make_pdfs ?(pdfdim=ThreeD) ?(rows=1) ?(cols=1) ?(altitude=20.) ?(azimuth=300
     let group_len = A.length page_group in  (* differs if last group is short *)
     let group_start = start_gen + group_idx * gens_per_page in
     let group_last  = group_start + gens_per_page - 1 in
-    let filename = basename ^ 
-                   (Printf.sprintf "%02dto%02d" group_start group_last ) ^
-                   ".pdf"
+    let filename = (Printf.sprintf "%s%02dto%02d.pdf" basename group_start group_last)
     in
-    let h = Pl.create ~m:rows ~n:cols filename in
     Pl.set_background_color h 255 255 255; (* applies to all subplots *)
-    let first_of_two = ref true in
-    for row = 0 to max_row do
-      for col = 0 to max_col do
-        let idx = (row * cols) + col in  (* row not rows *)
-        Pl.subplot h row col;
+    let first_of_two = ref true in (* allows staying with one generation for BothDs *)
+    let max_i, max_j = if leftright then max_row, max_col else max_col, max_row in (* order left right vs up down *)
+    let h = Pl.create ~m:rows ~n:cols filename in
+    (* main loop through plots *)
+    for i = 0 to max_i do
+      for j = 0 to max_j do
+        let row, col = if leftright then i, j else j, i in (* order left right vs up down *)
+        let idx = (i * (max_j + 1)) + col in 
+        Pl.subplot h i j;
         if idx < group_len then  (* don't index past end of a short group *)
-          (Pl.set_foreground_color h 0 0 0; (* grid color *)
+          (Pl.set_foreground_color h 0 0 0; (* grid and plot title color *)
            let xs, ys, zs = make_coords ~every (l2_sort_dists page_group.(idx)) in
            (* gen: calculate generation, which I'm not providing elsewhere.
             * pre_title: either a newline (for 3D) plots or an empty string, so that
@@ -276,6 +287,7 @@ let make_pdfs ?(pdfdim=ThreeD) ?(rows=1) ?(cols=1) ?(altitude=20.) ?(azimuth=300
     Pl.output h;
     Printf.printf "%s\n%!" filename
   in L.iteri make_pdf page_groups
+
 
 (* Make a series of n 2D plot pdfs from dists using basename. [DEPRECATED] *)
 let make_2D_pdfs basename dists n =
