@@ -179,8 +179,6 @@ let plot_color = Pl.RGB (160, 40, 0)
 (** Add a single 3D plot to handle h. To be used with make_3D_pdfs.  *)
 let add_3D_plot h altitude azimuth xs ys zs =
   let open Pl in
-  (* set_altitude h altitude; *)
-  (* set_azimuth h azimuth; *)
   set_ylabel h "freq of A allele";
   set_xlabel h "poss distributions";
   set_zlabel h "probability";
@@ -192,6 +190,7 @@ let add_2D_plot h ys zs =
   let open Pl in
   set_xlabel h "freq of A allele";
   set_ylabel h "probability";
+  (* set_ydigits h 0;  default val of zero in my Owl is OK *) 
   let _, n = Mat.shape ys in
   for i=0 to (n - 1) do 
     plot ~h ~spec:[plot_color] (Mat.col ys i) (Mat.row zs i)
@@ -217,7 +216,7 @@ let make_page_groups pdfdim plots_per_page finite_lazy_distlists =
                   [{w11=1.0; w12=0.8; w22=0.7}; {w11=1.0; w12=0.3; w22=0.7}];;
     make_pdfs "distsN=500init=200w11=1w22=0.7w12=0.8or0.3gen" distlists 9;; *)
 (* Turned into spaghetti when I tried to add option of two different plots.  needs redoing. *)
-let make_pdfs ?(pdfdim=ThreeD) ?(rows=1) ?(cols=1) ?(altitude=30.) ?(azimuth=300.) ?(every=1)
+let make_pdfs ?(pdfdim=ThreeD) ?(rows=1) ?(cols=1) ?(altitude=20.) ?(azimuth=300.) ?(every=1)
                          basename start_gen last_gen distlists =
   let plots_per_page = rows * cols in
   let max_row, max_col = rows - 1, cols - 1 in
@@ -250,7 +249,7 @@ let make_pdfs ?(pdfdim=ThreeD) ?(rows=1) ?(cols=1) ?(altitude=30.) ?(azimuth=300
         let idx = (row * cols) + col in  (* row not rows *)
         Pl.subplot h row col;
         if idx < group_len then  (* don't index past end of a short group *)
-          (Pl.set_foreground_color h 100 100 100; (* grid color *)
+          (Pl.set_foreground_color h 0 0 0; (* grid color *)
            let xs, ys, zs = make_coords ~every (l2_sort_dists page_group.(idx)) in
            (* gen: calculate generation, which I'm not providing elsewhere.
             * pre_title: either a newline (for 3D) plots or an empty string, so that
