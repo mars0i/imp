@@ -190,7 +190,7 @@ let add_2D_plot h ys zs =
   let open Pl in
   set_xlabel h "freq of A allele";
   set_ylabel h "probability";
-  (* set_ydigits h 0;  default val of zero in my Owl is OK *) 
+  set_ydigits h 0;
   let _, n = Mat.shape ys in
   for i=0 to (n - 1) do 
     plot ~h ~spec:[plot_color] (Mat.col ys i) (Mat.row zs i)
