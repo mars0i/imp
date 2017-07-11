@@ -249,16 +249,16 @@ let make_pdfs ?(leftright=true) ?(pdfdim=ThreeD) ?(rows=1) ?(cols=1)
     let group_last  = group_start + gens_per_page - 1 in
     let filename = (Printf.sprintf "%s%02dto%02d.pdf" basename group_start group_last)
     in
-    Pl.set_background_color h 255 255 255; (* applies to all subplots *)
     let first_of_two = ref true in (* allows staying with one generation for BothDs *)
-    let max_i, max_j = if leftright then max_row, max_col else max_col, max_row in (* order left right vs up down *)
     let h = Pl.create ~m:rows ~n:cols filename in
+    Pl.set_background_color h 255 255 255; (* applies to all subplots *)
+    let max_i, max_j = if leftright then max_row, max_col else max_col, max_row in (* order left right vs up down *)
     (* main loop through plots *)
     for i = 0 to max_i do
       for j = 0 to max_j do
         let row, col = if leftright then i, j else j, i in (* order left right vs up down *)
-        let idx = (i * (max_j + 1)) + col in 
-        Pl.subplot h i j;
+        Pl.subplot h row col;
+        let idx = (i * (max_j + 1)) + j in 
         if idx < group_len then  (* don't index past end of a short group *)
           (Pl.set_foreground_color h 0 0 0; (* grid and plot title color *)
            let xs, ys, zs = make_coords ~every (l2_sort_dists page_group.(idx)) in
@@ -266,12 +266,12 @@ let make_pdfs ?(leftright=true) ?(pdfdim=ThreeD) ?(rows=1) ?(cols=1)
             * pre_title: either a newline (for 3D) plots or an empty string, so that
             * titles on 3D plots will be pushed down a bit.*)
            let gen, pre_title = match pdfdim, !first_of_two with
-                               | BothDs, true -> add_3D_plot h altitude azimuth xs ys zs;
+                               | BothDs, true -> add_2D_plot h ys zs;
                                                  first_of_two := false;
-                                                 group_start + (idx / 2), "\n"
-                               | BothDs, false -> add_2D_plot h ys zs;
-                                                  first_of_two := true;
                                                  group_start + (idx / 2), ""
+                               | BothDs, false -> add_3D_plot h altitude azimuth xs ys zs;
+                                                  first_of_two := true;
+                                                 group_start + (idx / 2), "\n"
                                | TwoD, _ -> add_2D_plot h ys zs;
                                             group_start + idx, ""
                                | ThreeD, _ -> add_3D_plot h altitude azimuth xs ys zs;
