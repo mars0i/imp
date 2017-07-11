@@ -29,8 +29,8 @@ STARTGEN LASTGEN: First and last generations for which to generate PDFs.
     w11 (AA homozygote), w12 (heterozygote), w22 (BB heterozygote)
 At least one triple is required (despite brackets above).
 
-Example: %s foo 500 250 2 6  1.0 0.95 0.8  0.8 0.95 1.0
-" (Filename.basename(Sys.executable_name))
+Example: %s foo 500 250 2 6  1.0 0.95 0.8  0.8 0.95 1.0"
+(Filename.basename(Sys.executable_name))
 
 
 let default_alt = 30
@@ -41,6 +41,7 @@ let az_docstring =  sprintf "integer aZimuth of perspective: degrees in in [0,36
 let rows_docstring = sprintf "integer number of rows for multi-plot pages (default %d)" 1
 let cols_docstring = sprintf "integer number of columns for multi-plot pages (default %d)" 1
 let every_docstring = sprintf "integer plot only at every nth frequency (default %d)" 1
+let threeDtwoD_docstring = "-2: make 2D plots; -3: make 3D plots; both: 2D, 3D side-by-side (default 3D)"
 
 let commandline =
   Command.basic
@@ -51,17 +52,23 @@ let commandline =
                 +> flag "-r" (optional_with_default 1 int) ~doc:rows_docstring
                 +> flag "-c" (optional_with_default 1 int) ~doc:cols_docstring
                 +> flag "-e" (optional_with_default 1 int) ~doc:every_docstring
+                +> flag "-2" no_arg ~doc:threeDtwoD_docstring
+                +> flag "-3" no_arg ~doc:threeDtwoD_docstring
                 +> anon ("basename" %: string)
                 +> anon ("popsize" %: int)
                 +> anon ("initfreq" %: int)
                 +> anon ("startgen" %: int)
                 +> anon ("lastgen" %: int)
                 +> anon (sequence ("fitn" %: float)))
-    (fun alt_int az_int rows cols every basename popsize initfreq startgen lastgen fitn_floats () ->
+    (fun alt_int az_int rows cols every twoD threeD basename popsize initfreq startgen lastgen fitn_floats () ->
       let altitude = float alt_int in
       let azimuth = float az_int in
       let fitn_recs = WF.group_fitns fitn_floats in
       let distlists = WF.make_distlists popsize [initfreq] fitn_recs in
-      WF.make_pdfs ~rows ~cols ~altitude ~azimuth ~every basename startgen lastgen distlists)
+      let pdfdim = match twoD, threeD with
+                   | true, true   -> WF.BothDs
+                   | true, false  -> WF.TwoD
+                   | false, true | false, false -> WF.ThreeD (* default *)
+      in WF.make_pdfs ~rows ~cols ~altitude ~azimuth ~every ~pdfdim basename startgen lastgen distlists)
 
 let () = Command.run ~version:"1.1" ~build_info:"wrightfisherPDFS, (c) 2017 Marshall Abrams" commandline
