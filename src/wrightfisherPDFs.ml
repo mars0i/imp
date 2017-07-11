@@ -33,8 +33,8 @@ Example: %s foo 500 250 2 6  1.0 0.95 0.8  0.8 0.95 1.0"
 (Filename.basename(Sys.executable_name))
 
 
-let default_alt = 30
-let default_az = 125
+let default_alt = 20
+let default_az = 300
 
 let alt_docstring = sprintf "integer aLtitude of perspective: degrees in [0,90] (default: %d)"  default_alt
 let az_docstring =  sprintf "integer aZimuth of perspective: degrees in in [0,360] (default: %d)" default_az
