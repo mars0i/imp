@@ -224,7 +224,10 @@ let make_page_groups pdfdim plots_per_page finite_lazy_distlists =
     cols=1         Number of columns of plots in PDF
     altitude=20.   Viewing position: altitude parameter to mesh, plmesh
     azimuth=300.   Viewing position: azimuth parameter to mesh, plmesh
-    every=1        Sample data every k frequencies rather than all frequencies *)
+    every=1        Sample data every k frequencies rather than all frequencies 
+    
+    Note will throw an error if you try to make 3D plots with only one set of 
+    input fitnesses. *)
 let make_pdfs ?(leftright=true) ?(pdfdim=ThreeD) ?(rows=1) ?(cols=1) 
               ?(altitude=20.) ?(azimuth=300.) ?(every=1)
               basename start_gen last_gen distlists =
