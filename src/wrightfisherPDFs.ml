@@ -40,9 +40,10 @@ let alt_docstring = sprintf "integer aLtitude of perspective: degrees in [0,90] 
 let az_docstring =  sprintf "integer aZimuth of perspective: degrees in in [0,360] (default: %d)" default_az
 let rows_docstring = sprintf "integer number of rows for multi-plot pages (default %d)" 1
 let cols_docstring = sprintf "integer number of columns for multi-plot pages (default %d)" 1
+let plot_max_docstring = "If present, float argument sets max height for all plots."
 let every_docstring = sprintf "integer plot only at every nth frequency (default %d)" 1
 let threeDtwoD_docstring = "-2: make 2D plots; -3: make 3D plots; both: 2D, 3D side-by-side (default 3D)"
-let updown_docstring = "If present lay out plots top to bottom then next column, vs left to right"
+let updown_docstring = "If present lay out plots top to bottom then next column, vs left to right."
 
 let commandline =
   Command.basic
@@ -52,6 +53,7 @@ let commandline =
                 +> flag "-z" (optional_with_default default_az int)  ~doc:az_docstring
                 +> flag "-r" (optional_with_default 1 int) ~doc:rows_docstring
                 +> flag "-c" (optional_with_default 1 int) ~doc:cols_docstring
+                +> flag "-m" (optional float) ~doc:plot_max_docstring
                 +> flag "-e" (optional_with_default 1 int) ~doc:every_docstring
                 +> flag "-2" no_arg ~doc:threeDtwoD_docstring
                 +> flag "-3" no_arg ~doc:threeDtwoD_docstring
@@ -62,7 +64,7 @@ let commandline =
                 +> anon ("startgen" %: int)
                 +> anon ("lastgen" %: int)
                 +> anon (sequence ("fitn" %: float)))
-    (fun alt_int az_int rows cols every twoD threeD updown basename popsize initfreq startgen lastgen fitn_floats () ->
+    (fun alt_int az_int rows cols plot_max every twoD threeD updown basename popsize initfreq startgen lastgen fitn_floats () ->
       let altitude = float alt_int in
       let azimuth = float az_int in
       let fitn_recs = WF.group_fitns fitn_floats in
@@ -71,6 +73,6 @@ let commandline =
                    | true, true   -> WF.BothDs
                    | true, false  -> WF.TwoD
                    | false, true | false, false -> WF.ThreeD (* default *)
-      in WF.make_pdfs ~rows ~cols ~altitude ~azimuth ~every ~pdfdim ~leftright:(not updown) basename startgen lastgen distlists)
+      in WF.make_pdfs ~rows ~cols ~altitude ~azimuth ~every ~pdfdim ?plot_max ~leftright:(not updown) basename startgen lastgen distlists)
 
 let () = Command.run ~version:"1.1" ~build_info:"wrightfisherPDFS, (c) 2017 Marshall Abrams" commandline
