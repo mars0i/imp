@@ -40,10 +40,11 @@ let alt_docstring = sprintf "integer aLtitude of perspective: degrees in [0,90] 
 let az_docstring =  sprintf "integer aZimuth of perspective: degrees in in [0,360] (default: %d)" default_az
 let rows_docstring = sprintf "integer number of rows for multi-plot pages (default %d)" 1
 let cols_docstring = sprintf "integer number of columns for multi-plot pages (default %d)" 1
-let plot_max_docstring = "If present, float argument sets max height for all plots."
+let plot_max_docstring = "float If present, sets max height for all plots."
 let every_docstring = sprintf "integer plot only at every nth frequency (default %d)" 1
-let threeDtwoD_docstring = "-2: make 2D plots; -3: make 3D plots; both: 2D, 3D side-by-side (default 3D)"
-let updown_docstring = "If present lay out plots top to bottom then next column, vs left to right."
+let twoD_docstring = "make 2D plots; with -3 make 2D and 3D side-by-side (default 3D)"
+let threeD_docstring = "make 3D plots; with -2 make 2D and 3D side-by-side (default 3D)"
+let updown_docstring = "If present arrange plots top bottom right; vs left right down."
 
 let commandline =
   Command.basic
@@ -55,8 +56,8 @@ let commandline =
                 +> flag "-c" (optional_with_default 1 int) ~doc:cols_docstring
                 +> flag "-m" (optional float) ~doc:plot_max_docstring
                 +> flag "-e" (optional_with_default 1 int) ~doc:every_docstring
-                +> flag "-2" no_arg ~doc:threeDtwoD_docstring
-                +> flag "-3" no_arg ~doc:threeDtwoD_docstring
+                +> flag "-2" no_arg ~doc:twoD_docstring
+                +> flag "-3" no_arg ~doc:threeD_docstring
                 +> flag "-u" no_arg ~doc:updown_docstring
                 +> anon ("basename" %: string)
                 +> anon ("popsize" %: int)
