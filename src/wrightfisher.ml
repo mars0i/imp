@@ -168,11 +168,14 @@ let make_page_groups pdfdim plots_per_page finite_lazy_distlists =
   let page_group_lists = L.ntake plots_per_page distlists'
   in L.map A.of_list page_group_lists  (* make sublists into arrays for easy indexing *)
 
+let default_fontsize = 3.25
 let plot_color = Pl.RGB (160, 40, 0)
 
 (** Add a single 3D plot to handle h. To be used with make_3D_pdfs.  *)
-let add_3D_plot ?plot_max h altitude azimuth xs ys zs =
+let add_3D_plot ?plot_max ?fontsize h altitude azimuth xs ys zs =
   let open Pl in
+  let size = match fontsize with | Some x -> x | None -> default_fontsize in
+  set_font_size h size;
   set_ylabel h "freq of A allele";
   set_xlabel h "poss distributions";
   set_zlabel h "probability";
@@ -183,8 +186,10 @@ let add_3D_plot ?plot_max h altitude azimuth xs ys zs =
   | None -> ()
 
 (** Add a single 2D plot to handle h. To be used with make_pdfs.  *)
-let add_2D_plot ?plot_max h ys zs =
+let add_2D_plot ?plot_max ?fontsize h ys zs =
   let open Pl in
+  let size = match fontsize with | Some x -> x | None -> default_fontsize in
+  set_font_size h size;
   set_xlabel h "freq of A allele";
   set_ylabel h "probability";
   set_ydigits h 50;
@@ -216,7 +221,7 @@ let add_2D_plot ?plot_max h ys zs =
     Note will throw an error if you try to make 3D plots with only one set of 
     input fitnesses. *)
 let make_pdfs ?(leftright=true) ?(pdfdim=ThreeD) ?(rows=1) ?(cols=1) 
-              ?(altitude=20.) ?(azimuth=300.) ?(every=1) ?plot_max
+              ?(altitude=20.) ?(azimuth=300.) ?(every=1) ?plot_max ?fontsize
               basename start_gen last_gen distlists =
   let plots_per_page = rows * cols in
   let max_row, max_col = rows - 1, cols - 1 in
@@ -256,15 +261,15 @@ let make_pdfs ?(leftright=true) ?(pdfdim=ThreeD) ?(rows=1) ?(cols=1)
             * pre_title: either a newline (for 3D) plots or an empty string, so that
             * titles on 3D plots will be pushed down a bit.*)
            let gen, pre_title = match pdfdim, !first_of_two with
-                               | BothDs, true  -> add_2D_plot ?plot_max h ys zs;
+                               | BothDs, true  -> add_2D_plot ?plot_max ?fontsize h ys zs;
                                                   first_of_two := false;
                                                   group_start + (idx / 2), ""
-                               | BothDs, false -> add_3D_plot ?plot_max h altitude azimuth xs ys zs;
+                               | BothDs, false -> add_3D_plot ?plot_max ?fontsize h altitude azimuth xs ys zs;
                                                   first_of_two := true;
                                                   group_start + (idx / 2), "\n"
-                               | TwoD, _       -> add_2D_plot ?plot_max h ys zs;
+                               | TwoD, _       -> add_2D_plot ?plot_max ?fontsize h ys zs;
                                                   group_start + idx, ""
-                               | ThreeD, _     -> add_3D_plot ?plot_max h altitude azimuth xs ys zs;
+                               | ThreeD, _     -> add_3D_plot ?plot_max ?fontsize h altitude azimuth xs ys zs;
                                                   group_start + idx, "\n"
            in Pl.set_title h (pre_title ^ (Printf.sprintf "Generation %d" gen))
           )
