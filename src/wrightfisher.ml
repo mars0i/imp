@@ -27,6 +27,18 @@ let is_even n = n mod 2 = 0
 let sub_lazy_list start finish ll =
   LL.take (finish - start + 1) (LL.drop start ll)
 
+let lazy_take_at_idxs ns ll =
+  let f acc elt =
+    let i, ns', ll' = acc in
+    match ns' with
+    | [] -> acc
+    | n::nstl -> if i = n
+                 then (i+1, nstl, LL.cons elt ll')
+                 else (i+1, ns', ll')
+  in
+  let _, _, result = LL.fold_left f (0, ns, LL.nil) ll in
+  LL.rev result
+
 let make_init_dist allele_popsize a1count =
   let m = Mat.zeros 1 (allele_popsize + 1) in
   Mat.set m 0 a1count 1.0;
