@@ -121,8 +121,8 @@ let make_coords ?(every=1) dist_list =
     probability distributions produced by multiplying all
     distributions by all matrices. *)
 let next_dists tranmats dists =
-  (dists, L.concat (L.map (fun dist -> L.map (Mat.dot dist) tranmats)
-                          dists))
+  (dists, LL.concat (LL.map (fun dist -> LL.map (Mat.dot dist) tranmats)
+                            dists))
 
 (** Given a list of transition matrices and a list of initial distributions
     (often one distribution with all weight on one frequency),
@@ -135,7 +135,7 @@ let next_dists tranmats dists =
     will produce 2**1 = 2 dists.  Or with more initial distributions, the
     number of dists at n is (length init_dists) * (length tranmats)**n . *)
 let make_distlists_from_mats tranmats init_dists =
-  LL.from_loop init_dists (next_dists tranmats)
+  LL.from_loop (LL.of_list init_dists) (next_dists (LL.of_list tranmats))
 
 (** Like make_distlists_from_mats, but uses basic parameters to generate the transition
     matrices and initial distributions that are arguments to make_distslists.
