@@ -109,12 +109,17 @@ let make_coords ?(every=1) dist_list =
   let dist_list' = L.map (U.subsample_in_rows every) dist_list in (* identical if every=1 *)
   let (_, width) = Mat.shape (L.hd dist_list') in
   let height = L.length dist_list' in
-  let everyf = float every in
-  (* possibly replace next two lines with Mat.meshgrid, but need to make effect of everyf *)
+  let widthf, heightf, everyf = float width, float height, float every in
+  (* old version:
   let xs = Mat.repeat ~axis:0 (Mat.sequential 1 height) width in
   let ys = Mat.repeat ~axis:1 (Mat.sequential ~step:everyf width 1) height in (* step so freqs match z vals if every>1 *)
+  *)
+  (* new version: *)
+  let xs, ys = Mat.meshgrid 0. (heightf -. 1.)  0. ((widthf *. everyf) -. everyf)  height width in
   let zs = Mat.transpose (L.reduce Mat.concat_vertical dist_list') in
   (xs, ys, zs)
+(* QUESTION: does using meshgrid obviate the need for set_ydigits below?
+   Are there other advantages/disadvantages of meshgrid?  (It's harder to understand.) *)
 
 
 (** Given a list of transition matrices, mats, and a list of
