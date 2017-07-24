@@ -199,7 +199,7 @@ let add_3D_plot ?plot_max ?fontsize h altitude azimuth xs ys zs =
   | None -> ()
 
 (* Kludge to allow running with vanilla Owl that doesn't include it: *)
-let set_ydigits h n = ()
+(* let set_ydigits h n = () *)
 
 (** Add a single 2D plot to handle h. To be used with make_pdfs.  *)
 let add_2D_plot ?plot_max ?fontsize h ys zs =
