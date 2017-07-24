@@ -110,9 +110,10 @@ let make_coords ?(every=1) dist_list =
   let (_, width) = Mat.shape (L.hd dist_list') in
   let height = L.length dist_list' in
   let everyf = float every in
+  (* possibly replace next two lines with Mat.meshgrid, but need to make effect of everyf *)
   let xs = Mat.repeat ~axis:0 (Mat.sequential 1 height) width in
   let ys = Mat.repeat ~axis:1 (Mat.sequential ~step:everyf width 1) height in (* step so freqs match z vals if every>1 *)
-  let zs = L.reduce Mat.concat_vertical dist_list' in
+  let zs = Mat.transpose (L.reduce Mat.concat_vertical dist_list') in
   (xs, ys, zs)
 
 
@@ -197,8 +198,8 @@ let add_3D_plot ?plot_max ?fontsize h altitude azimuth xs ys zs =
   | Some z -> Pl.set_zrange h 0. z
   | None -> ()
 
-(* Can be used to run with vanilla Owl that doesn't include it: *)
-(* let set_ydigits h n = () *)
+(* Kludge to allow running with vanilla Owl that doesn't include it: *)
+let set_ydigits h n = ()
 
 (** Add a single 2D plot to handle h. To be used with make_pdfs.  *)
 let add_2D_plot ?plot_max ?fontsize h ys zs =
