@@ -211,7 +211,7 @@ let add_2D_plot ?plot_max ?fontsize h ys zs =
   set_ydigits h 50;
   let _, n = Mat.shape ys in
   for i=0 to (n - 1) do 
-    plot ~h ~spec:[plot_color] (Mat.col ys i) (Mat.row zs i);
+    plot ~h ~spec:[plot_color] (Mat.col ys i) (Mat.col zs i);
     match plot_max with
     | Some y -> Pl.set_yrange h 0. y
     | None -> ()
