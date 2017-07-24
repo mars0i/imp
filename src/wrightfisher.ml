@@ -197,6 +197,9 @@ let add_3D_plot ?plot_max ?fontsize h altitude azimuth xs ys zs =
   | Some z -> Pl.set_zrange h 0. z
   | None -> ()
 
+(* Can be used to run with vanilla Owl that doesn't include it: *)
+(* let set_ydigits h n = () *)
+
 (** Add a single 2D plot to handle h. To be used with make_pdfs.  *)
 let add_2D_plot ?plot_max ?fontsize h ys zs =
   let open Pl in
