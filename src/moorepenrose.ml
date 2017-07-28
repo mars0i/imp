@@ -19,10 +19,7 @@ let pinv mat =
   let rows, cols = shape mat in
   let v, ut = ctranspose vt, ctranspose u in
   let sigma_plus = pinv_diag s rows cols in
-  let (x1, y1), (x2, y2), (x3, y3) = shape v, shape sigma_plus, shape ut in
-  Printf.printf "(%d, %d); (%d, %d); (%d, %d)\n" x1 y1 x2 y2 x3 y3;
+  (* let (x1, y1), (x2, y2), (x3, y3) = shape v, shape sigma_plus, shape ut in
+  Printf.printf "(%d, %d); (%d, %d); (%d, %d)\n" x1 y1 x2 y2 x3 y3; *)
   v *@ sigma_plus *@ ut
-  (*
-  (ctranspose vt) *@ (pinv_diag s rows cols) *@ (ctranspose u)
-  *)
 
