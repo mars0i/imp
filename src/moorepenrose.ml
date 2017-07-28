@@ -1,32 +1,28 @@
 module Mat = Owl.Mat
 module Lin = Owl.Linalg.Generic
 
-let non_diag_elts m =
-  let open Mat in
-  (triu ~k:1 m) + (tril ~k:(-1) m)
-
-let is_diag m =
-  let a, b = Mat.shape m in
-  if a <> b then raise (Failure "is_diag: Matrix is not square.");
-  0. = Mat.sum (non_diag_elts m);;
-
 (** Moore-Penrose inverse for diagonal matrices:
     https://en.wikipedia.org/wiki/Moore%E2%80%93Penrose_pseudoinverse#Singular_value_decomposition_.28SVD.29 *)
-let diag_pinv m =
-  let a, b = Mat.shape m in
-  if a <> b then raise (Failure "diag_pinv: Matrix is not square.");
-  if not (is_diag m) then raise (Failure "diag_pinv: Matrix is not diagonal.");
-  let m' = Mat.clone m in
-  for i = 0 to a do
-    let elt = Mat.get m' i i in
-    if elt <> 0. then Mat.set m' i i (1. /. elt);
-  done;
-  (Mat.ctranspose m')
+let pinv_diag s rows cols =
+  let _, len = Mat.shape s in
+  let s' = Mat.(1. $/ s) in
+  let diag_stub = Mat.diagm s' in
+  (* pad diag_stub so that it has dims cols x rows (to transpose it): *)
+  Mat.pad [[0; cols - len];[0; rows - len]] diag_stub
+
 
 (** Moore-Penrose pseudoinverse:
     https://en.wikipedia.org/wiki/Moore%E2%80%93Penrose_pseudoinverse#Singular_value_decomposition_.28SVD.29 *)
-let pinv m =
-  let u, s, vt = Lin.svd m in
+let pinv mat =
+  let u, s, vt = Lin.svd ~thin:false mat in
   let open Mat in
-  (ctranspose vt) *@ (diag_pinv s) *@ (ctranspose u)
+  let rows, cols = shape mat in
+  let v, ut = ctranspose vt, ctranspose u in
+  let sigma_plus = pinv_diag s rows cols in
+  let (x1, y1), (x2, y2), (x3, y3) = shape v, shape sigma_plus, shape ut in
+  Printf.printf "(%d, %d); (%d, %d); (%d, %d)\n" x1 y1 x2 y2 x3 y3;
+  v *@ sigma_plus *@ ut
+  (*
+  (ctranspose vt) *@ (pinv_diag s rows cols) *@ (ctranspose u)
+  *)
 
