@@ -87,3 +87,16 @@ let mat_vertices ?digits ?uniq p q =
   let vec_verts = L.map2 (vec2vec_vertices ?digits ?uniq) p_rows q_rows in   (* A list of lists of vectors. Each list reps row vertices for one row *)
   let vec_vert_arrays = L.map A.of_list (L.n_cartesian_product vec_verts) in (* list of (ordered) arrays of vectors rep'ing rows of vertex matrices *)
   L.map M.of_rows vec_vert_arrays
+
+
+
+(** Example 2.10 *)
+
+let mp  = M.of_array [|0.35; 0.55; 0.25; 0.65|] 2 2;;
+let mq  = M.of_array [|0.45; 0.65; 0.35; 0.75|] 2 2;;
+let s0p = M.of_array [|0.4; 0.5|] 1 2;;
+let s0q = M.of_array [|0.5; 0.6|] 1 2;;
+let m = [mp; mq];;
+let s0 = [s0p; s0q];;
+
+
