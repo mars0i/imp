@@ -1,3 +1,5 @@
+(** superceded by Owl.Linalg.Generic.pinv *)
+
 module Mat = Owl.Mat
 module Lin = Owl.Linalg.Generic
 
