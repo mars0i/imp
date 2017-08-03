@@ -217,8 +217,8 @@ let mat_from_int_lists ls =
 
 (*********** Ways to process matrices **********)
 
-(** Apply f to all combinations of elements in xs and ys using fold_right.  
-    Preserves order. *)
+(** Apply f to all combinations of elements, i.e. to the Cartesian product of
+    all elements in xs and ys using fold_right.  Preserves order. *)
 let cross_apply f xs ys =
   L.fold_right (fun x xacc -> L.fold_right
                    (fun y yacc -> (f x y)::yacc)
