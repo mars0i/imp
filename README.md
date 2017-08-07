@@ -37,12 +37,12 @@ You will need to have installed opam and OCaml, and will need to use
 opam to install the libraries Batteries, (Jane Street's) Core, and
 Owl.
 
-**src/wrightfisherPDFs.ml**: The above make invocation will also create
+**src/wrightfisherPDFs.ml**: The above `make` invocation will also create
 an executable that will run the Wright-Fisher simulation(s) and
 generate PDF files.  (Restricted to a single intitial frequency.)  A
 link to the executable named (probably) "wrightfisherPDFs.native" will
 be generated as well.  Run it to see possible arguments and command
 line options.
 
-*src/setchains.ml* contains code specifically inspired by Hartiel's
+**src/setchains.ml** contains code specifically inspired by Hartiel's
 *Markov Set-Chains*, Springer 1998.
