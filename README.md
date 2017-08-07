@@ -1,6 +1,6 @@
 # imp
 Miscellaneous experiments with imprecise probability in OCaml, with
-particular interested in modeling evolutionary processes in which
+a particular focus on modeling evolutionary processes in which
 probabilities are imprecise.
 
 The following will not be self-explanatory for all readers.  At some
