@@ -6,6 +6,7 @@ module L = Batteries.List
 module A = Batteries.Array
 module M = Owl.Mat
 module U = Utils
+module Pm = Probmat
 
 (** Given two lists of length n, return a list containing the 2^n lists
     containing each combination of elements from p and q at the same indices.
@@ -89,6 +90,11 @@ let mat_vertices ?digits ?uniq p q =
   L.map M.of_rows vec_vert_arrays
 
 
+(* Find vertices of a list of 2D stochastic vectors *)
+(* TODO
+let twoD_vertices vs =
+  calculate min and max of first coord, or mins of each coord.
+  *)
 
 (** Example 2.10 *)
 
@@ -99,4 +105,10 @@ let s0q = M.of_array [|0.5; 0.6|] 1 2;;
 let m = [mp; mq];;
 let s0 = [s0p; s0q];;
 
+let m_verts = mat_vertices ~uniq:true ~digits:3 mp mq;;
+let s0_verts = mat_vertices ~uniq:true ~digits:3 s0p s0q;;
 
+let w1 = Pm.cross_apply M.dot s0_verts m_verts;;  (* dot = ( *@ )  *)
+let s1_verts = [(L.last w1); (L.first w1)];;  (* (0.29, 0.71), (0.4, 0.6); see Hartfiel *)
+
+let w2 = Pm.cross_apply M.dot s1_verts m_verts;;
