@@ -44,5 +44,5 @@ link to the executable named (probably) "wrightfisherPDFs.native" will
 be generated as well.  Run it to see possible arguments and command
 line options.
 
-**src/setchains.ml** contains code specifically inspired by Hartiel's
+**src/setchains.ml** contains code specifically inspired by Hartfiel's
 *Markov Set-Chains*, Springer 1998.
