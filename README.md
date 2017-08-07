@@ -3,10 +3,11 @@ Miscellaneous experiments with imprecise probability in OCaml, with
 particular interested in modeling evolutionary processes in which
 probabilities are imprecise.
 
-The following is not all self-explanatory.  Please feel free to write
-to me for clarification.
+The following will not be self-explanatory for all readers.  At some
+future date I may add further information.  Please don't hesitate to
+write to me for clarification or additional information.
 
-*src/wrightfisher.ml* implements a diploid, single-locus Wright-Fisher
+**src/wrightfisher.ml** implements a diploid, single-locus Wright-Fisher
 model with random mating and natural selection, using (discrete, not
 continuous) sets of fitnesses, transition matrices, and initial
 frequencies.  Plots of probability distributions at time t are easily
@@ -36,7 +37,7 @@ You will need to have installed opam and OCaml, and will need to use
 opam to install the libraries Batteries, (Jane Street's) Core, and
 Owl.
 
-*src/wrightfisherPDFs.ml*: The above make invocation will also create
+**src/wrightfisherPDFs.ml**: The above make invocation will also create
 an executable that will run the Wright-Fisher simulation(s) and
 generate PDF files.  (Restricted to a single intitial frequency.)  A
 link to the executable named (probably) "wrightfisherPDFs.native" will
