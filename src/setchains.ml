@@ -8,6 +8,34 @@ module M = Owl.Mat
 module U = Utils
 module Pm = Probmat
 
+let tighten_one_coord relation idx this_vec other_vec =
+  let this_elt = Mat.get this_vec 0 idx in
+  let f _ i acc elt =  (* sum other_vec only at other idxes *)
+    if i = idx then acc else acc +. elt in
+  let other_sum = M.foldi f 0. other_vec in
+  if relation (other_sum +. this_elt) 1. then this_elt
+  else 1. -. other_sum
+
+let tighten_vec relation this_vec other_vec
+  let n = Mat.length this_vec in
+  let tight_vec = Mat.create 1 n in
+  for i = 0 to (n - 1) do
+    Mat.set tight_vec 0 i (tighten_one_coord relation i this_vec other_vec)
+  done
+
+let tighten_vec_interval p q =
+  let p' = tighten_vec (>=) p q in
+  let q' = tighten_vec (<=) q p in
+  [p; q]
+
+let tighten_interval pq =
+  match pq with
+  | p::q::[] -> tighten_vec_interval p q
+  | _ -> raise (Failure "Not an interval.")
+
+(* TODO add matrix interval tightener. *)
+  
+
 (** Given two lists of length n, return a list containing the 2^n lists
     containing each combination of elements from p and q at the same indices.
     e.g.
