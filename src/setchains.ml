@@ -8,33 +8,8 @@ module M = Owl.Mat
 module U = Utils
 module Pm = Probmat
 
-let tighten_one_coord relation idx this_vec other_vec =
-  let this_elt = Mat.get this_vec 0 idx in
-  let f _ i acc elt =  (* sum other_vec only at other idxes *)
-    if i = idx then acc else acc +. elt in
-  let other_sum = M.foldi f 0. other_vec in
-  if relation (other_sum +. this_elt) 1. then this_elt
-  else 1. -. other_sum
-
-let tighten_vec relation this_vec other_vec
-  let n = Mat.length this_vec in
-  let tight_vec = Mat.create 1 n in
-  for i = 0 to (n - 1) do
-    Mat.set tight_vec 0 i (tighten_one_coord relation i this_vec other_vec)
-  done
-
-let tighten_vec_interval p q =
-  let p' = tighten_vec (>=) p q in
-  let q' = tighten_vec (<=) q p in
-  [p; q]
-
-let tighten_interval pq =
-  match pq with
-  | p::q::[] -> tighten_vec_interval p q
-  | _ -> raise (Failure "Not an interval.")
-
-(* TODO add matrix interval tightener. *)
-  
+(************************************************************)
+(** Utility helper functions *)
 
 (** Given two lists of length n, return a list containing the 2^n lists
     containing each combination of elements from p and q at the same indices.
@@ -63,6 +38,54 @@ let list_to_vec l =
 let mat_to_lists m =
   let open Batteries in
   A.to_list (A.map (A.to_list % M.to_array) (M.to_rows m))
+
+
+(************************************************************)
+(** Tight Interval Algorithm from p. 31: *)
+
+(** Return a tightened version of the value at index idx in this_vec
+    given other_vec.  *)
+let tighten_one_coord relation idx this_vec other_vec =
+  let this_elt = M.get this_vec 0 idx in
+  let f _ i acc elt =  (* sum other_vec only at other idxes *)
+    if i = idx then acc else acc +. elt in
+  let other_sum = M.foldi f 0. other_vec in
+  if relation (other_sum +. this_elt) 1. then this_elt
+  else 1. -. other_sum
+
+(** Returns a tight version of [this_vec], which could be either the lower
+    or upper vector of the interval.  You must also pass [other_vec], i.e.
+    whichever end vector of the interval is not this_vec. Relation should be
+    (>=) if this_vec is the lower vector, and (<=) if it's the upper vector. *)
+let tighten_vec relation this_vec other_vec =
+  let _, n = M.shape this_vec in
+  let tight_vec = M.empty 1 n in
+  for i = 0 to (n - 1) do
+    M.set tight_vec 0 i (tighten_one_coord relation i this_vec other_vec)
+  done;
+  tight_vec
+
+(** Given a lower and upper vector, return a tight vector interval, i.e. a list
+    containing an upper and a lower vector.  *)
+let tighten_interval2 p q =
+  let p' = tighten_vec (>=) p q in
+  let q' = tighten_vec (<=) q p in
+  [p'; q']
+
+(** Given a vector interval, i.e. a list containing a lower and upper vector,
+    return a tight vector interval, i.e. a list containing an upper and a lower 
+    vector.  *)
+let tighten_interval pq =
+  match pq with
+  | p::q::[] -> tighten_interval2 p q
+  | _ -> raise (Failure "Not an interval.")
+
+(* TODO add matrix interval tightener. *)
+(* Need to write map_rows2 *)
+
+  
+(************************************************************)
+(** Determine vertices: *)
 
 (** Try to avoid inequality comparisons that are incorrect due to
     inherent floating point fudgeyness.  Used in vertices_at. *)
