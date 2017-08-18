@@ -182,21 +182,28 @@ let unif_stoch_mat dim =
   M.of_rows rows
 
 (** Create a 1xN vector from a list of floats of length N. *)
-let vec_from_list l =
+let vec_from_list ?(col=false) l =
+  match col with
+  | false -> M.of_array (A.of_list l) 1 (L.length l) 
+  | true -> M.of_array (A.of_list l) (L.length l)  1
+
+(* old:
+  let vec_from_list ?(col=false) l =
   let dim = L.length l in
   let v = M.vector dim in
   L.iteri (fun i e -> M.set v 0 i e) l;
-  v
+  v *)
 
 (** Create a 1xN vector from a list of integers of length N. *)
-let vec_from_int_list l =
-  vec_from_list (L.map float l)
+let vec_from_int_list ?(col=false) l =
+  vec_from_list ~col (L.map float l)
 
 (** Throw an exception if the length of list l is not equal to cols. *)
 let check_length cols l = 
   if cols <> L.length l
   then raise (Failure "input rows have different lengths")
 
+(* This CAN BE REVISED to use of_array. *)
 (** Create an MxN matrix from a list of M lists of N floats. 
     Throws an exception if the internal lists have different lengths. *)
 let mat_from_lists ls =
