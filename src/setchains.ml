@@ -141,12 +141,50 @@ let mat_vertices ?digits ?uniq p q =
   L.map M.of_rows vec_vert_arrays
 
 
+(************************************************************)
 (* Find vertices of a list of 2D stochastic vectors *)
 (* TODO
 let twoD_vertices vs =
   calculate min and max of first coord, or mins of each coord.
   *)
 
+(************************************************************)
+(** Hi-Lo Method *)
+
+(* in progress *)
+
+(* FIXME *)
+(* For convenience, operate on lists.
+ * Is there a more efficient algorithm?? Without summing repeatedly? *)
+let recombine_columns p q =
+  if L.fsum p > 1.0 then raise (Failure "p sums to > 1");
+  let rec construct_vec p' q' =
+    match p', q' with
+    | [p1], [q1] -> 
+        Printf.printf "%f, %f, %f\n" p1 q1 (L.fsum q');
+        if (L.fsum q') >= 1. then p', q' (* FIXME not right *)
+                    else raise (Failure "q is not >= 1")
+    | p1::rest_p, q1::rest_q ->
+        Printf.printf "%f, %f, %f\n" p1 q1 (q1 +. (L.fsum rest_p));
+        if q1 +. (L.fsum rest_p) >= 1.  (* FIXME WAIT why would this be >= 1 if it's only part of the lists?? *)
+        then p', q1::rest_p
+        else
+          let back_p, back_q = construct_vec rest_p rest_q in
+          p1::back_p, p1::back_q
+    | _::_, [] -> raise (Failure "Lists not same length")
+    | [], _::_ -> raise (Failure "Lists not same length")
+    | _, _ -> raise (Failure "Bad columns.")  (* can this happen? *)
+  in construct_vec p q
+
+
+
+
+
+
+
+
+
+(************************************************************)
 (** Example 2.10 *)
 
 let mp  = M.of_array [|0.35; 0.55; 0.25; 0.65|] 2 2;;
