@@ -150,10 +150,33 @@ let twoD_vertices vs =
 
 (************************************************************)
 (** Hi-Lo Method *)
-
 (* in progress *)
 
-(* FIXME *)
+(** Compare function for use by idx_sort (q.v.) *)
+let vec_idx_cmp ?(rowvec=true) mat j j' =
+  (* swap indexes if this is a column vector *)
+  let i, i', j, j' = if rowvec
+                     then 0, 0, j, j'
+                     else j, j', 0, 0 in
+  if M.get mat i j > M.get mat i' j' then 1 
+  else if M.get mat i j < M.get mat i' j' then -1 
+  else 0
+
+(** Given a row or column vector, return a list of indexes in
+    order of the numerical order of the values at those indexes.
+    Automatically determines whether the argument is a row or a column 
+    vector, raising an exception if neither. *)
+let idx_sort v =
+  let rows, cols = M.shape v in
+  if rows > 1 && cols > 1 
+  then raise (Failure "Matrix argument is not a vector.");
+  let rowvec = (rows = 1) in 
+  let size = if rowvec then cols else rows in
+  let idxs = L.range 0 `To (size - 1) in
+    L.fast_sort (vec_idx_cmp ~rowvec v) idxs
+
+
+(* FIXME NOT RIGHT AT ALL*)
 (* For convenience, operate on lists.
  * Is there a more efficient algorithm?? Without summing repeatedly? *)
 let recombine_columns p q =
