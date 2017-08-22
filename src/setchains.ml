@@ -152,14 +152,15 @@ let twoD_vertices vs =
 (** Hi-Lo Method *)
 (* in progress *)
 
-(** Compare function for use by idx_sort (q.v.) *)
-let vec_idx_cmp ?(rowvec=true) mat j j' =
-  (* swap indexes if this is a column vector *)
-  let i, i', j, j' = if rowvec
-                     then 0, 0, j, j'
-                     else j, j', 0, 0 in
-  if M.get mat i j > M.get mat i' j' then 1 
-  else if M.get mat i j < M.get mat i' j' then -1 
+(** Compare function for use by idx_sort for row vector *)
+let row_vec_idx_cmp mat j j' =
+  if M.get mat 0 j > M.get mat 0 j' then 1 
+  else if M.get mat 0 j < M.get mat 0 j' then -1 
+  else 0
+
+let col_vec_idx_cmp mat i i' =
+  if M.get mat i 0 > M.get mat i' 0 then 1 
+  else if M.get mat i 0 < M.get mat i' 0 then -1 
   else 0
 
 (** Given a row or column vector, return a list of indexes in
@@ -170,10 +171,11 @@ let idx_sort v =
   let rows, cols = M.shape v in
   if rows > 1 && cols > 1 
   then raise (Failure "Matrix argument is not a vector.");
-  let rowvec = (rows = 1) in 
-  let size = if rowvec then cols else rows in
+  let size, idx_cmp = if rows = 1
+                      then cols, row_vec_idx_cmp 
+                      else rows, col_vec_idx_cmp in
   let idxs = L.range 0 `To (size - 1) in
-    L.fast_sort (vec_idx_cmp ~rowvec v) idxs
+  L.fast_sort (idx_cmp v) idxs
 
 
 (* FIXME NOT RIGHT AT ALL*)
@@ -224,3 +226,31 @@ let w1 = Pm.cross_apply M.dot s0_verts m_verts;;  (* dot = ( *@ )  *)
 let s1_verts = [(L.last w1); (L.first w1)];;  (* (0.29, 0.71), (0.4, 0.6); see Hartfiel *)
 
 let w2 = Pm.cross_apply M.dot s1_verts m_verts;;
+
+
+(* OBSOLETE:
+
+(** Compare function for use by idx_sort (q.v.) *)
+let vec_idx_cmp ?(rowvec=true) mat j j' =
+  (* swap indexes if this is a column vector *)
+  let i, i', j, j' = if rowvec
+                     then 0, 0, j, j'
+                     else j, j', 0, 0 in
+  if M.get mat i j > M.get mat i' j' then 1 
+  else if M.get mat i j < M.get mat i' j' then -1 
+  else 0
+
+(** Given a row or column vector, return a list of indexes in
+    order of the numerical order of the values at those indexes.
+    Automatically determines whether the argument is a row or a column 
+    vector, raising an exception if neither. *)
+let idx_sort v =
+  let rows, cols = M.shape v in
+  if rows > 1 && cols > 1 
+  then raise (Failure "Matrix argument is not a vector.");
+  let rowvec = (rows = 1) in 
+  let size = if rowvec then cols else rows in
+  let idxs = L.range 0 `To (size - 1) in
+    L.fast_sort (vec_idx_cmp ~rowvec v) idxs
+
+*)
