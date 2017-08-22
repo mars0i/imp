@@ -152,12 +152,16 @@ let twoD_vertices vs =
 (** Hi-Lo Method *)
 (* in progress *)
 
+(** Use separate compare functions for row and column vectors to avoid
+    having a test for row vs. col inside the compare function. *)
+
 (** Compare function for use by idx_sort for row vector *)
 let row_vec_idx_cmp mat j j' =
   if M.get mat 0 j > M.get mat 0 j' then 1 
   else if M.get mat 0 j < M.get mat 0 j' then -1 
   else 0
 
+(** Compare function for use by idx_sort for col vector *)
 let col_vec_idx_cmp mat i i' =
   if M.get mat i 0 > M.get mat i' 0 then 1 
   else if M.get mat i 0 < M.get mat i' 0 then -1 
