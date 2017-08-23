@@ -190,20 +190,23 @@ let sum_except mat i j =
     high. *)
 let recombine_p l p q =
   let size, _ = M.shape l in
+  (* sanity tests *)
   let _, p_size = M.shape p in
   let _, q_size = M.shape q in
   if size <> p_size || size <> q_size then raise (Failure "vectors not same size");
+  if (M.sum p) > 1. then raise (Failure "p vector sums to > 1");
+  if (M.sum q) < 1. then raise (Failure "q vector sums to < 1");
+  (* working code *)
   let idxs = idx_sort l in
   let pbar = M.clone p in  (* Note sum p should always ust be <= 0. *)
   let rec find_crossover j =
-    if j >= size then raise (Failure "bad vectors");
-    let i = idxs.(j) in  (* tick means "next" *)
-    let qi  = M.get q 0 i in
+    let i = idxs.(j) in
+    let qi = M.get q 0 i in
     let sum_rest = sum_except pbar 0 i in
     if qi +. sum_rest >= 1.
     then M.set pbar 0 i (1. -. sum_rest) (* return--last iter put it over *)
     else (M.set pbar 0 i qi;             (* still <= 1; try next qi *)
-          find_crossover (j + 1))
+          find_crossover (j + 1)) (* given sanity checks above, should not be able to go beyond end of idxs. *)
   in 
   find_crossover 0;
   pbar
