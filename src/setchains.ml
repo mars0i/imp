@@ -144,9 +144,7 @@ let mat_vertices ?digits ?uniq p q =
 (************************************************************)
 (* Find vertices of a list of 2D stochastic vectors *)
 (* TODO
-let twoD_vertices vs =
-  calculate min and max of first coord, or mins of each coord.
-  *)
+let twoD_vertices vs = calculate min and max of first coord, or mins of each coord.  *)
 
 (************************************************************)
 (** Hi-Lo Method *)
@@ -173,45 +171,45 @@ let col_vec_idx_cmp mat i i' =
     vector, raising an exception if neither. *)
 let idx_sort v =
   let rows, cols = M.shape v in
-  if rows > 1 && cols > 1 
-  then raise (Failure "Matrix argument is not a vector.");
+  if rows > 1 && cols > 1 then raise (Failure "Argument is not a vector.");
   let size, idx_cmp = if rows = 1
                       then cols, row_vec_idx_cmp 
                       else rows, col_vec_idx_cmp in
-  let idxs = L.range 0 `To (size - 1) in
-  L.fast_sort (idx_cmp v) idxs
+  let idxs = A.of_list (L.range 0 `To (size - 1)) in
+  A.fast_sort (idx_cmp v) idxs;
+  idxs
 
+(** Return the sum of all values in matrix except the one at i j. *)
+let sum_except mat i j = 
+  (M.sum mat) -. (M.get mat i j)
 
-(* FIXME NOT RIGHT AT ALL*)
-(* For convenience, operate on lists.
- * Is there a more efficient algorithm?? Without summing repeatedly? *)
-let recombine_columns p q =
-  if L.fsum p > 1.0 then raise (Failure "p sums to > 1");
-  let rec construct_vec p' q' =
-    match p', q' with
-    | [p1], [q1] -> 
-        Printf.printf "%f, %f, %f\n" p1 q1 (L.fsum q');
-        if (L.fsum q') >= 1. then p', q' (* FIXME not right *)
-                    else raise (Failure "q is not >= 1")
-    | p1::rest_p, q1::rest_q ->
-        Printf.printf "%f, %f, %f\n" p1 q1 (q1 +. (L.fsum rest_p));
-        if q1 +. (L.fsum rest_p) >= 1.  (* FIXME WAIT why would this be >= 1 if it's only part of the lists?? *)
-        then p', q1::rest_p
-        else
-          let back_p, back_q = construct_vec rest_p rest_q in
-          p1::back_p, p1::back_q
-    | _::_, [] -> raise (Failure "Lists not same length")
-    | [], _::_ -> raise (Failure "Lists not same length")
-    | _, _ -> raise (Failure "Bad columns.")  (* can this happen? *)
-  in construct_vec p q
-
-
-
-
-
-
-
-
+(* TODO generalize so that it can make qbar, too. *)
+(** Given a column l vec and two rows vecs p and q, return a new pbar vector
+    with high values from q where l is low and low values from p where l is
+    high. *)
+let recombine_p l p q =
+  let size, _ = M.shape l in
+  let idxs = idx_sort l in
+  let pbar = M.clone p in  (* Note sum p should always ust be <= 0. *)
+  let j = ref (-1) in
+  let not_found = ref true in
+  while !not_found do  (* forgive me for my sin--thought I'd try it this way *)
+    incr j; if !j >= size then raise (Failure "bad vectors");
+    M.print pbar;
+    print_int !j;
+    let i = idxs.(!j) in  (* we're not walking through pbar in its index order *)
+    let sum_rest = sum_except pbar 0 i in
+    let qi = M.get q 0 i in
+    if  qi +. sum_rest <= 1. then M.set pbar 0 i qi (* FIXME logic wrong here. need to test also for >= 1. *)
+    else (M.set pbar 0 i (1. -. sum_rest);
+          not_found := true)
+  done;
+  pbar
+(* FIXME to see the error, try these values:
+let l = Owl.Mat.of_array [|0.3; 0.5; 0.4|] 3 1;;
+let p = Owl.Mat.of_array [|0.1; 0.2; 0.4|] 1 3;;
+let q = Owl.Mat.of_array [|0.4; 0.3; 0.6|] 1 3;;
+  *)
 
 (************************************************************)
 (** Example 2.10 *)
@@ -257,4 +255,28 @@ let idx_sort v =
   let idxs = L.range 0 `To (size - 1) in
     L.fast_sort (vec_idx_cmp ~rowvec v) idxs
 
+*)
+
+(* OBSOLETE AND BROKEN 
+(* For convenience, operate on lists.
+ * Is there a more efficient algorithm?? Without summing repeatedly? *)
+let recombine_columns p q =
+  if L.fsum p > 1.0 then raise (Failure "p sums to > 1");
+  let rec construct_vec p' q' =
+    match p', q' with
+    | [p1], [q1] -> 
+        Printf.printf "%f, %f, %f\n" p1 q1 (L.fsum q');
+        if (L.fsum q') >= 1. then p', q' (* FIXME not right *)
+                    else raise (Failure "q is not >= 1")
+    | p1::rest_p, q1::rest_q ->
+        Printf.printf "%f, %f, %f\n" p1 q1 (q1 +. (L.fsum rest_p));
+        if q1 +. (L.fsum rest_p) >= 1.  (* FIXME WAIT why would this be >= 1 if it's only part of the lists?? *)
+        then p', q1::rest_p
+        else
+          let back_p, back_q = construct_vec rest_p rest_q in
+          p1::back_p, p1::back_q
+    | _::_, [] -> raise (Failure "Lists not same length")
+    | [], _::_ -> raise (Failure "Lists not same length")
+    | _, _ -> raise (Failure "Bad columns.")  (* can this happen? *)
+  in construct_vec p q
 *)
