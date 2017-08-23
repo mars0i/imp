@@ -3,6 +3,13 @@ module L = Batteries.List
 module F = Core.Float
 
 
+(** Measure execution time of function *)
+let time f x =
+    let t = Sys.time() in
+    let result = f x in
+    Printf.printf "Execution time: %fs\n" (Sys.time() -. t);
+    result
+
 (** Returns a memoizing version of function f of one argument.
     By Andrej Bauer: https://stackoverflow.com/a/14503530/1455243
     Caveats: 
