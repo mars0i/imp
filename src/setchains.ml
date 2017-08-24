@@ -200,7 +200,7 @@ let recombine_p l p q =
   let idxs = idx_sort l in
   let pbar = M.clone p in  (* Note sum p should always ust be <= 0. *)
   let rec find_crossover j =
-    let i = idxs.(j) in
+    let i = idxs.(j) in  (* walk pbar and q in idxs order *)
     let qi = M.get q 0 i in
     let sum_rest = sum_except pbar 0 i in
     if qi +. sum_rest >= 1.
