@@ -80,8 +80,13 @@ let tighten_interval pq =
   | p::q::[] -> tighten_interval2 p q
   | _ -> raise (Failure "Not an interval.")
 
-(* TODO add matrix interval tightener. *)
-(* Need to write map_rows2 *)
+(** Matrix interval tightener *)
+let tighten_mat_interval m1 m2 =
+  let m1_rows = M.to_rows m1 in
+  let m2_rows = M.to_rows m2 in
+  let m1' = M.concatenate (A.map2 (tighten_vec (>=)) m1_rows m2_rows) in
+  let m2' = M.concatenate (A.map2 (tighten_vec (<=)) m2_rows m1_rows) in
+  [m1'; m2']
 
   
 (************************************************************)
@@ -195,7 +200,7 @@ let recombine_p l p q =
   if size <> p_size || size <> q_size then raise (Failure "vectors not same size");
   if (M.sum p) > 1. then raise (Failure "p vector sums to > 1");
   if (M.sum q) < 1. then raise (Failure "q vector sums to < 1");
-  if M.for_all (fun x -> x >= 0.) M.(q - p) then raise (Failure "p vector is not < q vector");
+  if M.exists U.float_is_negative M.(q - p) then raise (Failure "q vector is not greater than p vector");
   (* working code *)
   let pbar = M.clone p in  (* Note sum p should always ust be <= 0. *)
   let rec find_crossover idxs =

@@ -187,3 +187,13 @@ let mapmap f outer = L.map (fun inner -> L.map f inner) outer
 let roundto digits x =
   let scale = F.int_pow 10. digits in
   (F.round (scale *. x)) /. scale
+
+let int_is_positive = ((<) 0);;
+let int_is_nonnegative = ((<=) 0);;
+let int_is_negative = ((>) 0);;
+let int_is_nonpositive = ((>=) 0);;
+
+let float_is_positive = ((<) 0.);;
+let float_is_nonnegative = ((<=) 0.);;
+let float_is_negative = ((>) 0.);;
+let float_is_nonpositive = ((>=) 0.);;
