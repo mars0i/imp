@@ -189,8 +189,8 @@ let sum_except mat i j =
     pbar with high values from q where l is low and low values from p where l is
     high. *)
 let recombine_p l p q =
-  let size, _ = M.shape l in
   (* sanity tests *)
+  let size, _ = M.shape l in
   let _, p_size = M.shape p in
   let _, q_size = M.shape q in
   if size <> p_size || size <> q_size then raise (Failure "vectors not same size");
