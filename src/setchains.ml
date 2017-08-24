@@ -175,9 +175,8 @@ let idx_sort v =
   let size, idx_cmp = if rows = 1
                       then cols, row_vec_idx_cmp 
                       else rows, col_vec_idx_cmp in
-  let idxs = A.of_list (L.range 0 `To (size - 1)) in
-  A.fast_sort (idx_cmp v) idxs;
-  idxs
+  let idxs = L.range 0 `To (size - 1) in
+  L.fast_sort (idx_cmp v) idxs
 
 (** Return the sum of all values in matrix except the one at i j. *)
 let sum_except mat i j = 
@@ -196,19 +195,21 @@ let recombine_p l p q =
   if size <> p_size || size <> q_size then raise (Failure "vectors not same size");
   if (M.sum p) > 1. then raise (Failure "p vector sums to > 1");
   if (M.sum q) < 1. then raise (Failure "q vector sums to < 1");
+  if M.for_all (fun x -> x >= 0.) M.(q - p) then raise (Failure "p vector is not < q vector");
   (* working code *)
-  let idxs = idx_sort l in
   let pbar = M.clone p in  (* Note sum p should always ust be <= 0. *)
-  let rec find_crossover j =
-    let i = idxs.(j) in  (* walk pbar and q in idxs order *)
-    let qi = M.get q 0 i in
-    let sum_rest = sum_except pbar 0 i in
-    if qi +. sum_rest >= 1.
-    then M.set pbar 0 i (1. -. sum_rest) (* return--last iter put it over *)
-    else (M.set pbar 0 i qi;             (* still <= 1; try next qi *)
-          find_crossover (j + 1)) (* given sanity checks above, should not be able to go beyond end of idxs. *)
+  let rec find_crossover idxs =
+    match idxs with
+    | [] -> raise (Failure "bad vectors") (* this should never happen *)
+    | i::idxs' -> 
+        let qi = M.get q 0 i in
+        let sum_rest = sum_except pbar 0 i in
+        if qi +. sum_rest >= 1.
+        then M.set pbar 0 i (1. -. sum_rest) (* return--last iter put it over *)
+        else (M.set pbar 0 i qi;             (* still <= 1; try next qi *)
+          find_crossover idxs') 
   in 
-  find_crossover 0;
+  find_crossover (idx_sort l);
   pbar
 
 (************************************************************)
