@@ -43,7 +43,7 @@ let mat_to_lists m =
 
 (** Reusable sanity check.  The arguments p and q should be Owl vectors,
     i.e. 1 x  n or n x 1 matrices. *)
-let sanity_check_interval p q =
+let sanity_check_vec_interval p q =
   let p_shape = M.shape p in
   if p_shape <> (M.shape q) then raise (Failure "Vectors aren't same size");
   if (M.sum p) > 1. then raise (Failure "Low vector sums to > 1");
@@ -79,7 +79,7 @@ let tighten_vec relation this_vec other_vec =
 (** Given a lower and upper vector, return a tight vector interval, i.e. a list
     containing an upper and a lower vector.  *)
 let tighten_interval2 p q =
-  sanity_check_interval p q;
+  sanity_check_vec_interval p q;
   let p' = tighten_vec (>=) p q in
   let q' = tighten_vec (<=) q p in
   [p'; q']
@@ -94,7 +94,7 @@ let tighten_interval pq =
 
 (** Matrix interval tightener *)
 let tighten_mat_interval m1 m2 =
-  sanity_check_interval m1 m2;
+  sanity_check_vec_interval m1 m2;
   let m1_rows = M.to_rows m1 in
   let m2_rows = M.to_rows m2 in
   let m1' = M.concatenate (A.map2 (tighten_vec (>=)) m1_rows m2_rows) in
@@ -154,7 +154,7 @@ let vec2vec_vertices ?digits ?uniq p q =
     vertex matrices.  See documentation for list_vertices for additional info *)
 let mat_vertices ?digits ?uniq p q =
   let p_rows, q_rows = A.to_list (M.to_rows p), A.to_list (M.to_rows q) in   (* lists of the row vectors from p and q *)
-  let _ = L.map2 sanity_check_interval p_rows q_rows in
+  let _ = L.map2 sanity_check_vec_interval p_rows q_rows in
   let vec_verts = L.map2 (vec2vec_vertices ?digits ?uniq) p_rows q_rows in   (* A list of lists of vectors. Each list reps row vertices for one row *)
   let vec_vert_arrays = L.map A.of_list (L.n_cartesian_product vec_verts) in (* list of (ordered) arrays of vectors rep'ing rows of vertex matrices *)
   L.map M.of_rows vec_vert_arrays
@@ -208,7 +208,7 @@ let sum_except mat i j =
     high. *)
 let recombine_p l p q =
   (* sanity checks *)
-  sanity_check_interval p q;
+  sanity_check_vec_interval p q;
   let m, n = M.shape l in
   if (n, m) <> (M.shape p) then raise (Failure "Incompatible row and column vectors");
   (* working code *)
