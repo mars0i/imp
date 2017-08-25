@@ -212,7 +212,7 @@ let recombine_p l p q =
   let m, n = M.shape l in
   if (n, m) <> (M.shape p) then raise (Failure "Incompatible row and column vectors");
   (* working code *)
-  let pbar = M.clone p in  (* Note sum p should always ust be <= 0. *)
+  let pbar = M.clone p in  (* Note sum p should always ust be <= 1. *)
   let rec find_crossover idxs =
     match idxs with
     | [] -> raise (Failure "bad vectors") (* this should never happen *)
