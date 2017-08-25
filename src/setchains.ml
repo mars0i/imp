@@ -212,17 +212,17 @@ let recombine_p l p q =
   let m, n = M.shape l in
   if (n, m) <> (M.shape p) then raise (Failure "Incompatible row and column vectors");
   (* working code *)
-  let pbar = M.clone p in  (* Note sum p should always ust be <= 1. *)
+  let pbar = M.clone p in
   let rec find_crossover idxs =
     match idxs with
-    | [] -> raise (Failure "bad vectors") (* this should never happen *)
     | i::idxs' -> 
         let qi = M.get q 0 i in
-        let sum_rest = sum_except pbar 0 i in
+        let sum_rest = sum_except pbar 0 i in  (* Note sum pbar starts out <= 1. *)
         if qi +. sum_rest >= 1.
         then M.set pbar 0 i (1. -. sum_rest) (* return--last iter put it over *)
         else (M.set pbar 0 i qi;             (* still <= 1; try next qi *)
           find_crossover idxs') 
+    | [] -> raise (Failure "bad vectors") (* this should never happen *)
   in 
   find_crossover (idx_sort l);
   pbar
