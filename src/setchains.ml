@@ -39,6 +39,17 @@ let mat_to_lists m =
   let open Batteries in
   A.to_list (A.map (A.to_list % M.to_array) (M.to_rows m))
 
+(************************************************************)
+
+(** Reusable sanity check.  The arguments p and q should be Owl vectors,
+    i.e. 1 x  n or n x 1 matrices. *)
+let sanity_check_interval p q =
+  let p_shape = M.shape p in
+  if p_shape <> (M.shape q) then raise (Failure "Vectors aren't same size");
+  if (M.sum p) > 1. then raise (Failure "Low vector sums to > 1");
+  if (M.sum q) < 1. then raise (Failure "High vector sums to < 1");
+  if M.exists U.float_is_negative M.(q - p) then raise (Failure "High vector is not >= p vector everywhere");
+  () (* redundant clarification *)
 
 (************************************************************)
 (** Tight Interval Algorithm from p. 31: *)
@@ -68,6 +79,7 @@ let tighten_vec relation this_vec other_vec =
 (** Given a lower and upper vector, return a tight vector interval, i.e. a list
     containing an upper and a lower vector.  *)
 let tighten_interval2 p q =
+  sanity_check_interval p q;
   let p' = tighten_vec (>=) p q in
   let q' = tighten_vec (<=) q p in
   [p'; q']
@@ -82,6 +94,7 @@ let tighten_interval pq =
 
 (** Matrix interval tightener *)
 let tighten_mat_interval m1 m2 =
+  sanity_check_interval m1 m2;
   let m1_rows = M.to_rows m1 in
   let m2_rows = M.to_rows m2 in
   let m1' = M.concatenate (A.map2 (tighten_vec (>=)) m1_rows m2_rows) in
@@ -141,6 +154,7 @@ let vec2vec_vertices ?digits ?uniq p q =
     vertex matrices.  See documentation for list_vertices for additional info *)
 let mat_vertices ?digits ?uniq p q =
   let p_rows, q_rows = A.to_list (M.to_rows p), A.to_list (M.to_rows q) in   (* lists of the row vectors from p and q *)
+  let _ = L.map2 sanity_check_interval p_rows q_rows in
   let vec_verts = L.map2 (vec2vec_vertices ?digits ?uniq) p_rows q_rows in   (* A list of lists of vectors. Each list reps row vertices for one row *)
   let vec_vert_arrays = L.map A.of_list (L.n_cartesian_product vec_verts) in (* list of (ordered) arrays of vectors rep'ing rows of vertex matrices *)
   L.map M.of_rows vec_vert_arrays
@@ -188,19 +202,15 @@ let sum_except mat i j =
   (M.sum mat) -. (M.get mat i j)
 
 (* TODO generalize so that it can make qbar, too. *)
-(* TODO possibly fix to avoid so much redundant addition. *)
+(* Possibly fix to avoid so much redundant addition. *)
 (** Given a column l vec and two rows vecs p and q, return a stochastic vector
     pbar with high values from q where l is low and low values from p where l is
     high. *)
 let recombine_p l p q =
-  (* sanity tests *)
-  let size, _ = M.shape l in
-  let _, p_size = M.shape p in
-  let _, q_size = M.shape q in
-  if size <> p_size || size <> q_size then raise (Failure "vectors not same size");
-  if (M.sum p) > 1. then raise (Failure "p vector sums to > 1");
-  if (M.sum q) < 1. then raise (Failure "q vector sums to < 1");
-  if M.exists U.float_is_negative M.(q - p) then raise (Failure "q vector is not greater than p vector");
+  (* sanity checks *)
+  sanity_check_interval p q;
+  let m, n = M.shape l in
+  if (n, m) <> (M.shape p) then raise (Failure "Incompatible row and column vectors");
   (* working code *)
   let pbar = M.clone p in  (* Note sum p should always ust be <= 0. *)
   let rec find_crossover idxs =
