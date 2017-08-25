@@ -225,7 +225,7 @@ let recombine_p l p q =
     | [] -> raise (Failure "bad vectors") (* this should never happen *)
   in 
   find_crossover (idx_sort l);
-  pbar
+  M.transpose pbar
 
 (************************************************************)
 (** Example 2.10 *)
