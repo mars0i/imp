@@ -82,15 +82,14 @@ let tighten_interval2 p q =
   sanity_check_vec_interval p q;
   let p' = tighten_vec (>=) p q in
   let q' = tighten_vec (<=) q p in
-  [p'; q']
+  (p', q')
 
 (** Given a vector interval, i.e. a list containing a lower and upper vector,
     return a tight vector interval, i.e. a list containing an upper and a lower 
     vector.  *)
 let tighten_interval pq =
-  match pq with
-  | p::q::[] -> tighten_interval2 p q
-  | _ -> raise (Failure "Not an interval.")
+  let p, q = pq in
+  tighten_interval2 p q
 
 (** Matrix interval tightener *)
 let tighten_mat_interval m1 m2 =
@@ -201,14 +200,13 @@ let idx_sort v =
 let sum_except mat i j = 
   (M.sum mat) -. (M.get mat i j)
 
-(* TODO generalize so that it can make qbar, too. *)
 (* Possibly fix to avoid so much redundant addition. *)
-(** Given a column l vec and two rows vecs p and q, return a stochastic vector
-    pbar with high values from q where l is low and low values from p where l is
-    high. *)
-let recombine_p l p q =
-  (* sanity checks *)
-  sanity_check_vec_interval p q;
+
+(** Given a relation >= (or <=), a column l vec and two rows vecs p and q, 
+    return a stochastic col vec with high (or low) values from q where l is low
+    and low (or high) values from p where l is high. *)
+let recombine relation l p q =
+  (* sanity check *)
   let m, n = M.shape l in
   if (n, m) <> (M.shape p) then raise (Failure "Incompatible row and column vectors");
   (* working code *)
@@ -218,7 +216,7 @@ let recombine_p l p q =
     | i::idxs' -> 
         let qi = M.get q 0 i in
         let sum_rest = sum_except pbar 0 i in  (* Note sum pbar starts out <= 1. *)
-        if qi +. sum_rest >= 1.
+        if relation (qi +. sum_rest) 1.
         then M.set pbar 0 i (1. -. sum_rest) (* return--last iter put it over *)
         else (M.set pbar 0 i qi;             (* still <= 1; try next qi *)
           find_crossover idxs') 
@@ -226,6 +224,18 @@ let recombine_p l p q =
   in 
   find_crossover (idx_sort l);
   M.transpose pbar
+
+(** Given column vec l and two rows vecs p and q, return stochastic col vec lo
+    with high values from q where l is low, low values from p where l is high.*)
+let recombine_lo l p q = 
+  sanity_check_vec_interval p q;
+  recombine (>=) l p q
+
+(** Given column vec l and two rows vecs p and q, return stochastic col vec hi
+    with high values from q where l is high, low values from p where l is low.*)
+let recombine_hi l p q = 
+  sanity_check_vec_interval p q;
+  recombine (<=) l q p
 
 (************************************************************)
 (** Example 2.10 *)
