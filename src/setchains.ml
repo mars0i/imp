@@ -226,7 +226,7 @@ let recombine relation l p q =
     match idxs with
     | i::idxs' -> 
         let qi = M.get q 0 i in
-        let sum_rest = sum_except pbar 0 i in (* begins <= 1 if p<=q, or >= 1 if swapped *)
+        let sum_rest = sum_except pbar 0 i in (* pbar begins <= 1 if p<=q, or >= 1 if p, q swapped *)
         if relation (qi +. sum_rest) 1.
         then M.set pbar 0 i (1. -. sum_rest) (* return--last iter put it over *)
         else (M.set pbar 0 i qi;             (* still <= 1; try next qi *)
