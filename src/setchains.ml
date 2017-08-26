@@ -78,7 +78,7 @@ let tighten_vec relation this_vec other_vec =
 
 (** Given a lower and upper vector, return a tight vector interval, i.e. a list
     containing an upper and a lower vector.  *)
-let tighten_interval2 p q =
+let tighten_interval p q =
   sanity_check_vec_interval p q;
   let p' = tighten_vec (>=) p q in
   let q' = tighten_vec (<=) q p in
@@ -87,7 +87,7 @@ let tighten_interval2 p q =
 (** Given a vector interval, i.e. a list containing a lower and upper vector,
     return a tight vector interval, i.e. a list containing an upper and a lower 
     vector.  *)
-let tighten_interval pq =
+let tighten_interval2 pq =
   let p, q = pq in
   tighten_interval2 p q
 
