@@ -202,6 +202,8 @@ let sum_except mat i j =
 
 (* Possibly fix to avoid so much redundant addition. *)
 
+(** DON'T FORGET TO TIGHTEN FIRST *)
+
 (** Given a relation >= (or <=), a column l vec and two rows vecs p and q, 
     return a stochastic col vec with high (or low) values from q where l is low
     and low (or high) values from p where l is high. *)
