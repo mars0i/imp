@@ -211,13 +211,15 @@ let sum_except mat i j =
 
 (** Given a relation >= (or <=), a column l vec and two rows vecs p and q, 
     return a stochastic col vec with high (or low) values from q where l is low
-    and low (or high) values from p where l is high. *)
+    and low (or high) values from p where l is high. (Note that roles of p and
+    q will be swapped from what they are in Hartfield when (<=) is passed, i.e.
+    the names p and q here may be misleading. *)
 let recombine relation l p q =
   (* sanity check *)
   let m, n = M.shape l in
   if (n, m) <> (M.shape p) then raise (Failure "Incompatible row and column vectors");
   (* working code *)
-  let pbar = M.clone p in
+  let pbar = M.transpose p in
   let rec find_crossover idxs =
     match idxs with
     | i::idxs' -> 
@@ -230,7 +232,7 @@ let recombine relation l p q =
     | [] -> raise (Failure "bad vectors") (* this should never happen *)
   in 
   find_crossover (idx_sort l);
-  M.transpose pbar
+  pbar
 
 (** Given column vec l and two rows vecs p and q, return stochastic col vec lo
     with high values from q where l is low, low values from p where l is high.*)
