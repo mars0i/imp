@@ -209,11 +209,13 @@ let sum_except mat i j =
     not the linear order of the vectors. 
     (Don't forget to tighten the arguments first.) *)
 
-(** Given a relation >= (or <=), a column l vec and two rows vecs p and q, 
-    return a stochastic col vec with high (or low) values from q where l is low
-    and low (or high) values from p where l is high. (Note that roles of p and
-    q will be swapped from what they are in Hartfield when (<=) is passed, i.e.
-    the names p and q here may be misleading. *)
+(** Given a relation (>=), a column l vec and two tight row vecs p and q s.t. 
+    p<=q, return a stochastic row vec ("p bar") with high values from q where l
+    is low and low values from p where l is high.  Or pass (<=), l, and tight
+    row vecs s.t. p >= q to return a stoch row vec ("q bar") with low values 
+    from p where l is low.  Note that the latter swaps the normal meanings of 
+    p and q in Hartfiel, i.e. here you the arguments should be (<=), l, q, p
+    according to the normal senses of p and q. *)
 let recombine relation l p q =
   (* sanity check *)
   let m, n = M.shape l in
@@ -224,7 +226,7 @@ let recombine relation l p q =
     match idxs with
     | i::idxs' -> 
         let qi = M.get q 0 i in
-        let sum_rest = sum_except pbar 0 i in  (* Note sum pbar starts out <= 1. *)
+        let sum_rest = sum_except pbar 0 i in (* begins <= 1 if p<=q, or >= 1 if swapped *)
         if relation (qi +. sum_rest) 1.
         then M.set pbar 0 i (1. -. sum_rest) (* return--last iter put it over *)
         else (M.set pbar 0 i qi;             (* still <= 1; try next qi *)
@@ -234,13 +236,13 @@ let recombine relation l p q =
   find_crossover (idx_sort l);
   pbar
 
-(** Given column vec l and two rows vecs p and q, return stochastic col vec lo
+(** Given column vec l and tight row vecs p and q, return stochastic vec lo
     with high values from q where l is low, low values from p where l is high.*)
 let recombine_lo l p q = 
   sanity_check_vec_interval p q;
   recombine (>=) l p q
 
-(** Given column vec l and two rows vecs p and q, return stochastic col vec hi
+(** Given column vec l and tight row vecs p and q, return stochastic vec hi
     with high values from q where l is high, low values from p where l is low.*)
 let recombine_hi l p q = 
   sanity_check_vec_interval p q;
