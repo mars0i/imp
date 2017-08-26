@@ -89,7 +89,7 @@ let tighten_interval p q =
     vector.  *)
 let tighten_interval2 pq =
   let p, q = pq in
-  tighten_interval2 p q
+  tighten_interval p q
 
 (** Matrix interval tightener *)
 let tighten_mat_interval m1 m2 =
@@ -228,8 +228,8 @@ let recombine relation l p q =
         let qi = M.get q 0 i in
         let sum_rest = sum_except pbar 0 i in (* pbar begins <= 1 if p<=q, or >= 1 if p, q swapped *)
         if relation (qi +. sum_rest) 1.
-        then M.set pbar 0 i (1. -. sum_rest) (* return--last iter put it over *)
-        else (M.set pbar 0 i qi;             (* still <= 1; try next qi *)
+        then M.set pbar 0 i (1. -. sum_rest) (* return--last iter put it over/under *)
+        else (M.set pbar 0 i qi;             (* still <= 1, or >=1; try next one *)
           find_crossover idxs') 
     | [] -> raise (Failure "bad vectors") (* this should never happen *)
   in 
