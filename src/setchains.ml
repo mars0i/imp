@@ -202,7 +202,12 @@ let sum_except mat i j =
 
 (* Possibly fix to avoid so much redundant addition. *)
 
-(** DON'T FORGET TO TIGHTEN FIRST *)
+
+(** "Recombination" functions (by analogy with genetic recombination) that
+    take two vectors and create a new vector from parts of each of them,
+    though in this case the order in which the elements are considered is
+    not the linear order of the vectors. 
+    (Don't forget to tighten the arguments first.) *)
 
 (** Given a relation >= (or <=), a column l vec and two rows vecs p and q, 
     return a stochastic col vec with high (or low) values from q where l is low
