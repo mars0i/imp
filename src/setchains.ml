@@ -221,7 +221,7 @@ let recombine relation l p q =
   let m, n = M.shape l in
   if (n, m) <> (M.shape p) then raise (Failure "Incompatible row and column vectors");
   (* working code *)
-  let pbar = M.transpose p in
+  let pbar = M.clone p in
   let rec find_crossover idxs =
     match idxs with
     | i::idxs' -> 
@@ -247,6 +247,17 @@ let recombine_lo l p q =
 let recombine_hi l p q = 
   sanity_check_vec_interval p q;
   recombine (<=) l q p
+
+(* Example for creating suitable vectors for testing:
+let p, q = 
+  let size = 6 in 
+  let x = 1. /. (float size) in
+  let p' = M.(x $- ((uniform 1 size) *$ 0.1)) in
+  let q' = M.(p' + ((uniform 1 size) *$ 0.2)) in
+  tighten_interval p' q';;
+*)
+
+
 
 (************************************************************)
 (** Example 2.10 *)
