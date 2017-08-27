@@ -248,6 +248,55 @@ let recombine_hi l p q =
   sanity_check_vec_interval p q;
   recombine (<=) l q p
 
+(* FIXME THERE IS SOMETHING VERY WRONG:
+
+ (* make untight interval: *)
+# let p', q' = let size = 6 in let x = 1. /. (float size) in let p' = M.(x $- ((uniform 1 size) *$ 0.05)) in let q' = M.(p' + ((uniform 1 size) *$ 0.1)) in p', q';;
+
+         C0       C1       C2       C3       C4       C5
+R0 0.125753 0.127614 0.118317 0.134262 0.156025 0.132074
+
+         C0       C1       C2       C3       C4       C5
+R0 0.171318 0.167455 0.128352 0.219961 0.253929 0.194772
+
+val p' : (float, Bigarray.float64_elt) M.op_t2 =
+val q' : (float, Bigarray.float64_elt) M.op_t2 =
+
+
+ (* make tight interval. in this case, it was already tight. *)
+# let p, q = tighten_interval p' q';;
+
+         C0       C1       C2       C3       C4       C5
+R0 0.125753 0.127614 0.118317 0.134262 0.156025 0.132074
+
+
+         C0       C1       C2       C3       C4       C5
+R0 0.171318 0.167455 0.128352 0.219961 0.253929 0.194772
+
+val p : M.mat =
+val q : M.mat =
+
+ (* make hi and lo. UH OH: lo is not <= hi.  (Nor is it >= hi.)  
+  * OR IS THIS OK?? Both sum to one, though, btw, as they should. 
+  * OH WAIT: lo and hi are supposed to be calculated wrt different
+  * column vectors.  I used the same one.  That's not right. *)
+# let lo, hi = recombine_lo l p q, recombine_hi l p q;;
+
+         C0       C1       C2       C3      C4       C5
+R0 0.171318 0.167455 0.128352 0.134262 0.20384 0.194772
+
+
+         C0       C1       C2       C3       C4       C5
+R0 0.125753 0.149965 0.118317 0.219961 0.253929 0.132074
+
+val lo : M.mat =
+val hi : M.mat =
+
+ *)
+
+
+
+
 (* Example for creating suitable vectors for testing:
 let p, q = 
   let size = 6 in 
