@@ -1,7 +1,0 @@
-export OCAMLRUNPARAM='v=0x04,i=3600000'
-time ./wrightfisher.native "yonat" 500 200 1 10  1.0 0.95 0.8   1.0 0.8 0.4
-
-setting s doesn't help.
-v just reports when major heap is expanded
-i is major heap size in words
-
