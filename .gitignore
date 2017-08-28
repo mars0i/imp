@@ -25,3 +25,4 @@ probmat_api*
 *.odocl
 *.mldylib
 *.mllib
+.merlin
