@@ -8,5 +8,4 @@
  ((name        popgen)
   (public_name popgen)
   (modules (wrightfisher))
-  (libraries (batteries core owl)))
-  )
+  (libraries (batteries core owl))))
