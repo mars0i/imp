@@ -5,7 +5,7 @@
     allele frequencies using "credal sets" of evolutionary transition 
     probabilities involving selection and drift but no other forces.  *)
 
-module WF = Popgen.Wrightfisher
+module WF = Imp.Wrightfisher
 module Command = Core.Command
 module Spec = Core.Command.Spec
 

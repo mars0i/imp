@@ -1,9 +1,0 @@
-opam-version: "1.2"
-version: "1.0"
-maintainer: "marshall@logical.net"
-authors: ["mars0i"]
-homepage: "https://github.com/mars0i/imp"
-license: "GPL 3.0"
-build: [
-  ["jbuilder" "build" "--only" "wrightfisherPDFs" "--root" "." "-j" jobs "@install"]
-]

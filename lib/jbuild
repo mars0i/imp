@@ -1,11 +1,7 @@
 (jbuild_version 1)
 
 (library 
- ((name        probutils)
-  (public_name probutils)
-  (modules (probmat utils))
-  (libraries (batteries core owl)))
- ((name        popgen)
-  (public_name popgen)
-  (modules (wrightfisher))
+ ((name        imp)
+  (public_name imp)
+  (modules (wrightfisher probmat utils))
   (libraries (batteries core owl))))

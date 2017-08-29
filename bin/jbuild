@@ -3,10 +3,4 @@
 (executable 
  ((name        wrightfisherPDFs)
   (public_name wfpdf)
-  (libraries (core popgen))))
-
-(install
-  ((section bin)
-   (files (wrightfisherPDFs))
-   (package main)))
-
+  (libraries (core imp))))
