@@ -1,6 +1,0 @@
-#/bin/sh
-basenam="$1"
-shift
-set -x
-~/imp/wrightfisherPDFs.native $basenam "$@" && \
-echo ~/imp/wrightfisherPDFs.native $basenam "$@" > ${basenam}Commandline
