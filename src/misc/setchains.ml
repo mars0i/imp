@@ -5,8 +5,8 @@ module B = Batteries
 module L = Batteries.List
 module A = Batteries.Array
 module M = Owl.Mat
-module U = Imp.Utils
-module Pm = Imp.Probmat
+module U = Utils.Utils
+module Pm = Utils.Probmat
 
 (************************************************************)
 (** Utility helper functions *)
