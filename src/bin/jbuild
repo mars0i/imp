@@ -3,4 +3,5 @@
 (executable 
  ((name        wrightfisherPDFs)
   (public_name wfpdf)
-  (libraries (core imp))))
+  (package wf)
+  (libraries (core wf))))

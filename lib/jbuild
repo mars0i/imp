@@ -1,7 +1,0 @@
-(jbuild_version 1)
-
-(library 
- ((name        imp)
-  (public_name imp)
-  (modules (wrightfisher probmat utils))
-  (libraries (batteries core owl))))

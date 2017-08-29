@@ -13,7 +13,7 @@ module Pl = Owl.Plot
 module L = Batteries.List
 module A = Batteries.Array
 module LL = Batteries.LazyList
-module U = Utils (* don't qualify with Imp because we are inside Imp *)
+module U = Utils
 
 let ( *@ ) = Mat.( *@ )  (* = dot: matrix multiplication *)
 

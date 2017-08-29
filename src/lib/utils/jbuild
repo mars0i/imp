@@ -1,0 +1,7 @@
+(jbuild_version 1)
+
+(library 
+ ((name        utils)
+  (public_name utils)
+  (modules (probmat utils)) ; That's right--Utils.Utils
+  (libraries (batteries core owl))))
