@@ -1,0 +1,90 @@
+notes on how things work/how to change things in owl_plot.ml
+
+What makes mesh and surf display color variation?  For the non-contour
+versions, I believe it's these lines:
+
+862	| false -> [ PL_FACETED; PL_MAG_COLOR ]
+
+892	let opt1 = [ PL_DRAW_LINEXY; PL_MAG_COLOR; PL_MESH ] in
+
+
+These are passed to plsurf3d and plmesh, respectively.  I think
+PL_MAG_COLOR is what does it.  See e.g.
+http://plplot.sourceforge.net/examples.php?demo=08&lbind=Ocaml
+and
+http://plplot.sourceforge.net/examples.php?demo=11&lbind=Ocaml
+
+------------------------------
+
+set_foreground_color just stores an RGB value in the page structure.
+
+It's retrieved in _prepare_page, which sets the color for all
+subsequent writes with this line
+
+	let _ = plscol0 1 r g b; plcol0 1 in
+
+Those are plplot functions.
+plscol0 sets the color at index 1 in colormap 0.  
+pcol0 chooses the index for subsequent writes.
+So the whole line sets color #1 to the values r, g, b, and then
+chooses that color for subsequent writes by whatever writes to the
+screen.
+
+The reason that the gride lines and the plot lines are the same color
+in mesh output is that _prepare_page sets the color before it calls
+plbox3, which writes the axes and gridlines (I think).  AND THEN
+this color index is left unchanged when the plotting takes place.
+
+As an experiment, I set colors for two different color indexes, and
+then selected the second one after plbox3 was called.  This indeed
+led to the plot lines having a different color.
+
+So to change this, the right thing would probably be to add an
+additional element to the page structure, and then add functiosn to
+set them separately, and then maybe set each in _prepare_page--one
+before all of the writing is done in prepare page, and one after that.
+
+OH--most of the plot functions have a ~color argument that does this.
+OK, that's good enough.  I just need to add it to mesh and surf.
+
+(There's also colormap 1, which is designed for e.g. varying color by
+height.)
+
+----------------------------
+
+I've added a `~color` parameter to `mesh` in my fork
+[here](https://github.com/mars0i/owl/blob/master/lib/owl_plot.ml#L878).
+
+There was an unexpected problem, though.  The axes and tick marks were
+had the color specified by `set_foreground_color`, but the grid lines
+that run behind the plot had the same color as the plot, i.e. the color
+specified by the `~color` argument to `mesh.
+
+A solution is to use `plcol0` index 2 instead of 1, which is what's used
+throughout owl_plot.ml.  This is what I have done in my fork:
+https://github.com/mars0i/owl/blob/master/lib/owl_plot.ml#L255 This
+seems weird to have to do this.  Everywhere else in owl_plot.ml, the
+code just uses index 1, and saves and restores the rgb values to col0
+index 1 as needed.  However, using index 1 in `_prepare_page` results in
+the grid lines having the color of the plot, while using index 2 in
+`_prepare_page` causes the grid lines to have the same color as the axes
+and tick marks.
+
+The axes, ticks, and grid lines are drawn by `plbox3`.  However,
+`plbox3` draws the axes and tick marks immediately (i.e. during the
+execution of `_prepare_page`, but doesn't draw the grid lines until the
+plot is drawn.  The [documentation for
+`plbox3`](http://plplot.sourceforge.net/docbook-manual/plplot-html-5.12.0/plbox3.html)
+says "These lines are not drawn until after plot3d or plmesh are called
+because of the need for hidden line removal. "  `plbox3` apparently
+remembers the col0 index that was in scope when it was called, and gets
+the RGB value from it at the time of plotting to figure out what color
+to use.  So the col0 index at the time of the `plbox3` call has to be
+different from the one used as the plotting color.
+
+================================
+
+re that Owl is plotting the z axis labels in wierd scientific notation
+in 2D plots.  I think this is because the returned numbers have many
+float bits.  Ways to control it might include plbox, plgzax and maybe
+others.

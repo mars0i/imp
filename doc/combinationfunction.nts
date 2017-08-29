@@ -1,0 +1,35 @@
+Clojure doesn't seem to have a choose/combination/binomialcoeff function
+in its standard libs.  Not in math.numeric-tower, not in
+math.combinatorics, not in core.matrix.
+
+This function, which I found on Rosetta code, produces integer overflow
+for even n = 100, k = 10, even if you use BigInts/Ratios (100N) or
+BigDecimals (100M):
+
+(defn binomial-coefficient [n k]
+  (let [rprod (fn [a b] (reduce * (range a (inc b))))]
+    (/ (rprod (- n k -1N) n) (rprod 1N k))))
+
+[It's not blowing the stack; the problem is with the numbers.]
+
+Is there a better algorithm?  What about a Java lib?
+
+-----------------
+
+In OCaml you can use Gsl.Sf.choose, which returns floats and works until
+just past n = 1000:
+
+
+# Gsl.Sf.choose 1025 513;;
+- : float = 8.9537737152027112e+306
+
+# Gsl.Sf.choose 1030 515;;
+Exception: Gsl_error.Gsl_exn (Gsl_error.EOVRFLW, "overflow").
+
+
+i.e. it looks like I can model populations with up to about 500
+individuals.  And even then, there may be effects due to precision.
+
+------------------
+
+SBCL would be another option, maybe.

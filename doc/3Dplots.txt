@@ -1,0 +1,106 @@
+notes on 3D plotting in Owl
+
+Tutorial 4 gives this example
+(replace +@ by +, and use pow1 instead of **@):
+
+let x, y = Mat.meshgrid (-2.5) 2.5 (-2.5) 2.5 100 100 in
+let z0 = Mat.(sin ((x **@ 2.) +@ (y **@ 2.))) in
+let z1 = Mat.(cos ((x **@ 2.) +@ (y **@ 2.))) in
+let h = Plot.create ~m:2 ~n:2 "" in
+let _ = Plot.subplot h 0 0 in
+let _ = Plot.surf ~h x y z0 in
+let _ = Plot.subplot h 0 1 in
+let _ = Plot.mesh ~h x y z0 in
+let _ = Plot.subplot h 1 0 in
+let _ = Plot.surf ~h x y z1 in
+let _ = Plot.subplot h 1 1 in
+let _ = Plot.mesh ~h x y z1 in
+Plot.output h;;
+
+meshgrid gives us two 100x100 matrices, one for x coords and one for y
+coords?  
+Q: Why are they matrices and not vectors?  
+A: Because in a 2D field, each point has two coordinates.
+These are those coordinates, I guess.
+
+Then you pass these two matrices as arguments to a function that
+computes the sine of the sum of their squares, so I guess produces a
+100x100 matrix of z coordinates in z0.
+
+Likewise for cosine and z1.
+
+----------
+
+What if you have a set of 2D plots each in the form of an x vector and a
+y vector, and you want to combine them into a 3D plot?  So you make
+their y coords z coords, and then assign the same y coord, repeatedly,
+to go with each x vector.  But the x vector is just the output of
+Mat.sequential.  OK, so following the Tutorial 4 example, I think you
+want:
+
+An x matrix that's, say 100 copies of row vectors from 
+	Mat.sequential 1 100,
+and a y matrix that's the transpose of that.  Or something similar if the
+whole thing isn't square.
+
+And then the z matrix will be 100 (or whatever) different (formerly y)
+vectors stacked one on top of the other.
+
+Q: Why do you need to pass the x and y matrices as well as the z
+matrix to Plot.surf or Plot.mesh, etc.?  After all, the points are
+already laid out in a square.
+A: Yes, but how would the plot system know how to label the tick marks
+on the margin if you did that?  I guess.
+
+So note that in my case, the x matrix is labeling time, while the y
+matrix is just labeling run numbers.  Could be arbitrary.
+
+Summary:
+
+I think this procedure will work.  (You can rearrange some of the steps.)
+
+Step 1: Make M Wright-Fisher probability vectors of length N+1 (or 2N+1).
+
+Step 2: Concatenate them into an Mx(N+1) z matrix.
+
+Step 3: Create an Mx(N+1) x matrix with each row sequential from 0 through N.
+
+Step 4: Create an Mx(N+1) y matrix in which each column is identical,
+but is whatever you want.  Maybe make each column sequential from 0 to M-1.
+
+Step 5: Pass x, y, and z to Plot.mesh or Plot.surf on plot handle h, and
+then call Plot.output on the plot handle.
+
+-----------------
+
+Probability plane examples:
+
+
+(* triangular plane function *)
+let f x y = if x +. y > 1. then 0. else 1. -. x -. y;;
+
+(* triangular plane function from opposite direction *)
+ let g x y = if x +. y < 1. then 0. else 1. -. (1. -. x) -. (1. -. y);;
+
+(* make x, y coord matrices *)
+let xs, ys = Mat.meshgrid 0. 1. 0. 1. 100 100;;
+
+(* make z coord matrix *)
+let zs = Mat.map2 f xs ys;;
+
+(* create pdf file *)
+let h = Plot.create "probplane.pdf" in
+  Plot.mesh ~h ~contour:true xs ys zs;
+  Plot.output h;;
+
+
+(* versions with optional predicates to include only some points *)
+(* not working? *)
+
+let f ?(keep = (fun x' y' z' -> true)) x y = let z = 1. -. x -. y in if x +. y < 1. && keep x y z then 1. -. x -. y else 0.;;
+
+let g ?(keep = (fun x' y' z' -> true)) x y = let z = 1. -. x -. y in if x +. y >  1. && keep x y z then x +. y -. 1. else 0.;;
+
+(* failed attempt to use this method *)
+let h = Plot.create "probplane.pdf" in Plot.mesh ~h xs ys (Mat.map2 (g ~keep:(fun x y z -> x > 0.2 && x < 0.4 && y > 0.4 && y < 0.6 && z > 0.5 && z < 0.9)) xs ys); Plot.output h;;
+

@@ -1,0 +1,2 @@
+Jane Street Core has an Interval module.   This might be useful.
+Batteries doesn't seem to have anything similar.
