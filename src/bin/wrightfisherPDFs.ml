@@ -7,7 +7,7 @@
 
 module Command = Core.Command
 module Spec = Core.Command.Spec
-(* Also uses module Wf *)
+module WF = Wf.Wrightfisher
 
 let sprintf = Printf.sprintf
 
@@ -70,12 +70,12 @@ let commandline =
     (fun alt_int az_int rows cols plot_max fontsize every twoD threeD updown basename popsize initfreq startgen lastgen fitn_floats () ->
       let altitude = float alt_int in
       let azimuth = float az_int in
-      let fitn_recs = Wf.group_fitns fitn_floats in
-      let distlists = Wf.make_distlists popsize [initfreq] fitn_recs in
+      let fitn_recs = WF.group_fitns fitn_floats in
+      let distlists = WF.make_distlists popsize [initfreq] fitn_recs in
       let pdfdim = match twoD, threeD with
-                   | true, true   -> Wf.BothDs
-                   | true, false  -> Wf.TwoD
-                   | false, true | false, false -> Wf.ThreeD (* default *)
-      in Wf.make_pdfs ~rows ~cols ~altitude ~azimuth ~every ~pdfdim ?plot_max ?fontsize ~leftright:(not updown) basename startgen lastgen distlists)
+                   | true, true   -> WF.BothDs
+                   | true, false  -> WF.TwoD
+                   | false, true | false, false -> WF.ThreeD (* default *)
+      in WF.make_pdfs ~rows ~cols ~altitude ~azimuth ~every ~pdfdim ?plot_max ?fontsize ~leftright:(not updown) basename startgen lastgen distlists)
 
 let () = Command.run ~version:"1.1" ~build_info:"wrightfisherPDFS, (c) 2017 Marshall Abrams" commandline
