@@ -248,7 +248,20 @@ let recombine_hi l p q =
   sanity_check_vec_interval p q;
   recombine (<=) l q p
 
-(* FIXME THERE IS SOMETHING VERY WRONG:
+
+
+(*
+let make_lo_col l p q =
+  let rows, cols = M.shape l in
+  let lo_mat = M.empty rows cols in
+  let f lcol =
+    M.iter2_rows (recombine_lo lcol) p q
+*)
+
+
+
+
+(* FIXME THERE IS SOMETHING VERY WRONG??:
 
  (* make untight interval: *)
 # let p', q' = let size = 6 in let x = 1. /. (float size) in let p' = M.(x $- ((uniform 1 size) *$ 0.05)) in let q' = M.(p' + ((uniform 1 size) *$ 0.1)) in p', q';;
