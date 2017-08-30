@@ -5,8 +5,8 @@ module B = Batteries
 module L = Batteries.List
 module A = Batteries.Array
 module M = Owl.Mat
-module U = Imp.Utils
-module Pm = Imp.Probmat
+module U = Utils.Utils
+module Pm = Utils.Probmat
 
 (************************************************************)
 (** Utility helper functions *)
@@ -98,7 +98,7 @@ let tighten_mat_interval m1 m2 =
   let m2_rows = M.to_rows m2 in
   let m1' = M.concatenate (A.map2 (tighten_vec (>=)) m1_rows m2_rows) in
   let m2' = M.concatenate (A.map2 (tighten_vec (<=)) m2_rows m1_rows) in
-  [m1'; m2']
+  (m1', m2')
 
   
 (************************************************************)
@@ -248,8 +248,6 @@ let recombine_hi l p q =
   sanity_check_vec_interval p q;
   recombine (<=) l q p
 
-
-
 (*
 let make_lo_col l p q =
   let rows, cols = M.shape l in
@@ -259,10 +257,7 @@ let make_lo_col l p q =
 *)
 
 
-
-
 (* FIXME THERE IS SOMETHING VERY WRONG??:
-
  (* make untight interval: *)
 # let p', q' = let size = 6 in let x = 1. /. (float size) in let p' = M.(x $- ((uniform 1 size) *$ 0.05)) in let q' = M.(p' + ((uniform 1 size) *$ 0.1)) in p', q';;
 
@@ -320,23 +315,4 @@ let p, q =
 *)
 
 
-
-(************************************************************)
-(** Example 2.10 *)
-(*
-let mp  = M.of_array [|0.35; 0.55; 0.25; 0.65|] 2 2;;
-let mq  = M.of_array [|0.45; 0.65; 0.35; 0.75|] 2 2;;
-let s0p = M.of_array [|0.4; 0.5|] 1 2;;
-let s0q = M.of_array [|0.5; 0.6|] 1 2;;
-let m = [mp; mq];;
-let s0 = [s0p; s0q];;
-
-let m_verts = mat_vertices ~uniq:true ~digits:3 mp mq;;
-let s0_verts = mat_vertices ~uniq:true ~digits:3 s0p s0q;;
-
-let w1 = Pm.cross_apply M.dot s0_verts m_verts;;  (* dot = ( *@ )  *)
-let s1_verts = [(L.last w1); (L.first w1)];;  (* (0.29, 0.71), (0.4, 0.6); see Hartfiel *)
-
-let w2 = Pm.cross_apply M.dot s1_verts m_verts;;
-*)
 
