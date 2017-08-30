@@ -5,8 +5,7 @@ module B = Batteries
 module L = Batteries.List
 module A = Batteries.Array
 module M = Owl.Mat
-module U = Utils.Utils
-module Pm = Utils.Probmat
+module U = Matutils.Utils
 
 (************************************************************)
 (** Utility helper functions *)
@@ -26,18 +25,6 @@ let rec sequences p q =
       let tailverts = sequences tp tq in
       L.concat [L.map (L.cons hp) tailverts; L.map (L.cons hq) tailverts]
   | _, _ -> raise (Failure "lists are not the same length")
-
-(** Converts a 1xN matrix, i.e. row vector, into a list. *)
-let vec_to_list = B.(A.to_list % M.to_array)
-
-let list_to_vec l =
-  let a = A.of_list l in
-  M.of_array a 1 (A.length a)
-
-(** Converts an MxN matrix into a list of M lists of length N. *)
-let mat_to_lists m =
-  let open Batteries in
-  A.to_list (A.map (A.to_list % M.to_array) (M.to_rows m))
 
 (************************************************************)
 
@@ -144,10 +131,10 @@ let verts3 = list_vertices ~digits:3 ~uniq:true
  * for list_vertices for additional information, including info on optional
  * args. *)
 let vec_vertices ?digits ?uniq p q =
-  L.map list_to_vec (list_vertices ?digits ?uniq p q)
+  L.map U.list_to_vec (list_vertices ?digits ?uniq p q)
 
 let vec2vec_vertices ?digits ?uniq p q =
-  vec_vertices ?digits ?uniq (vec_to_list p) (vec_to_list q)
+  vec_vertices ?digits ?uniq (U.vec_to_list p) (U.vec_to_list q)
 
 (** Given a min and max matrices p and q for a tight interval, return a list of
     vertex matrices.  See documentation for list_vertices for additional info *)
@@ -242,11 +229,38 @@ let recombine_lo l p q =
   sanity_check_vec_interval p q;
   recombine (>=) l p q
 
-(** Given column vec l and tight row vecs p and q, return stochastic vec hi
-    with high values from q where l is high, low values from p where l is low.*)
-let recombine_hi l p q = 
+(** Given column vec h and tight row vecs p and q, return stochastic vec hi
+    with high values from q where h is high, low values from p where h is low.*)
+let recombine_hi h p q = 
   sanity_check_vec_interval p q;
-  recombine (<=) l q p
+  recombine (<=) h q p
+
+let iteri_1_by_2_arrays f xs ys1 ys2 =
+  let num_xs = A.length xs in
+  let num_ys = A.length ys1 in
+  if (A.length ys2) <> num_ys then raise (Failure "second and third arrays have different lengths");
+  for i = 0 to num_xs - 1 do
+    for j = 0 to num_ys - 1 do
+      f i j xs ys1 ys2
+    done
+  done
+
+let make_component_bound_mat recomb prev_bound_mat p_mat q_mat =
+  let prev_cols = M.to_cols prev_bound_mat in
+  let p_rows = M.to_rows p_mat in
+  let q_rows = M.to_rows q_mat in
+  let dim = A.length prev_cols in (* add sanity checks *)
+  let new_bound_mat = M.empty dim dim in
+  let write_new_elem i j prev_col p_row q_row =
+    let bar_row = recomb prev_cols.(i) p_rows.(j) q_rows.(j) in
+    M.(set new_bound_mat i j (get (bar_row *@ prev_col) 0 0))
+  in
+  iteri_1_by_2_arrays write_new_elem prev_cols p_rows q_rows
+
+
+let make_lo_mat = make_component_bound_mat recombine_lo
+
+let make_hi_mat = make_component_bound_mat recombine_hi
 
 (*
 let make_lo_col l p q =
