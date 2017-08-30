@@ -1,0 +1,7 @@
+(jbuild_version 1)
+
+(library 
+ ((name        matutils)
+  (public_name matutils)
+  (modules (probmat utils))
+  (libraries (batteries core owl))))

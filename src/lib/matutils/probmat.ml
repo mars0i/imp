@@ -181,62 +181,6 @@ let unif_stoch_mat dim =
   let rows = A.init dim (fun _ -> unif_stoch_vec dim) in
   M.of_rows rows
 
-(** Create a 1xN vector from a list of floats of length N. *)
-let vec_from_list ?(col=false) l =
-  match col with
-  | false -> M.of_array (A.of_list l) 1 (L.length l) 
-  | true -> M.of_array (A.of_list l) (L.length l)  1
-
-(* old:
-  let vec_from_list ?(col=false) l =
-  let dim = L.length l in
-  let v = M.vector dim in
-  L.iteri (fun i e -> M.set v 0 i e) l;
-  v *)
-
-(** Create a 1xN vector from a list of integers of length N. *)
-let vec_from_int_list ?(col=false) l =
-  vec_from_list ~col (L.map float l)
-
-(** Throw an exception if the length of list l is not equal to cols. *)
-let check_length cols l = 
-  if cols <> L.length l
-  then raise (Failure "input rows have different lengths")
-
-(* This CAN BE REVISED to use of_array. *)
-(** Create an MxN matrix from a list of M lists of N floats. 
-    Throws an exception if the internal lists have different lengths. *)
-let mat_from_lists ls =
-  match ls with
-  | [] -> M.empty 0 0
-  | l' :: ls' -> 
-      let rows, cols = L.length ls, L.length l' in
-      L.iter (check_length cols) ls';
-      let mat = M.empty rows cols in
-      let fill_row i l = L.iteri (fun j e -> M.set mat i j e) l in
-      L.iteri fill_row ls;
-      mat
-
-(** Create an MxN matrix from a list of M lists of N integers. 
-    Throws an exception if the internal lists have different lengths. *)
-let mat_from_int_lists ls =
-  mat_from_lists (L.map (fun l -> L.map float l) ls)
-
-(*********** Ways to process matrices **********)
-
-(** Apply f to all combinations of elements, i.e. to the Cartesian product of
-    all elements in xs and ys using fold_right.  Preserves order. *)
-let cross_apply f xs ys =
-  L.fold_right (fun x xacc -> L.fold_right
-                   (fun y yacc -> (f x y)::yacc)
-                   ys xacc)
-    xs [];;
-
-(** Given two lists of matrices, return a list containing the products of all 
-    combinations of one matrix from the first list and the other from the 
-    second list. *)
-let mult_mats = cross_apply M.dot
-
 
 (*********** Strings for printing **********)
 

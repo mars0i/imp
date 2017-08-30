@@ -4,4 +4,4 @@
  ((name        wf)
   (public_name wf)
   (modules (wrightfisher))
-  (libraries (batteries core owl utils))))
+  (libraries (batteries core owl matutils))))

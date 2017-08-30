@@ -1,4 +1,5 @@
 module M  = Owl.Mat
+module A = Batteries.Array
 module L = Batteries.List
 module F = Core.Float
 
@@ -182,6 +183,88 @@ let insert_before n new_elt l =
     l []
 
 let mapmap f outer = L.map (fun inner -> L.map f inner) outer
+
+(*********** Ways to process matrices **********)
+
+(** Apply f to all combinations of elements, i.e. to the Cartesian product of
+    all elements in xs and ys using fold_right.  Preserves order. *)
+let cross_apply_lists f xs ys =
+  L.fold_right (fun x xacc -> L.fold_right
+                   (fun y yacc -> (f x y)::yacc)
+                   ys xacc)
+    xs [];;
+
+(** Given two lists of matrices, return a list containing the products of all 
+    combinations of one matrix from the first list and the other from the 
+    second list. *)
+let mult_mat_lists = cross_apply_lists M.dot
+
+(** Apply f to all combinations of elements, i.e. to the Cartesian product of
+    all elements in xs and ys using fold_right.  Preserves order. *)
+let cross_apply_arrays f xs ys =
+  A.fold_right (fun x xacc -> A.fold_right
+                   (fun y yacc -> (f x y)::yacc)
+                   ys xacc)
+    xs [];;
+
+(** Given two lists of matrices, return a list containing the products of all 
+    combinations of one matrix from the first list and the other from the 
+    second list. *)
+let mult_mat_arrays = cross_apply_arrays M.dot
+
+
+(********************************************)
+(** Data structure conversions *)
+
+(** Converts a 1xN matrix, i.e. row vector, into a list. *)
+let vec_to_list = Batteries.(A.to_list % M.to_array)
+
+let list_to_vec l =
+  let a = A.of_list l in
+  M.of_array a 1 (A.length a)
+
+(** Converts an MxN matrix into a list of M lists of length N. *)
+let mat_to_lists m =
+  let open Batteries in
+  A.to_list (A.map (A.to_list % M.to_array) (M.to_rows m))
+
+(** Create a 1xN vector from a list of floats of length N. *)
+let vec_from_list ?(col=false) l =
+  match col with
+  | false -> M.of_array (A.of_list l) 1 (L.length l) 
+  | true -> M.of_array (A.of_list l) (L.length l)  1
+
+(** Create a 1xN vector from a list of integers of length N. *)
+let vec_from_int_list ?(col=false) l =
+  vec_from_list ~col (L.map float l)
+
+(** Throw an exception if the length of list l is not equal to cols. *)
+let check_length cols l = 
+  if cols <> L.length l
+  then raise (Failure "input rows have different lengths")
+
+(* This CAN BE REVISED to use of_array. *)
+(** Create an MxN matrix from a list of M lists of N floats. 
+    Throws an exception if the internal lists have different lengths. *)
+let mat_from_lists ls =
+  match ls with
+  | [] -> M.empty 0 0
+  | l' :: ls' -> 
+      let rows, cols = L.length ls, L.length l' in
+      L.iter (check_length cols) ls';
+      let mat = M.empty rows cols in
+      let fill_row i l = L.iteri (fun j e -> M.set mat i j e) l in
+      L.iteri fill_row ls;
+      mat
+
+(** Create an MxN matrix from a list of M lists of N integers. 
+    Throws an exception if the internal lists have different lengths. *)
+let mat_from_int_lists ls =
+  mat_from_lists (L.map (fun l -> L.map float l) ls)
+
+
+(********************************************)
+(** Numerical utility functions *)
 
 (** Rounds second arg to number of decimal digits specified by first arg. *)
 let roundto digits x =

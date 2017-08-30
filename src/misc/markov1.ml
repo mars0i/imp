@@ -4,7 +4,7 @@
  * wireframe plots and countour heatmaps as well as various 2D plots. *)
 
 module LL = Batteries.LazyList;;
-module P = Imp.Probmat;;
+module P = Matutils.Probmat;;
 
 let s = P.vec_from_int_list [0; 0; 0; 1; 0;]
 

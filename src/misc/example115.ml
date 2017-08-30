@@ -2,7 +2,7 @@
   * Introduction to Imprecise Probabilities. *)
 
 module M = Owl.Mat
-module P = Imp.Probmat
+module P = Matutils.Probmat
 
 let q1 = P.vec_from_list [0.5 ; 0.5 ; 0.0];;
 let q2 = P.vec_from_list [0.0 ; 0.5 ; 0.5];;

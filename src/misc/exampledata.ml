@@ -1,6 +1,6 @@
 module L  = Batteries.List
 module M = Owl.Mat
-module P = Imp.Probmat
+module P = Matutils.Probmat
 
 let omega_size = 2
 let num_dists = 2
