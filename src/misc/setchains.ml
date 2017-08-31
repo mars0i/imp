@@ -201,7 +201,7 @@ let sum_except mat i j =
     is low and low values from p where l is high.  Or pass (<=), l, and tight
     row vecs s.t. p >= q to return a stoch row vec ("q bar") with low values 
     from p where l is low.  Note that the latter swaps the normal meanings of 
-    p and q in Hartfiel, i.e. here you the arguments should be (<=), l, q, p
+    p and q in Hartfiel, i.e. here the arguments should be (<=), l, q, p
     according to the normal senses of p and q. *)
 let recombine relation p q lh =
   (* sanity check *)
@@ -233,12 +233,17 @@ let recombine_lo p q l =
     with high values from q where h is high, low values from p where h is low.*)
 let recombine_hi p q h = 
   sanity_check_vec_interval p q;
-  recombine (<=) q p h
+  recombine (<=) q p h (* note swapped args *)
 
 (* would it be faster to do full matrix mult on two whole matrices, rather than piecemeal? *)
-(** Given [recombine_lo] or [recombine_hi], the original tight interval bounds P and Q, and
-    either the previous tight component lo or hi bound (as appropriate), return the next
-    lo or hi tight component bound. *)
+(** Given [recombine_lo] or [recombine_hi], the original tight interval bounds
+    P and Q, and either the previous tight component lo or hi bound (as
+    appropriate), return the next lo or hi tight component bound.
+    NOTE:
+      If recomb is recombine_lo, the arguments should be P, Q, and the 
+      previous lo matrix.  
+      If recomb is recombine_hi, the arguments should be (notice!) Q, P,
+      and the previous hi matrix. *)
 let make_bounds_mat recomb p_mat q_mat prev_bound_mat = 
   (* sanity checks *)
   let (m, n) = M.shape prev_bound_mat in
@@ -260,15 +265,23 @@ let make_bounds_mat recomb p_mat q_mat prev_bound_mat =
 
 (** Starting from the original P and Q tight interval bounds and the previous
     component tight lo bound, make the netxt lo matrix. *)
-let make_lo_mat = make_bounds_mat recombine_lo
+let make_lo_mat p_mat q_mat prev_lo_mat =
+  make_bounds_mat recombine_lo p_mat q_mat prev_lo_mat
 
 (** Starting from the original P and Q tight interval bounds and the previous
-    component tight hi bound, make the netxt hi matrix. *)
-let make_hi_mat = make_bounds_mat recombine_hi
+    component tight hi bound, make the netxt hi matrix.
+    NOTE args are in same order as make_lo_mat. *)
+let make_hi_mat p_mat q_mat prev_hi_mat =
+  make_bounds_mat recombine_hi q_mat p_mat prev_hi_mat (* note swapped args *)
 
 (** Given [recombine_lo] or [recombine_hi], the original tight interval bounds P and Q, and
     either the previous tight component lo or hi bound (as appropriate), return the nth
-    lo or hi tight component bound. *)
+    lo or hi tight component bound.
+    NOTE:
+      If recomb is recombine_lo, the arguments should be P, Q, and the 
+      previous lo matrix.  
+      If recomb is recombine_hi, the arguments should be (notice!) Q, P,
+      and the previous hi matrix. *)
 let rec make_nth_bounds_mat recomb p_mat q_mat prev_bound_mat n =
   if n <= 0 then prev_bound_mat
   else let bound_mat = make_bounds_mat recomb p_mat q_mat prev_bound_mat in
@@ -276,11 +289,14 @@ let rec make_nth_bounds_mat recomb p_mat q_mat prev_bound_mat n =
 
 (** Starting from the original P and Q tight interval bounds and the previous
     component tight lo bound, make the nth lo matrix. *)
-let make_nth_lo_mat = make_nth_bounds_mat recombine_lo
+let make_nth_lo_mat p_mat q_mat prev_lo_mat n =
+  make_nth_bounds_mat recombine_lo p_mat q_mat prev_lo_mat n
 
 (** Starting from the original P and Q tight interval bounds and the previous
-    component tight hi bound, make the nth hi matrix. *)
-let make_nth_hi_mat = make_nth_bounds_mat recombine_hi
+    component tight hi bound, make the nth hi matrix.
+    NOTE args are in same order as make_lo_mat. *)
+let make_nth_hi_mat p_mat q_mat prev_hi_mat n =
+  make_nth_bounds_mat recombine_hi q_mat p_mat prev_hi_mat n (* note swapped args *)
 
 (** Convenience function to make boht of the nth hi and lo matrices. *)
 let make_nth_bounds_mats p_mat q_mat prev_lo_mat prev_hi_mat n =
