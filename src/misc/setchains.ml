@@ -194,7 +194,11 @@ let sum_except mat i j =
     take two vectors and create a new vector from parts of each of them,
     though in this case the order in which the elements are considered is
     not the linear order of the vectors. 
-    (Don't forget to tighten the arguments first.) *)
+    (Don't forget to tighten the arguments first.) 
+    NOTE: Functions that take a function argument such as [relation] or
+    [recomb] are mainly intended to be used for building other functions.
+    Among other things, the functionals will usually require arguments in
+    a different order depending on which function is passed.  *)
 
 (** Given a relation (>=), a column l vec and two tight row vecs p and q s.t. 
     p<=q, return a stochastic row vec ("p bar") with high values from q where l
@@ -272,16 +276,13 @@ let make_lo_mat p_mat q_mat prev_lo_mat =
     component tight hi bound, make the netxt hi matrix.
     NOTE args are in same order as make_lo_mat. *)
 let make_hi_mat p_mat q_mat prev_hi_mat =
-  make_bounds_mat recombine_hi q_mat p_mat prev_hi_mat (* note swapped args *)
+  make_bounds_mat recombine_hi p_mat q_mat prev_hi_mat (* note swapped args *)
 
-(** Given [recombine_lo] or [recombine_hi], the original tight interval bounds P and Q, and
-    either the previous tight component lo or hi bound (as appropriate), return the nth
-    lo or hi tight component bound.
-    NOTE:
-      If recomb is recombine_lo, the arguments should be P, Q, and the 
-      previous lo matrix.  
-      If recomb is recombine_hi, the arguments should be (notice!) Q, P,
-      and the previous hi matrix. *)
+(** Given [recombine_lo] or [recombine_hi], the original tight interval bounds
+    P and Q, and either the previous tight component lo or hi bound (as 
+    appropriate), return the nth lo or hi tight component bound. 
+    NOTE args do not need to be swapped if [reccombine_hi] is used; they sill
+    be swapped internall by recomb. *)
 let rec make_nth_bounds_mat recomb p_mat q_mat prev_bound_mat n =
   if n <= 0 then prev_bound_mat
   else let bound_mat = make_bounds_mat recomb p_mat q_mat prev_bound_mat in
@@ -296,9 +297,9 @@ let make_nth_lo_mat p_mat q_mat prev_lo_mat n =
     component tight hi bound, make the nth hi matrix.
     NOTE args are in same order as make_lo_mat. *)
 let make_nth_hi_mat p_mat q_mat prev_hi_mat n =
-  make_nth_bounds_mat recombine_hi q_mat p_mat prev_hi_mat n (* note swapped args *)
+  make_nth_bounds_mat recombine_hi p_mat q_mat prev_hi_mat n (* note swapped args *)
 
-(** Convenience function to make boht of the nth hi and lo matrices. *)
+(** Convenience function to make both the nth lo and hi matrices. *)
 let make_nth_bounds_mats p_mat q_mat prev_lo_mat prev_hi_mat n =
   (make_nth_lo_mat p_mat q_mat prev_lo_mat n),
   (make_nth_hi_mat p_mat q_mat prev_hi_mat n)
