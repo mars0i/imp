@@ -80,7 +80,7 @@ let tighten_interval2 pq =
 
 (** Matrix interval tightener *)
 let tighten_mat_interval m1 m2 =
-  sanity_check_vec_interval m1 m2;
+  (* sanity_check_vec_interval m1 m2; *) (* needs to be different for nxn matrices *)
   let m1_rows = M.to_rows m1 in
   let m2_rows = M.to_rows m2 in
   let m1' = M.concatenate (A.map2 (tighten_vec (>=)) m1_rows m2_rows) in
@@ -258,14 +258,6 @@ let make_component_bound_mat recomb prev_bound_mat p_mat q_mat =
 let make_lo_mat = make_component_bound_mat recombine_lo
 
 let make_hi_mat = make_component_bound_mat recombine_hi
-
-(*
-let make_lo_col l p q =
-  let rows, cols = M.shape l in
-  let lo_mat = M.empty rows cols in
-  let f lcol =
-    M.iter2_rows (recombine_lo lcol) p q
-*)
 
 
 (* FIXME THERE IS SOMETHING VERY WRONG??:
