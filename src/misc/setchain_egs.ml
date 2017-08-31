@@ -29,7 +29,7 @@ let l = M.of_array [|0.25; 0.25; 0.5|] 3 1;;
 let h = M.of_array [|0.75; 0.75; 0.5|] 3 1;;
 
 (************************************************************)
-(** Example 2.14 *)
+(** Example 2.14 (same as Ex. 2.11) *)
 
 (* Note: These are already tight. *)
 
