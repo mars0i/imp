@@ -258,12 +258,12 @@ let make_bounds_mat recomb p_mat q_mat prev_bound_mat =
   let p_rows = M.to_rows p_mat in
   let q_rows = M.to_rows q_mat in
   let new_bound_mat = M.empty n n in
-  for i = 0 to n - 1 do
-    for j = 0 to n - 1 do
-      let prev_col = prev_cols.(i) in 
-      let bar_row = recomb p_rows.(j) q_rows.(j) prev_col in
+  for j = 0 to n - 1 do    (* j indexes columns in L, as on pp. 50f *)
+    for i = 0 to n - 1 do  (* and i indexes rows in p, q *)
+      let prev_col = prev_cols.(j) in 
+      let bar_row = recomb p_rows.(i) q_rows.(i) prev_col in
       M.(set new_bound_mat i j (get (bar_row *@ prev_col) 0 0)) (* result of multiplication is 1x1 *)
-    done
+    done    (* TODO swapping these indexes gave me results in book p52, but does that make sense?? *)
   done;
   new_bound_mat
 
