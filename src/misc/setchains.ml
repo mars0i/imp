@@ -264,7 +264,7 @@ let make_bounds_mat recomb p_mat q_mat prev_bound_mat =
       let bar_row = recomb p_rows.(i) q_rows.(i) prev_col in
       M.(set new_bound_mat i j (get (bar_row *@ prev_col) 0 0)) (* result of multiplication is 1x1 *)
     done    (* TODO swapping these indexes gave me results in book on p.52, but does that make sense?? *)
-  done;
+  done;   (* NOTE In example 2.14, my results seem to be the same as Hartfiel's EXCEPT that our 2nd and 3rd rows are swaped wrt each other. *)
   new_bound_mat
 
 (** Starting from the original P and Q tight interval bounds and the previous
