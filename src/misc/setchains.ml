@@ -65,7 +65,7 @@ let tighten_vec relation this_vec other_vec =
 
 (** Given a lower and upper vector, return a tight vector interval, i.e. a list
     containing an upper and a lower vector.  *)
-let tighten_interval p q =
+let tighten_vec_interval p q =
   sanity_check_vec_interval p q;
   let p' = tighten_vec (>=) p q in
   let q' = tighten_vec (<=) q p in
@@ -74,9 +74,9 @@ let tighten_interval p q =
 (** Given a vector interval, i.e. a list containing a lower and upper vector,
     return a tight vector interval, i.e. a list containing an upper and a lower 
     vector.  *)
-let tighten_interval2 pq =
+let tighten_vec_interval2 pq =
   let p, q = pq in
-  tighten_interval p q
+  tighten_vec_interval p q
 
 (** Matrix interval tightener *)
 let tighten_mat_interval m1 m2 =
@@ -314,7 +314,7 @@ val q' : (float, Bigarray.float64_elt) M.op_t2 =
 
 
  (* make tight interval. in this case, it was already tight. *)
-# let p, q = tighten_interval p' q';;
+# let p, q = tighten_vec_interval p' q';;
 
          C0       C1       C2       C3       C4       C5
 R0 0.125753 0.127614 0.118317 0.134262 0.156025 0.132074
@@ -353,5 +353,5 @@ let p, q =
   let x = 1. /. (float size) in
   let p' = M.(x $- ((uniform 1 size) *$ 0.1)) in
   let q' = M.(p' + ((uniform 1 size) *$ 0.2)) in
-  tighten_interval p' q';;
+  tighten_vec_interval p' q';;
 *)
