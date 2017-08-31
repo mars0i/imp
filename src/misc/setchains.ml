@@ -239,7 +239,7 @@ let recombine_hi p q h =
 (** Given [recombine_lo] or [recombine_hi], the original tight interval bounds P and Q, and
     either the previous tight component lo or hi bound (as appropriate), return the next
     lo or hi tight component bound. *)
-let make_comp_bound_mat recomb p_mat q_mat prev_bound_mat = 
+let make_bounds_mat recomb p_mat q_mat prev_bound_mat = 
   (* sanity checks *)
   let (m, n) = M.shape prev_bound_mat in
   if m <> n then raise (Failure "first matrix is not square");
@@ -260,42 +260,42 @@ let make_comp_bound_mat recomb p_mat q_mat prev_bound_mat =
 
 (** Starting from the original P and Q tight interval bounds and the previous
     component tight lo bound, make the netxt lo matrix. *)
-let make_lo_mat = make_comp_bound_mat recombine_lo
+let make_lo_mat = make_bounds_mat recombine_lo
 
 (** Starting from the original P and Q tight interval bounds and the previous
     component tight hi bound, make the netxt hi matrix. *)
-let make_hi_mat = make_comp_bound_mat recombine_hi
+let make_hi_mat = make_bounds_mat recombine_hi
 
 (** Given [recombine_lo] or [recombine_hi], the original tight interval bounds P and Q, and
     either the previous tight component lo or hi bound (as appropriate), return the nth
     lo or hi tight component bound. *)
-let rec make_nth_comp_bound_mat recomb p_mat q_mat prev_bound_mat n =
+let rec make_nth_bounds_mat recomb p_mat q_mat prev_bound_mat n =
   if n <= 0 then prev_bound_mat
-  else let bound_mat = make_comp_bound_mat recomb p_mat q_mat prev_bound_mat in
-  make_nth_comp_bound_mat recomb p_mat q_mat bound_mat (n - 1)
+  else let bound_mat = make_bounds_mat recomb p_mat q_mat prev_bound_mat in
+  make_nth_bounds_mat recomb p_mat q_mat bound_mat (n - 1)
 
 (** Starting from the original P and Q tight interval bounds and the previous
     component tight lo bound, make the nth lo matrix. *)
-let make_nth_lo_mat = make_nth_comp_bound_mat recombine_lo
+let make_nth_lo_mat = make_nth_bounds_mat recombine_lo
 
 (** Starting from the original P and Q tight interval bounds and the previous
     component tight hi bound, make the nth hi matrix. *)
-let make_nth_hi_mat = make_nth_comp_bound_mat recombine_hi
+let make_nth_hi_mat = make_nth_bounds_mat recombine_hi
 
 (** Convenience function to make boht of the nth hi and lo matrices. *)
-let make_nth_comp_bound_mats p_mat q_mat prev_lo_mat prev_hi_mat n =
+let make_nth_bounds_mats p_mat q_mat prev_lo_mat prev_hi_mat n =
   (make_nth_lo_mat p_mat q_mat prev_lo_mat n),
   (make_nth_hi_mat p_mat q_mat prev_hi_mat n)
 
 (*
-let rec make_nth_comp_bound_mats p_mat q_mat prev_lo_bound prev_hi_bound n =
+let rec make_nth_bounds_mats p_mat q_mat prev_lo_bound prev_hi_bound n =
   (* sanity check *)
   if n < 0 then raise (Failure "can't have a negative number of iterations");
   (* working code *)
   if n = 0 then prev_lo_bound, prev_hi_bound
   else let lo_bound, hi_bound = 
     (make_lo_mat p_mat q_mat prev_lo_bound), (make_hi_mat p_mat q_mat prev_hi_bound)
-  in make_nth_comp_bound_mats p_mat q_mat lo_bound hi_bound (n - 1)
+  in make_nth_bounds_mats p_mat q_mat lo_bound hi_bound (n - 1)
 *)
 
 
