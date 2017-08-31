@@ -261,23 +261,6 @@ let make_bounds_mat recomb p_mat q_mat prev_bound_mat =
 (** Starting from the original P and Q tight interval bounds and the previous
     component tight lo bound, make the netxt lo matrix. *)
 let make_lo_mat = make_bounds_mat recombine_lo
-(* FIXME
- * Using pmat and qmat from Example 2.14:
-
-	# let l1 = make_lo_mat pmat qmat pmat;;
-	                                                                                                                C0     C1     C2                                                                                  R0   0.25 0.1875 0.0625
-	R1 0.3125  0.375 0.3125
-	R2 0.0625 0.1875   0.25
-	
-	val l1 : M.mat =
-
-	# let l2 = make_lo_mat pmat pmat l1;;
-	Exception: Failure "High vector sums to < 1".                                                            Raised at file "src/misc/setchains.ml", line 37, characters 31-66                                        Called from file "src/misc/setchains.ml", line 229, characters 2-31
-	Called from file "src/misc/setchains.ml", line 255, characters 20-57
-	Called from file "//toplevel//", line 1, characters 9-33
-	Called from file "toplevel/toploop.ml", line 180, characters 17-56
-*)
-
 
 (** Starting from the original P and Q tight interval bounds and the previous
     component tight hi bound, make the netxt hi matrix. *)
