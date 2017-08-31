@@ -203,9 +203,9 @@ let sum_except mat i j =
     from p where l is low.  Note that the latter swaps the normal meanings of 
     p and q in Hartfiel, i.e. here you the arguments should be (<=), l, q, p
     according to the normal senses of p and q. *)
-let recombine relation l p q =
+let recombine relation p q lh =
   (* sanity check *)
-  let m, n = M.shape l in
+  let m, n = M.shape lh in
   if (n, m) <> (M.shape p) then raise (Failure "Incompatible row and column vectors");
   (* working code *)
   let pbar = M.clone p in
@@ -220,23 +220,26 @@ let recombine relation l p q =
           find_crossover idxs') 
     | [] -> raise (Failure "bad vectors") (* this should never happen *)
   in 
-  find_crossover (idx_sort l);
+  find_crossover (idx_sort lh);
   pbar
 
 (** Given column vec l and tight row vecs p and q, return stochastic vec lo
     with high values from q where l is low, low values from p where l is high.*)
-let recombine_lo l p q = 
+let recombine_lo p q l = 
   sanity_check_vec_interval p q;
-  recombine (>=) l p q
+  recombine (>=) p q l
 
 (** Given column vec h and tight row vecs p and q, return stochastic vec hi
     with high values from q where h is high, low values from p where h is low.*)
-let recombine_hi h p q = 
+let recombine_hi p q h = 
   sanity_check_vec_interval p q;
-  recombine (<=) h q p
+  recombine (<=) q p h
 
 (* would it be faster to do full matrix mult on two whole matrices, rather than piecemeal? *)
-let make_component_bound_mat recomb prev_bound_mat p_mat q_mat =
+(** Given [recombine_lo] or [recombine_hi], the original tight interval bounds P and Q, and
+    either the previous tight component lo or hi bound (as appropriate), return the next
+    lo or hi tight component bound. *)
+let make_comp_bound_mat recomb p_mat q_mat prev_bound_mat = 
   (* sanity checks *)
   let (m, n) = M.shape prev_bound_mat in
   if m <> n then raise (Failure "first matrix is not square");
@@ -249,15 +252,51 @@ let make_component_bound_mat recomb prev_bound_mat p_mat q_mat =
   for i = 0 to n - 1 do
     for j = 0 to n - 1 do
       let prev_col = prev_cols.(i) in 
-      let bar_row = recomb prev_col p_rows.(j) q_rows.(j) in
+      let bar_row = recomb p_rows.(j) q_rows.(j) prev_col in
       M.(set new_bound_mat i j (get (bar_row *@ prev_col) 0 0)) (* result of multiplication is 1x1 *)
     done
   done;
   new_bound_mat
 
-let make_lo_mat = make_component_bound_mat recombine_lo
+(** Starting from the original P and Q tight interval bounds and the previous
+    component tight lo bound, make the netxt lo matrix. *)
+let make_lo_mat = make_comp_bound_mat recombine_lo
 
-let make_hi_mat = make_component_bound_mat recombine_hi
+(** Starting from the original P and Q tight interval bounds and the previous
+    component tight hi bound, make the netxt hi matrix. *)
+let make_hi_mat = make_comp_bound_mat recombine_hi
+
+(** Given [recombine_lo] or [recombine_hi], the original tight interval bounds P and Q, and
+    either the previous tight component lo or hi bound (as appropriate), return the nth
+    lo or hi tight component bound. *)
+let rec make_nth_comp_bound_mat recomb p_mat q_mat prev_bound_mat n =
+  if n <= 0 then prev_bound_mat
+  else let bound_mat = make_comp_bound_mat recomb p_mat q_mat prev_bound_mat in
+  make_nth_comp_bound_mat recomb p_mat q_mat bound_mat (n - 1)
+
+(** Starting from the original P and Q tight interval bounds and the previous
+    component tight lo bound, make the nth lo matrix. *)
+let make_nth_lo_mat = make_nth_comp_bound_mat recombine_lo
+
+(** Starting from the original P and Q tight interval bounds and the previous
+    component tight hi bound, make the nth hi matrix. *)
+let make_nth_hi_mat = make_nth_comp_bound_mat recombine_hi
+
+(** Convenience function to make boht of the nth hi and lo matrices. *)
+let make_nth_comp_bound_mats p_mat q_mat prev_lo_mat prev_hi_mat n =
+  (make_nth_lo_mat p_mat q_mat prev_lo_mat n),
+  (make_nth_hi_mat p_mat q_mat prev_hi_mat n)
+
+(*
+let rec make_nth_comp_bound_mats p_mat q_mat prev_lo_bound prev_hi_bound n =
+  (* sanity check *)
+  if n < 0 then raise (Failure "can't have a negative number of iterations");
+  (* working code *)
+  if n = 0 then prev_lo_bound, prev_hi_bound
+  else let lo_bound, hi_bound = 
+    (make_lo_mat p_mat q_mat prev_lo_bound), (make_hi_mat p_mat q_mat prev_hi_bound)
+  in make_nth_comp_bound_mats p_mat q_mat lo_bound hi_bound (n - 1)
+*)
 
 
 (* FIXME THERE IS SOMETHING VERY WRONG??:
@@ -316,6 +355,3 @@ let p, q =
   let q' = M.(p' + ((uniform 1 size) *$ 0.2)) in
   tighten_interval p' q';;
 *)
-
-
-
