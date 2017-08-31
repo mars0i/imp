@@ -235,28 +235,25 @@ let recombine_hi h p q =
   sanity_check_vec_interval p q;
   recombine (<=) h q p
 
-let iteri_1_by_2_arrays f xs ys1 ys2 =
-  let num_xs = A.length xs in
-  let num_ys = A.length ys1 in
-  if (A.length ys2) <> num_ys then raise (Failure "second and third arrays have different lengths");
-  for i = 0 to num_xs - 1 do
-    for j = 0 to num_ys - 1 do
-      f i j xs ys1 ys2
-    done
-  done
-
+(* would it be faster to do full matrix mult on two whole matrices, rather than piecemeal? *)
 let make_component_bound_mat recomb prev_bound_mat p_mat q_mat =
+  (* sanity checks *)
+  let (m, n) = M.shape prev_bound_mat in
+  if m <> n then raise (Failure "first matrix is not square");
+  if (m, n) <> M.shape p_mat || (m, n) <> M.shape q_mat then raise (Failure "matrices are not the same shape");
+  (* working code *)
   let prev_cols = M.to_cols prev_bound_mat in
   let p_rows = M.to_rows p_mat in
   let q_rows = M.to_rows q_mat in
-  let dim = A.length prev_cols in (* add sanity checks *)
-  let new_bound_mat = M.empty dim dim in
-  let write_new_elem i j prev_col p_row q_row =
-    let bar_row = recomb prev_cols.(i) p_rows.(j) q_rows.(j) in
-    M.(set new_bound_mat i j (get (bar_row *@ prev_col) 0 0))
-  in
-  iteri_1_by_2_arrays write_new_elem prev_cols p_rows q_rows
-
+  let new_bound_mat = M.empty n n in
+  for i = 0 to n - 1 do
+    for j = 0 to n - 1 do
+      let prev_col = prev_cols.(i) in 
+      let bar_row = recomb prev_col p_rows.(j) q_rows.(j) in
+      M.(set new_bound_mat i j (get (bar_row *@ prev_col) 0 0)) (* result of multiplication is 1x1 *)
+    done
+  done;
+  new_bound_mat
 
 let make_lo_mat = make_component_bound_mat recombine_lo
 
