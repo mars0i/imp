@@ -46,7 +46,8 @@ let qmat = M.of_array [|0.0;  0.75; 0.75;
 
 (************************************************************)
 (** Example 2.15.
-    See HartfielSetChainsErratat.txt. *)
+    See HartfielSetChainsErratat.txt for notes on how my results do
+    and don't match what's in the book. *)
 
 (* Note: These are already tight. *)
 
@@ -59,3 +60,4 @@ let qmat = M.of_array [|0.473; 0.509; 0.093;
                         0.079; 0.724; 0.272;
                         0.036; 0.528; 0.511|]
                       3 3;;
+
