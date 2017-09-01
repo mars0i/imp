@@ -1,0 +1,49 @@
+My list of (possible) errata for Hartfiel's _Markov Set-Chains_
+Marshall Abrams
+
+- p. 50: under 2., (C), (a): I believe the first inequality should be <=, 
+  not < .
+
+
+- Example 2.14, p. 52:
+
+My results for L_2, H_2, L_4, H_4, L_6, and H_6 agree with the book's
+*except that* in each matrix, my second row is equal to the book's
+third row, and vice versa (up to rounding).  My first rows agree with
+the book's.
+
+I considered the possibility that this difference could be due to a
+bug in my code.  This seems unlikely.  It would be
+wierd for the first rows to match while two other rows got switched.
+I can't imagine how that could possibly happen given the way that my
+code is structured.  (Other sorts of bugs would be a lot more
+plausible.)
+
+Moreover, in example 2.15, my results for the two matrices reported in
+the book are nearly equivalent (see below) to the book's results.  It
+would be very strange for my code to swap rows on some inputs but not
+others.
+
+So I think it's likely that rows two and three got switched at some
+stage in the process of producing the book.
+
+(My results do match what's in the book for L_44 and H_44, but all rows
+are identical in each of these matrices.)
+
+
+- Example 2.15, p. 53: I've calculated the L_5 and H_5 matrices using
+  routines in my setchains.ml.  The values listed in the text are clearly
+  rounded from longer decimals.  It seems likely that my results are
+  correct to at least four decimal places; I wouldn't think that floating
+  point errors could do that much damage in four iterations of
+  calculations on small matrices.  In that case, there are two small
+  errors in the rounded values in H_5.
+
+Using the normal mathematical 1-based indexes (not OCaml's zero-based
+indexes):
+
+The text lists the 1,2 element as 0.654, but I get 0.65476...., so it
+looks like the reported result should be 0.655.
+
+The text lists the 3,1 element as 0.101, but I get 0.1080....
+(Perhaps a zero was accidentally inserted.)

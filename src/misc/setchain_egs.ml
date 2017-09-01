@@ -29,7 +29,8 @@ let l = M.of_array [|0.25; 0.25; 0.5|] 3 1;;
 let h = M.of_array [|0.75; 0.75; 0.5|] 3 1;;
 
 (************************************************************)
-(** Example 2.14 (same as Ex. 2.11) *)
+(** Example 2.14 (same as Ex. 2.11).
+    See HartfielSetChainsErratat.txt. *)
 
 (* Note: These are already tight. *)
 
@@ -44,7 +45,8 @@ let qmat = M.of_array [|0.0;  0.75; 0.75;
                       3 3;;
 
 (************************************************************)
-(** Example 2.15 *)
+(** Example 2.15.
+    See HartfielSetChainsErratat.txt. *)
 
 (* Note: These are already tight. *)
 
