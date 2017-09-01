@@ -142,12 +142,12 @@ let next_dists tranmats dists =
 let make_distlists_from_mats tranmats init_dists =
   LL.from_loop init_dists (next_dists tranmats)
 
-(** Like make_distlists_from_mats, but uses basic parameters to generate the transition
-    matrices and initial distributions that are arguments to make_distslists.
-    Arg 1, size is the number of alleles, i.e. 2N; arg 2, init_freqs, is a 
-    list of all initial frequencies for the population (usually there is only
-    one, so the list will have only one element); arg 3, fitn_list is a list
-    of fitness structures. *)
+(** Like make_distlists_from_mats, but uses basic parameters to generate the 
+    transition matrices and initial distributions that are arguments to 
+    make_distslists.  Arg 1, size is the number of alleles, i.e. 2N; arg 2,
+    init_freqs, is a list of all initial frequencies for the population 
+    (usually there is only one, so the list will have only one element); 
+    arg 3, fitn_list is a list of fitness structures. *)
 let make_distlists size init_freqs fitn_list =
   let init_dists = L.map (make_init_dist size) init_freqs in
   let tranmats = L.map (make_tranmat size) fitn_list in
