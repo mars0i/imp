@@ -1,11 +1,12 @@
 (** Functions inspired by Hartfiel's _Markov Set-Chains_, Springer 1998.
     Please see this book for definitions of terms, proofs, algorithms. *)
 
-module B = Batteries
 module L = Batteries.List
 module A = Batteries.Array
 module M = Owl.Mat
+
 module U = Matutils.Utils
+module W = Wf.Wrightfisher
 
 (************************************************************)
 (** Utility helper functions *)
@@ -286,72 +287,48 @@ let make_hi_mat p_mat q_mat prev_hi_mat =
     the initial state.
     NOTE args do not need to be swapped ieven [reccombine_hi] is used; they
     will be swapped internall by recomb. *)
-let rec make_kth_bounds_mat recomb p_mat q_mat prev_bound_mat k =
+let rec make_kth_bounds_mat_from_prev recomb p_mat q_mat prev_bound_mat k =
   if k <= 1 then prev_bound_mat
   else let bound_mat = make_bounds_mat recomb p_mat q_mat prev_bound_mat in
-  make_kth_bounds_mat recomb p_mat q_mat bound_mat (k - 1)
+  make_kth_bounds_mat_from_prev recomb p_mat q_mat bound_mat (k - 1)
 
 (** Starting from the original P and Q tight interval bounds and the previous
     component tight lo bound, make the kth lo matrix. *)
-let make_kth_lo_mat p_mat q_mat prev_lo_mat k =
-  make_kth_bounds_mat recombine_lo p_mat q_mat prev_lo_mat k
+let make_kth_lo_mat_from_prev p_mat q_mat prev_lo_mat k =
+  make_kth_bounds_mat_from_prev recombine_lo p_mat q_mat prev_lo_mat k
 
 (** Starting from the original P and Q tight interval bounds and the previous
     component tight hi bound, make the kth hi matrix.
     NOTE args are in same order as make_lo_mat. *)
-let make_kth_hi_mat p_mat q_mat prev_hi_mat k =
-  make_kth_bounds_mat recombine_hi p_mat q_mat prev_hi_mat k (* note swapped args *)
+let make_kth_hi_mat_from_prev p_mat q_mat prev_hi_mat k =
+  make_kth_bounds_mat_from_prev recombine_hi p_mat q_mat prev_hi_mat k (* note swapped args *)
 
 (** Convenience function to make both the kth lo and hi matrices. *)
-let make_kth_bounds_mats p_mat q_mat prev_lo_mat prev_hi_mat k =
-  (make_kth_lo_mat p_mat q_mat prev_lo_mat k),
-  (make_kth_hi_mat p_mat q_mat prev_hi_mat k)
+let make_kth_bounds_mats_from_prev p_mat q_mat prev_lo_mat prev_hi_mat k =
+  (make_kth_lo_mat_from_prev p_mat q_mat prev_lo_mat k),
+  (make_kth_hi_mat_from_prev p_mat q_mat prev_hi_mat k)
+
+let make_kth_bounds_mats p_mat q_mat k = 
+  make_kth_bounds_mats_from_prev p_mat q_mat p_mat q_mat k
 
 
-(* FIXME THERE IS SOMETHING VERY WRONG??:
- (* make untight interval: *)
-# let p', q' = let size = 6 in let x = 1. /. (float size) in let p' = M.(x $- ((uniform 1 size) *$ 0.05)) in let q' = M.(p' + ((uniform 1 size) *$ 0.1)) in p', q';;
+(***************************************)
+(** Make example intervals *)
 
-         C0       C1       C2       C3       C4       C5
-R0 0.125753 0.127614 0.118317 0.134262 0.156025 0.132074
-
-         C0       C1       C2       C3       C4       C5
-R0 0.171318 0.167455 0.128352 0.219961 0.253929 0.194772
-
-val p' : (float, Bigarray.float64_elt) M.op_t2 =
-val q' : (float, Bigarray.float64_elt) M.op_t2 =
+let make_wf_interval popsize fitns1 fitns2 =
+  let [wf1; wf2] = L.map (W.make_tranmat popsize) [fitns1; fitns2] in
+  M.min2 wf1 wf2, M.max2 wf1 wf2;;
 
 
- (* make tight interval. in this case, it was already tight. *)
-# let p, q = tighten_vec_interval p' q';;
+(* example :
+let p', q' = make_wf_interval 100 
+                 {w11=1.0; w12=0.3; w22=0.1}; {w11=1.0; w12=0.9; w22=0.5};;
 
-         C0       C1       C2       C3       C4       C5
-R0 0.125753 0.127614 0.118317 0.134262 0.156025 0.132074
-
-
-         C0       C1       C2       C3       C4       C5
-R0 0.171318 0.167455 0.128352 0.219961 0.253929 0.194772
-
-val p : M.mat =
-val q : M.mat =
-
- (* make hi and lo. UH OH: lo is not <= hi.  (Nor is it >= hi.)  
-  * OR IS THIS OK?? Both sum to one, though, btw, as they should. 
-  * OH WAIT: lo and hi are supposed to be calculated wrt different
-  * column vectors.  I used the same one.  That's not right. *)
-# let lo, hi = recombine_lo l p q, recombine_hi l p q;;
-
-         C0       C1       C2       C3      C4       C5
-R0 0.171318 0.167455 0.128352 0.134262 0.20384 0.194772
+let p, q = tighten_mat_interval p' q';;
+*)
 
 
-         C0       C1       C2       C3       C4       C5
-R0 0.125753 0.149965 0.118317 0.219961 0.253929 0.132074
 
-val lo : M.mat =
-val hi : M.mat =
-
- *)
 
 
 
