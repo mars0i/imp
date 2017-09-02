@@ -315,10 +315,11 @@ let make_kth_bounds_mats p_mat q_mat k =
 (***************************************)
 (** Make example intervals *)
 
+[@@@ warning "-8"] (* disable match warning https://stackoverflow.com/a/46006016/1455243 *)
 let make_wf_interval popsize fitns1 fitns2 =
   let [wf1; wf2] = L.map (W.make_tranmat popsize) [fitns1; fitns2] in
-  M.min2 wf1 wf2, M.max2 wf1 wf2;;
-
+  M.min2 wf1 wf2, M.max2 wf1 wf2
+[@@@ warning "+8"]
 
 (* example :
 let p', q' = make_wf_interval 100 
