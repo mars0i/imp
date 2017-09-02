@@ -61,3 +61,13 @@ let qmat = M.of_array [|0.473; 0.509; 0.093;
                         0.036; 0.528; 0.511|]
                       3 3;;
 
+
+(************************************************************)
+(* Example for creating suitable vectors for testing:
+let p, q = 
+  let size = 6 in 
+  let x = 1. /. (float size) in
+  let p' = M.(x $- ((uniform 1 size) *$ 0.1)) in
+  let q' = M.(p' + ((uniform 1 size) *$ 0.2)) in
+  tighten_vec_interval p' q';;
+*)

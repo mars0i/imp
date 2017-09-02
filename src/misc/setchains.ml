@@ -27,6 +27,10 @@ let rec sequences p q =
       L.concat [L.map (L.cons hp) tailverts; L.map (L.cons hq) tailverts]
   | _, _ -> raise (Failure "lists are not the same length")
 
+(** Return the sum of all values in matrix except the one at i j. *)
+let sum_except mat i j = 
+  (M.sum mat) -. (M.get mat i j)
+
 (************************************************************)
 
 (** Reusable sanity check.  The arguments p and q should be Owl vectors,
@@ -79,14 +83,19 @@ let tighten_vec_interval2 pq =
   let p, q = pq in
   tighten_vec_interval p q
 
+(* This is very slow, taking time on the order of 2^(N/100) seconds on my MBA.
+ * Almost all of the time is in tighten_vec; the splitting and concatenation
+ * have negligible impact. *)
 (** Matrix interval tightener *)
-let tighten_mat_interval m1 m2 =
-  (* sanity_check_vec_interval m1 m2; *) (* needs to be different for nxn matrices *)
-  let m1_rows = M.to_rows m1 in
-  let m2_rows = M.to_rows m2 in
-  let m1' = M.concatenate (A.map2 (tighten_vec (>=)) m1_rows m2_rows) in
-  let m2' = M.concatenate (A.map2 (tighten_vec (<=)) m2_rows m1_rows) in
-  (m1', m2')
+let tighten_mat_interval low high =
+  (* sanity_check_vec_interval low high; *) (* needs to be different for nxn matrices *)
+  let low_rows = M.to_rows low in
+  let high_rows = M.to_rows high in
+  let low_tight_vecs  = A.map2 (tighten_vec (>=)) low_rows high_rows in
+  let high_tight_vecs = A.map2 (tighten_vec (<=)) high_rows low_rows in
+  let low'  = M.concatenate low_tight_vecs in
+  let high' = M.concatenate high_tight_vecs in
+  (low', high')
 
   
 (************************************************************)
@@ -183,10 +192,6 @@ let idx_sort v =
                       else rows, col_vec_idx_cmp in
   let idxs = L.range 0 `To (size - 1) in
   L.fast_sort (idx_cmp v) idxs
-
-(** Return the sum of all values in matrix except the one at i j. *)
-let sum_except mat i j = 
-  (M.sum mat) -. (M.get mat i j)
 
 (* Possibly fix to avoid so much redundant addition. *)
 
@@ -320,25 +325,7 @@ let make_wf_interval popsize fitns1 fitns2 =
   let [wf1; wf2] = L.map (W.make_tranmat popsize) [fitns1; fitns2] in
   M.min2 wf1 wf2, M.max2 wf1 wf2
 [@@@ warning "+8"]
-
 (* example :
-let p', q' = make_wf_interval 100 
-                 {w11=1.0; w12=0.3; w22=0.1}; {w11=1.0; w12=0.9; w22=0.5};;
-
+let p', q' = W.(make_wf_interval 100 {w11=1.0; w12=0.3; w22=0.1} {w11=1.0; w12=0.9; w22=0.5});;
 let p, q = tighten_mat_interval p' q';;
-*)
-
-
-
-
-
-
-
-(* Example for creating suitable vectors for testing:
-let p, q = 
-  let size = 6 in 
-  let x = 1. /. (float size) in
-  let p' = M.(x $- ((uniform 1 size) *$ 0.1)) in
-  let q' = M.(p' + ((uniform 1 size) *$ 0.2)) in
-  tighten_vec_interval p' q';;
 *)
