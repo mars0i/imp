@@ -4,10 +4,25 @@ module L = Batteries.List
 module F = Core.Float
 
 
-(** Measure execution time of function *)
-let time f x =
+(** Measure execution time of function of one argument.  Note that if used 
+    with partial application on a function that expects multiple arguments,
+    you might just get the time needed to return the first function, which
+    would probably not be what you wanted. *)
+let time1 f x =
     let t = Sys.time() in
     let result = f x in
+    Printf.printf "Execution time: %fs\n" (Sys.time() -. t);
+    result
+
+let time2 f x y =
+    let t = Sys.time() in
+    let result = f x y in
+    Printf.printf "Execution time: %fs\n" (Sys.time() -. t);
+    result
+
+let time3 f x y z =
+    let t = Sys.time() in
+    let result = f x y z in
     Printf.printf "Execution time: %fs\n" (Sys.time() -. t);
     result
 
