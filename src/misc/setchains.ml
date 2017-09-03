@@ -51,7 +51,7 @@ let sanity_check_vec_interval p q =
 let tighten_one_coord relation idx this_vec other_vec =
   let this_elt = M.get this_vec 0 idx in
   let f _ i acc elt =  (* sum other_vec only at other idxes *)
-    if i = idx then acc else acc +. elt in
+    if i = idx then acc else acc +. elt in  (* note this does same thing as sum_except *)
   let other_sum = M.foldi f 0. other_vec in
   if relation (other_sum +. this_elt) 1. then this_elt
   else 1. -. other_sum
