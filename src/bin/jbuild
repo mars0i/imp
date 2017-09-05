@@ -1,7 +1,13 @@
 (jbuild_version 1)
 
-(executable 
- ((name        wrightfisherPDFs)
-  (public_name wfpdf)
+;(executable 
+; ((name        wrightfisherPDFs)
+;  (public_name wfpdf)
+;  (package wf)
+;  (libraries (core wf))))
+
+(executables
+ ((names (wrightfisherPDFs setchaintest))
+	(public_names (wrightfisherPDFs setchaintest))
   (package wf)
-  (libraries (core wf))))
+  (libraries (core wf matutils))))

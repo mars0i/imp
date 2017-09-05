@@ -6,7 +6,7 @@ module A = Batteries.Array
 module M = Owl.Mat
 
 module U = Matutils.Utils
-module W = Wf.Wrightfisher
+module W = Wrightfisher
 
 (************************************************************)
 (** Utility helper functions *)
