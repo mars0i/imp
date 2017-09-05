@@ -60,14 +60,20 @@ let qmat = M.of_array [|0.473; 0.509; 0.093;
                         0.079; 0.724; 0.272;
                         0.036; 0.528; 0.511|]
                       3 3;;
+(************************************************************)
+(* example using make_wf_interval: *)
+
+let n = 100;;
+let p', q' = W.(make_wf_interval n {w11=1.0; w12=0.3; w22=0.1} {w11=1.0; w12=0.9; w22=0.5});;
+let p, q = tighten_mat_interval p' q';;
 
 
 (************************************************************)
-(* Example for creating suitable vectors for testing:
+(* ad hoc example *)
+
 let p, q = 
   let size = 6 in 
   let x = 1. /. (float size) in
   let p' = M.(x $- ((uniform 1 size) *$ 0.1)) in
   let q' = M.(p' + ((uniform 1 size) *$ 0.2)) in
   tighten_vec_interval p' q';;
-*)
