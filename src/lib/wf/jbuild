@@ -4,4 +4,4 @@
  ((name        wf)
   (public_name wf)
   (modules (wrightfisher setchains))
-  (libraries (batteries core owl matutils))))
+  (libraries (batteries core owl parmap matutils))))
