@@ -1,5 +1,7 @@
 9/2017
 
+Version up to 9/5/2017:
+
 N=300
 MBA bytecode:
 	tighten both initial mats: 9.1 secs
@@ -7,6 +9,7 @@ MBA bytecode:
 MBA native executable:
 	tighten: 3.6 secs
 	2nd lo, hi: 88.9 secs ~= 1.5 mins
+	(only slightly faster with 9/6 version, which is what I expected.)
 
 N=500
 MBA native executable:
