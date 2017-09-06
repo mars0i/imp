@@ -244,7 +244,15 @@ let recombine_hi p q h =
   sanity_check_vec_interval p q;
   recombine (<=) q p h (* note swapped args *)
 
-(* would it be faster to do full matrix mult on two whole matrices, rather than piecemeal? *)
+(** Given the original P and Q matrices [p_mat] and [q_mat], and a previous
+    tight bounds matrix [prev_bound_mat], calculate the value at i j for the
+    next tight bounds matrix.  Used by [make_bounds_mat].*)
+let calc_bound_val recomb p_mat q_mat prev_bound_mat i j =
+  let prev_col = M.col prev_bound_mat j in (* row, col are just perspectives on underlying mat *)
+  let p_row, q_row = M.row p_mat i, M.row q_mat i in
+  let bar_row = recomb p_row q_row prev_col in
+  M.(get (bar_row *@ prev_col) 0 0)
+
 (** Given [recombine_lo] or [recombine_hi], the original tight interval bounds
     P and Q, and either the previous tight component lo or hi bound (as
     appropriate), return the next lo or hi tight component bound.
@@ -254,6 +262,20 @@ let recombine_hi p q h =
       If recomb is recombine_hi, the arguments should be (notice!) Q, P,
       and the previous hi matrix. *)
 let make_bounds_mat recomb p_mat q_mat prev_bound_mat = 
+  (* sanity checks *)
+  let (m, n) = M.shape prev_bound_mat in
+  if m <> n then raise (Failure "first matrix is not square");
+  if (m, n) <> M.shape p_mat || (m, n) <> M.shape q_mat then raise (Failure "matrices are not the same shape");
+  (* working code *)
+  let new_bound_mat = M.empty n n in
+  for j = 0 to n - 1 do    (* j indexes columns in L, as on pp. 50f *)
+    for i = 0 to n - 1 do  (* and i indexes rows in p, q *)
+      M.(set new_bound_mat i j (calc_bound_val recomb p_mat q_mat prev_bound_mat i j))
+    done
+  done;
+  new_bound_mat
+
+let old_make_bounds_mat recomb p_mat q_mat prev_bound_mat = 
   (* sanity checks *)
   let (m, n) = M.shape prev_bound_mat in
   if m <> n then raise (Failure "first matrix is not square");
