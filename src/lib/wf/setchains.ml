@@ -4,6 +4,7 @@
 module L = Batteries.List
 module A = Batteries.Array
 module M = Owl.Mat
+module Pmap = Parmap
 
 module U = Matutils.Utils
 module W = Wrightfisher
@@ -244,6 +245,11 @@ let recombine_hi p q h =
   sanity_check_vec_interval p q;
   recombine (<=) q p h (* note swapped args *)
 
+let flat_idx_to_rowcol width idx =
+  let row = idx / width in
+  let col = idx mod width in
+  row, col
+
 (** Given the original P and Q matrices [p_mat] and [q_mat], and a previous
     tight bounds matrix [prev_bound_mat], calculate the value at i j for the
     next tight bounds matrix.  Used by [make_bounds_mat].*)
@@ -253,6 +259,39 @@ let calc_bound_val recomb p_mat q_mat prev_bound_mat i j =
   let bar_row = recomb p_row q_row prev_col in
   M.(get (bar_row *@ prev_col) 0 0)
 
+let calc_bound_val_from_flat_idx recomb p_mat q_mat prev_bound_mat width idx =
+  let i, j = flat_idx_to_rowcol width idx in
+  let prev_col = M.col prev_bound_mat j in (* row, col are just perspectives on underlying mat *)
+  let p_row, q_row = M.row p_mat i, M.row q_mat i in
+  let bar_row = recomb p_row q_row prev_col in
+  M.(get (bar_row *@ prev_col) 0 0)
+
+let calc_bound_val_for_parmap recomb p_mat q_mat prev_bound_mat width idx _ =
+  calc_bound_val_from_flat_idx recomb p_mat q_mat prev_bound_mat width idx
+
+let make_bounds_mat4 recomb p_mat q_mat prev_bound_mat = 
+  (* sanity checks *)
+  let (m, n) = M.shape prev_bound_mat in
+  if m <> n then raise (Failure "first matrix is not square");
+  if (m, n) <> M.shape p_mat || (m, n) <> M.shape q_mat then raise (Failure "matrices are not the same shape");
+  (* working code *)
+  let len = m * n in
+  let bounds_array = A.make len 0. in (* does nothing but needed to feed parmap--in long run, find a more elegant way *)
+  let _ = Pmap.array_float_parmapi ~result:bounds_array 
+                                   (calc_bound_val_for_parmap recomb p_mat q_mat prev_bound_mat m)
+                                   bounds_array (* this arg will be ignored! *)
+  in M.of_array bounds_array m n
+
+let make_bounds_mat3 recomb p_mat q_mat prev_bound_mat = 
+  (* sanity checks *)
+  let (m, n) = M.shape prev_bound_mat in
+  if m <> n then raise (Failure "first matrix is not square");
+  if (m, n) <> M.shape p_mat || (m, n) <> M.shape q_mat then raise (Failure "matrices are not the same shape");
+  (* working code *)
+  let len = m * n in
+  let bounds_array = A.init len (calc_bound_val_from_flat_idx recomb p_mat q_mat prev_bound_mat m) in
+  M.of_array bounds_array m n
+
 (** Given [recombine_lo] or [recombine_hi], the original tight interval bounds
     P and Q, and either the previous tight component lo or hi bound (as
     appropriate), return the next lo or hi tight component bound.
@@ -261,7 +300,7 @@ let calc_bound_val recomb p_mat q_mat prev_bound_mat i j =
       previous lo matrix.  
       If recomb is recombine_hi, the arguments should be (notice!) Q, P,
       and the previous hi matrix. *)
-let make_bounds_mat recomb p_mat q_mat prev_bound_mat = 
+let make_bounds_mat2 recomb p_mat q_mat prev_bound_mat = 
   (* sanity checks *)
   let (m, n) = M.shape prev_bound_mat in
   if m <> n then raise (Failure "first matrix is not square");
@@ -275,7 +314,7 @@ let make_bounds_mat recomb p_mat q_mat prev_bound_mat =
   done;
   new_bound_mat
 
-let old_make_bounds_mat recomb p_mat q_mat prev_bound_mat = 
+let make_bounds_mat1 recomb p_mat q_mat prev_bound_mat = 
   (* sanity checks *)
   let (m, n) = M.shape prev_bound_mat in
   if m <> n then raise (Failure "first matrix is not square");
@@ -293,6 +332,8 @@ let old_make_bounds_mat recomb p_mat q_mat prev_bound_mat =
     done
   done;
   new_bound_mat
+
+let make_bounds_mat = make_bounds_mat4;;
 
 (** Starting from the original P and Q tight interval bounds and the previous
     component tight lo bound, make the netxt lo matrix. *)
