@@ -11,19 +11,19 @@ module F = Core.Float
 let time1 f x =
     let t = Sys.time() in
     let result = f x in
-    Printf.printf "Execution time: %fs\n" (Sys.time() -. t);
+    Printf.printf "%fs\n" (Sys.time() -. t);
     result
 
 let time2 f x y =
     let t = Sys.time() in
     let result = f x y in
-    Printf.printf "Execution time: %fs\n" (Sys.time() -. t);
+    Printf.printf "%fs\n" (Sys.time() -. t);
     result
 
 let time3 f x y z =
     let t = Sys.time() in
     let result = f x y z in
-    Printf.printf "Execution time: %fs\n" (Sys.time() -. t);
+    Printf.printf "%fs\n" (Sys.time() -. t);
     result
 
 (** Returns a memoizing version of function f of one argument.
