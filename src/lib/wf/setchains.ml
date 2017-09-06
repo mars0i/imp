@@ -162,7 +162,7 @@ let mat_vertices ?digits ?uniq p q =
 let twoD_vertices vs = calculate min and max of first coord, or mins of each coord.  *)
 
 (************************************************************)
-(** Hi-Lo Method *)
+(** Hi-Lo Method (several pages near the end of chapter 2) *)
 
 (** Use separate compare functions for row and column vectors to avoid
     having a test for row vs. col inside the compare function. *)
