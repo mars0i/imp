@@ -163,7 +163,6 @@ let twoD_vertices vs = calculate min and max of first coord, or mins of each coo
 
 (************************************************************)
 (** Hi-Lo Method *)
-(* in progress *)
 
 (** Use separate compare functions for row and column vectors to avoid
     having a test for row vs. col inside the compare function. *)
