@@ -1,20 +1,28 @@
 9/2017
 
 N=300
-bytecode
+MBA bytecode:
 	tighten both initial mats: 9.1 secs
 	calc second lo and hi (i.e. first after initial: 243 secs
-native
+MBA native executable:
 	tighten: 3.6 secs
 	2nd lo, hi: 88.9 secs ~= 1.5 mins
 
 N=500
-native
+MBA native executable:
 	tighten: 16.3 secs
 	2nd lo, hi: 488.9 secs ~= 8.15 mins
 
 N=1000
-native
+MBA native executable:
 	tighten: 130.4 secs ~= 2.2 mins
 	2nd lo, hi: : 5354 secs ~= 89.2 mins
 
+N=1000
+MBP, native executable:
+	tighten:  36.25 secs
+	calc #2 lo, hi from initial p, q (=#1): 1864.94 secs ~= 31 minutes
+
+(Wow. 30 minutes for one N=1000 iteration with native code on my faster
+machine.  Wow.  I wonder if it gets faster as it converges.  Probably
+not much.  That means about 24 hours for close to 50 iterations.)
