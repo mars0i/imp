@@ -1,8 +1,20 @@
 9/2017
 
 N=300
-bytecode tighten both initial mats: 9.1 secs
-bytecode calc second lo and hi (i.e. first after initial: 243 secs
-native tighten: 3.6 secs
-native 2nd lo, hi: 88.9 secs
+bytecode
+	tighten both initial mats: 9.1 secs
+	calc second lo and hi (i.e. first after initial: 243 secs
+native
+	tighten: 3.6 secs
+	2nd lo, hi: 88.9 secs ~= 1.5 mins
+
+N=500
+native
+	tighten: 16.3 secs
+	2nd lo, hi: 488.9 secs ~= 8.15 mins
+
+N=1000
+native
+	tighten: 130.4 secs ~= 2.2 mins
+	2nd lo, hi: : 5354 secs ~= 89.2 mins
 
