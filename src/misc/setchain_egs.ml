@@ -44,6 +44,15 @@ let qmat = M.of_array [|0.0;  0.75; 0.75;
                         0.75; 0.75; 0.0|]
                       3 3;;
 
+(** Modifies a matrix to introduce Hartfiel's typo, for easier 
+    comparison with the text.  See doc/HartfielMarkovSetChainsErrata.txt *)
+let swap12 m = 
+  let m' = M.clone m in
+  M.swap_rows m' 1 2;
+  m';;
+
+let swap12both (lo, hi) = swap12 lo, swap12 hi;;
+
 (************************************************************)
 (** Example 2.15.
     See HartfielSetChainsErratat.txt for notes on how my results do
@@ -60,6 +69,10 @@ let qmat = M.of_array [|0.473; 0.509; 0.093;
                         0.079; 0.724; 0.272;
                         0.036; 0.528; 0.511|]
                       3 3;;
+
+let p = M.of_array [|0.4; 0.1; 0.2|] 1 3;;
+let q = M.of_array [|0.6; 0.3; 0.4|] 1 3;;
+
 (************************************************************)
 (* example using make_wf_interval: *)
 
