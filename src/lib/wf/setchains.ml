@@ -269,6 +269,7 @@ let calc_bound_val_from_flat_idx recomb p_mat q_mat prev_bound_mat width idx =
 let calc_bound_val_for_parmap recomb p_mat q_mat prev_bound_mat width idx _ =
   calc_bound_val_from_flat_idx recomb p_mat q_mat prev_bound_mat width idx
 
+(** Alternate version of make_bounds_mat *)
 let make_bounds_mat4 recomb p_mat q_mat prev_bound_mat = 
   (* sanity checks *)
   let (m, n) = M.shape prev_bound_mat in
@@ -282,6 +283,7 @@ let make_bounds_mat4 recomb p_mat q_mat prev_bound_mat =
                                    bounds_array (* this arg will be ignored! *)
   in M.of_array bounds_array m n
 
+(** Alternate version of make_bounds_mat *)
 let make_bounds_mat3 recomb p_mat q_mat prev_bound_mat = 
   (* sanity checks *)
   let (m, n) = M.shape prev_bound_mat in
@@ -292,14 +294,7 @@ let make_bounds_mat3 recomb p_mat q_mat prev_bound_mat =
   let bounds_array = A.init len (calc_bound_val_from_flat_idx recomb p_mat q_mat prev_bound_mat m) in
   M.of_array bounds_array m n
 
-(** Given [recombine_lo] or [recombine_hi], the original tight interval bounds
-    P and Q, and either the previous tight component lo or hi bound (as
-    appropriate), return the next lo or hi tight component bound.
-    NOTE:
-      If recomb is recombine_lo, the arguments should be P, Q, and the 
-      previous lo matrix.  
-      If recomb is recombine_hi, the arguments should be (notice!) Q, P,
-      and the previous hi matrix. *)
+(** Alternate version of make_bounds_mat *)
 let make_bounds_mat2 recomb p_mat q_mat prev_bound_mat = 
   (* sanity checks *)
   let (m, n) = M.shape prev_bound_mat in
@@ -314,6 +309,7 @@ let make_bounds_mat2 recomb p_mat q_mat prev_bound_mat =
   done;
   new_bound_mat
 
+(** Alternate version of make_bounds_mat *)
 let make_bounds_mat1 recomb p_mat q_mat prev_bound_mat = 
   (* sanity checks *)
   let (m, n) = M.shape prev_bound_mat in
@@ -333,6 +329,14 @@ let make_bounds_mat1 recomb p_mat q_mat prev_bound_mat =
   done;
   new_bound_mat
 
+(** Given [recombine_lo] or [recombine_hi], the original tight interval bounds
+    P and Q, and either the previous tight component lo or hi bound (as
+    appropriate), return the next lo or hi tight component bound.
+    NOTE:
+      If recomb is recombine_lo, the arguments should be P, Q, and the 
+      previous lo matrix.  
+      If recomb is recombine_hi, the arguments should be (notice!) Q, P,
+      and the previous hi matrix. *)
 let make_bounds_mat = make_bounds_mat4;;
 
 (** Starting from the original P and Q tight interval bounds and the previous
