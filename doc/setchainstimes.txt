@@ -29,3 +29,21 @@ MBP, native executable:
 (Wow. 30 minutes for one N=1000 iteration with native code on my faster
 machine.  Wow.  I wonder if it gets faster as it converges.  Probably
 not much.  That means about 24 hours for close to 50 iterations.)
+
+------------
+
+MBA after introducing Parmap:
+
+~/docs/src/ml/imp(master)$ date; time _build/default/src/bin/setchaintest.exe 1000 ; date
+Wed Sep  6 23:05:47 CDT 2017
+Top level run command: N=1000
+make initial interval: 2.463601s
+tighten it: 138.793038s
+calculate lo2, hi2: 0.219433s
+141.477390s
+
+real	50m30.176s
+user	90m10.341s
+sys	0m34.332s
+Wed Sep  6 23:56:17 CDT 2017
+
