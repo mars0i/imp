@@ -41,12 +41,21 @@ make initial interval: 2.463601s
 tighten it: 138.793038s
 calculate lo2, hi2: 0.219433s
 141.477390s
-
 real	50m30.176s
 user	90m10.341s
 sys	0m34.332s
 Wed Sep  6 23:56:17 CDT 2017
 
-It's wierd that the internal times are 2 mins 20 secs total, but the
+[It's wierd that the internal times are 2 mins 20 secs total, but the
 run time is 50 minutes, but still--without parmap I can't really
-run N=1000 on the MBA at all.
+run N=1000 on the MBA at all.]
+
+~/docs/src/ml/imp(master)$ time _build/default/src/bin/setchaintest.exe 500
+N=500
+make initial interval: cpu: 0.622555s wall: 0.570224s
+tighten it: cpu: 16.674154s wall: 17.782483s
+calculate lo2, hi2: cpu: 0.099781s wall: 273.144847s
+cpu: 17.397236s wall: 291.498261s
+real	4m51.542s
+user	8m13.447s
+sys	0m3.768s
