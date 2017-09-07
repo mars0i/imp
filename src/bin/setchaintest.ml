@@ -2,7 +2,7 @@ module W = Wf.Wrightfisher
 module U = Matutils.Utils
 module S = Wf.Setchains
 
-let n = 300;;
+let n = 1000;;
 
 Printf.printf "N=%d\n" n;;
 
@@ -19,6 +19,7 @@ let next_bounds_test mk_bounds p_mat q_mat =
 print_string "current default lo, hi: ";;
 let lo2, hi2 = Matutils.Utils.time3 S.make_kth_bounds_mats p q 2;;
 
+(*
 print_string "mat1: ";;
 let lo2', hi2' = Matutils.Utils.time3 next_bounds_test S.make_bounds_mat1 p q in
 Printf.printf "lo: %B\n" (lo2 = lo2');
@@ -38,3 +39,4 @@ print_string "mat4: ";;
 let lo2', hi2' = Matutils.Utils.time3 next_bounds_test S.make_bounds_mat4 p q in
 Printf.printf "lo: %B\n" (lo2 = lo2');
 Printf.printf "hi: %B\n" (hi2 = hi2');;
+*)
