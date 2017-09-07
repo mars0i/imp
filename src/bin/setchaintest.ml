@@ -24,9 +24,11 @@ let commandline = Command.basic ~summary:description
                                 Spec.(empty +> anon ("N" %: int))
                                 run_test;;
 
-let () = Command.run ~version:"1.0"
-                     ~build_info:"setchaintest, (c) 2017 Marshall Abrams" 
-                     commandline
+let wrap_run version build_info commandline = 
+  Command.run ~version:version ~build_info:build_info commandline
+in
+U.time3 wrap_run "1.1" "setchaintest, (c) 2017 Marshall Abrams" commandline
+;
 
 (*
 let next_bounds_test mk_bounds p_mat q_mat = 
