@@ -47,3 +47,6 @@ user	90m10.341s
 sys	0m34.332s
 Wed Sep  6 23:56:17 CDT 2017
 
+It's wierd that the internal times are 2 mins 20 secs total, but the
+run time is 50 minutes, but still--without parmap I can't really
+run N=1000 on the MBA at all.
