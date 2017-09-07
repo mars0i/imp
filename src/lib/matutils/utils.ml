@@ -9,21 +9,21 @@ module F = Core.Float
     you might just get the time needed to return the first function, which
     would probably not be what you wanted. *)
 let time1 f x =
-    let t = Sys.time() in
+    let cpu_time, wall_time = Sys.time(), Unix.gettimeofday() in
     let result = f x in
-    Printf.printf "%fs\n" (Sys.time() -. t);
+    Printf.printf "cpu: %fs, wall: %fs\n" (Sys.time() -. cpu_time) (Unix.gettimeofday() -. wall_time);
     result
 
 let time2 f x y =
-    let t = Sys.time() in
+    let cpu_time, wall_time = Sys.time(), Unix.gettimeofday() in
     let result = f x y in
-    Printf.printf "%fs\n" (Sys.time() -. t);
+    Printf.printf "cpu: %fs, wall: %fs\n" (Sys.time() -. cpu_time) (Unix.gettimeofday() -. wall_time);
     result
 
 let time3 f x y z =
-    let t = Sys.time() in
+    let cpu_time, wall_time = Sys.time(), Unix.gettimeofday() in
     let result = f x y z in
-    Printf.printf "%fs\n" (Sys.time() -. t);
+    Printf.printf "cpu: %fs, wall: %fs\n" (Sys.time() -. cpu_time) (Unix.gettimeofday() -. wall_time);
     result
 
 (** Returns a memoizing version of function f of one argument.
