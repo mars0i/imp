@@ -123,3 +123,29 @@ Thu Sep  7 16:18:51 CDT 2017
 in which there is a huge overall difference.  8 minutes with Parmap,
 2-1/2 hours without, a ratio of 17.25 for overall runtime, and 18.75X
 for that one function.  Wow.  Thanks Parmap!]
+
+----------------------
+MBP with Parmap and without:
+
+~/docs/src/ml/imp(master)$ date ; _build/default/src/bin/setchaintest.exe 1000; date
+Fri Sep  8 11:14:54 CDT 2017
+N=1000
+
+make initial interval: cpu: 0.886070s, wall: 0.619621s
+tighten it: cpu: 33.392279s, wall: 33.393520s
+
+calculate lo2, hi2 using Parmap, using make_bounds_mat4: cpu: 0.070257s, wall: 424.630305s
+
+calculate lo2, hi2 without Parmap using make_bounds_mat3: cpu: 1712.451286s, wall: 5737.566875s
+
+Results of both calculations are the same? true
+Ratio between make_bounds_mat4 and make_bounds_mat3 wall times ~= 13.511902
+
+Extra check: calculate lo2, hi2 without Parmap using (earlier) make_bounds_mat1: cpu: 1720.531376s, wall: 6459.017996s
+
+Results are the same? true
+
+Overall time:
+cpu: 3467.339869s, wall: 12655.236911s
+Fri Sep  8 14:45:49 CDT 2017
+
