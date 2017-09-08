@@ -45,6 +45,7 @@ real	50m30.176s
 user	90m10.341s
 sys	0m34.332s
 Wed Sep  6 23:56:17 CDT 2017
+[NOTE: This is not miraculous, but it is a huge speedup.]
 
 [It's wierd that the internal times are 2 mins 20 secs total, but the
 run time is 50 minutes, but still--without parmap I can't really
@@ -59,3 +60,4 @@ cpu: 17.397236s wall: 291.498261s
 real	4m51.542s
 user	8m13.447s
 sys	0m3.768s
+[NOTE: This is not miraculous, but it is close to a 2X speedup.]
