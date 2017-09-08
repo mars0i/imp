@@ -61,3 +61,42 @@ real	4m51.542s
 user	8m13.447s
 sys	0m3.768s
 [NOTE: This is not miraculous, but it is close to a 2X speedup.]
+
+------------
+MBP with Parmap:
+
+~/docs/src/ml/imp(master)$ date; time _build/default/src/bin/setchaintest.exe 1000; date
+Thu Sep  7 13:53:02 CDT 2017
+N=1000
+make initial interval: cpu: 0.865497s, wall: 0.596823s
+tighten it: cpu: 34.689715s, wall: 34.713636s
+calculate lo2, hi2:
+cpu: 0.065128s, wall: 442.184503s
+	Core.run:
+cpu: 35.620504s, wall: 477.495054s
+
+real	7m57.517s
+user	47m2.544s
+sys	0m2.721s
+Thu Sep  7 14:00:59 CDT 2017
+
+...............
+
+Reverting to no Parmap, i.e. make_bounds_mat1:
+~/docs/src/ml/imp(master)$ date; time _build/default/src/bin/setchaintest.exe 1000; date
+Thu Sep  7 14:00:59 CDT 2017
+N=1000
+make initial interval: cpu: 0.877895s, wall: 0.606439s
+tighten it: cpu: 32.903994s, wall: 32.904554s
+calculate lo2, hi2: cpu: 1938.218062s, wall: 8237.634971s
+cpu: 1972.000079s, wall: 8271.146047s
+
+real	137m51.168s
+user	32m47.714s
+sys	0m4.318s
+Thu Sep  7 16:18:51 CDT 2017
+
+[OK, those are before and after (or rather after and before) times
+in which there is a huge overall difference.  8 minutes with Parmap,
+2-1/2 hours without, a ratio of 17.25 for overall runtime, and 18.75X
+for that one function.  Wow.  Thanks Parmap!]
