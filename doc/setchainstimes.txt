@@ -93,3 +93,7 @@ real	137m51.168s
 user	32m47.714s
 sys	0m4.318s
 Thu Sep  7 16:18:51 CDT 2017
+
+[OK, those are before and after (or rather after and before) times
+in which there is a huge overall difference.  8 minutes with Parmap,
+2-1/2 hours without, a ratio of 17.25.
