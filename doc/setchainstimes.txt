@@ -96,4 +96,5 @@ Thu Sep  7 16:18:51 CDT 2017
 
 [OK, those are before and after (or rather after and before) times
 in which there is a huge overall difference.  8 minutes with Parmap,
-2-1/2 hours without, a ratio of 17.25.
+2-1/2 hours without, a ratio of 17.25 for overall runtime, and 18.75X
+for that one function.  Wow.  Thanks Parmap!]
