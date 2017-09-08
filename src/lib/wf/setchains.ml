@@ -245,6 +245,7 @@ let recombine_hi p q h =
   sanity_check_vec_interval p q;
   recombine (<=) q p h (* note swapped args *)
 
+(* TODO: rewrite with Pervasives.modf? *)
 let flat_idx_to_rowcol width idx =
   let row = idx / width in
   let col = idx mod width in
@@ -252,7 +253,7 @@ let flat_idx_to_rowcol width idx =
 
 (** Given the original P and Q matrices [p_mat] and [q_mat], and a previous
     tight bounds matrix [prev_bound_mat], calculate the value at i j for the
-    next tight bounds matrix.  Used by [make_bounds_mat].*)
+    next tight bounds matrix.  Used by [hilo_mult].*)
 let calc_bound_val recomb p_mat q_mat prev_bound_mat i j =
   let prev_col = M.col prev_bound_mat j in (* row, col are just perspectives on underlying mat *)
   let p_row, q_row = M.row p_mat i, M.row q_mat i in
@@ -269,13 +270,9 @@ let calc_bound_val_from_flat_idx recomb p_mat q_mat prev_bound_mat width idx =
 let calc_bound_val_for_parmap recomb p_mat q_mat prev_bound_mat width idx _ =
   calc_bound_val_from_flat_idx recomb p_mat q_mat prev_bound_mat width idx
 
-(** Alternate version of make_bounds_mat *)
-let make_bounds_mat4 recomb p_mat q_mat prev_bound_mat = 
-  (* sanity checks *)
-  let (m, n) = M.shape prev_bound_mat in
-  if m <> n then raise (Failure "first matrix is not square");
-  if (m, n) <> M.shape p_mat || (m, n) <> M.shape q_mat then raise (Failure "matrices are not the same shape");
-  (* working code *)
+(** Alternate version of hilo_mult *)
+let hilo_mult4 recomb p_mat q_mat prev_bound_mat = 
+  let (m, n) = M.shape p_mat in
   let len = m * n in
   let bounds_array = A.make len 0. in (* does nothing but needed to feed parmap--in long run, find a more elegant way *)
   let _ = Pmap.array_float_parmapi ~result:bounds_array 
@@ -283,25 +280,18 @@ let make_bounds_mat4 recomb p_mat q_mat prev_bound_mat =
                                    bounds_array (* this arg will be ignored! *)
   in M.of_array bounds_array m n
 
-(** Alternate version of make_bounds_mat *)
-let make_bounds_mat3 recomb p_mat q_mat prev_bound_mat = 
-  (* sanity checks *)
-  let (m, n) = M.shape prev_bound_mat in
-  if m <> n then raise (Failure "first matrix is not square");
-  if (m, n) <> M.shape p_mat || (m, n) <> M.shape q_mat then raise (Failure "matrices are not the same shape");
-  (* working code *)
+(** Alternate version of hilo_mult *)
+let hilo_mult3 recomb p_mat q_mat prev_bound_mat = 
+  let (m, n) = M.shape p_mat in
   let len = m * n in
-  let bounds_array = A.init len (calc_bound_val_from_flat_idx recomb p_mat q_mat prev_bound_mat m) in
+  let bounds_array = A.init len (calc_bound_val_from_flat_idx recomb p_mat q_mat prev_bound_mat m)
+  in
   M.of_array bounds_array m n
 
-(** Alternate version of make_bounds_mat *)
-let make_bounds_mat2 recomb p_mat q_mat prev_bound_mat = 
-  (* sanity checks *)
-  let (m, n) = M.shape prev_bound_mat in
-  if m <> n then raise (Failure "first matrix is not square");
-  if (m, n) <> M.shape p_mat || (m, n) <> M.shape q_mat then raise (Failure "matrices are not the same shape");
-  (* working code *)
-  let new_bound_mat = M.empty n n in
+(** Alternate version of hilo_mult *)
+let hilo_mult2 recomb p_mat q_mat prev_bound_mat = 
+  let (m, n) = M.shape p_mat in
+  let new_bound_mat = M.empty m n in
   for j = 0 to n - 1 do    (* j indexes columns in L, as on pp. 50f *)
     for i = 0 to n - 1 do  (* and i indexes rows in p, q *)
       M.(set new_bound_mat i j (calc_bound_val recomb p_mat q_mat prev_bound_mat i j))
@@ -309,19 +299,15 @@ let make_bounds_mat2 recomb p_mat q_mat prev_bound_mat =
   done;
   new_bound_mat
 
-(** Alternate version of make_bounds_mat *)
-let make_bounds_mat1 recomb p_mat q_mat prev_bound_mat = 
-  (* sanity checks *)
-  let (m, n) = M.shape prev_bound_mat in
-  if m <> n then raise (Failure "first matrix is not square");
-  if (m, n) <> M.shape p_mat || (m, n) <> M.shape q_mat then raise (Failure "matrices are not the same shape");
-  (* working code *)
+(** Alternate version of hilo_mult *)
+let hilo_mult1 recomb p_mat q_mat prev_bound_mat = 
+  let (m, n) = M.shape p_mat in
   let prev_cols = M.to_cols prev_bound_mat in
   let p_rows = M.to_rows p_mat in
   let q_rows = M.to_rows q_mat in
-  let new_bound_mat = M.empty n n in
-  for j = 0 to n - 1 do    (* j indexes columns in L, as on pp. 50f *)
-    for i = 0 to n - 1 do  (* and i indexes rows in p, q *)
+  let new_bound_mat = M.empty m n in
+  for j = 0 to n - 1 do    (* j indexes columns in L and in p and q, as on pp. 50f *)
+    for i = 0 to m - 1 do  (* and i indexes rows in p, q *)
       let prev_col = prev_cols.(j) in 
       let bar_row = recomb p_rows.(i) q_rows.(i) prev_col in
       M.(set new_bound_mat i j (get (bar_row *@ prev_col) 0 0)) (* result of multiplication is 1x1 *)
@@ -337,18 +323,18 @@ let make_bounds_mat1 recomb p_mat q_mat prev_bound_mat =
       previous lo matrix.  
       If recomb is recombine_hi, the arguments should be (notice!) Q, P,
       and the previous hi matrix. *)
-let make_bounds_mat = make_bounds_mat4;;
+let hilo_mult = hilo_mult4;;
 
 (** Starting from the original P and Q tight interval bounds and the previous
     component tight lo bound, make the netxt lo matrix. *)
 let make_lo_mat p_mat q_mat prev_lo_mat =
-  make_bounds_mat recombine_lo p_mat q_mat prev_lo_mat
+  hilo_mult recombine_lo p_mat q_mat prev_lo_mat
 
 (** Starting from the original P and Q tight interval bounds and the previous
     component tight hi bound, make the netxt hi matrix.
     NOTE args are in same order as make_lo_mat. *)
 let make_hi_mat p_mat q_mat prev_hi_mat =
-  make_bounds_mat recombine_hi p_mat q_mat prev_hi_mat (* note swapped args *)
+  hilo_mult recombine_hi p_mat q_mat prev_hi_mat (* note swapped args *)
 
 (** Given [recombine_lo] or [recombine_hi], the original tight interval bounds
     P and Q, and either the previous tight component lo or hi bound (as 
@@ -360,7 +346,7 @@ let make_hi_mat p_mat q_mat prev_hi_mat =
     will be swapped internall by recomb. *)
 let rec make_kth_bounds_mat_from_prev recomb p_mat q_mat prev_bound_mat k =
   if k <= 1 then prev_bound_mat
-  else let bound_mat = make_bounds_mat recomb p_mat q_mat prev_bound_mat in
+  else let bound_mat = hilo_mult recomb p_mat q_mat prev_bound_mat in
   make_kth_bounds_mat_from_prev recomb p_mat q_mat bound_mat (k - 1)
 
 (** Starting from the original P and Q tight interval bounds and the previous
