@@ -31,7 +31,7 @@ let run_test n () =
 
   print_string "\nExtra check: calculate lo2, hi2 without Parmap using (earlier) make_bounds_mat1: ";
   let lo2'', hi2'' = Matutils.Utils.time3 Slow1.make_kth_bounds_mats p q 2  in
-  Printf.printf "\nResults are the same? %B\n" ((lo2, hi2) = (lo2'', hi2''));
+  Printf.printf "Results are the same? %B\n" ((lo2, hi2) = (lo2'', hi2''));
 
   print_string "\nOverall time:\n"
 
