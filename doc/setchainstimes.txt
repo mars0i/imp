@@ -81,4 +81,15 @@ Thu Sep  7 14:00:59 CDT 2017
 ...............
 
 Reverting to no Parmap, i.e. make_bounds_mat1:
+~/docs/src/ml/imp(master)$ date; time _build/default/src/bin/setchaintest.exe 1000; date
+Thu Sep  7 14:00:59 CDT 2017
+N=1000
+make initial interval: cpu: 0.877895s, wall: 0.606439s
+tighten it: cpu: 32.903994s, wall: 32.904554s
+calculate lo2, hi2: cpu: 1938.218062s, wall: 8237.634971s
+cpu: 1972.000079s, wall: 8271.146047s
 
+real	137m51.168s
+user	32m47.714s
+sys	0m4.318s
+Thu Sep  7 16:18:51 CDT 2017
