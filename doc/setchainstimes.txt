@@ -63,6 +63,29 @@ sys	0m3.768s
 [NOTE: This is not miraculous, but it is close to a 2X speedup.]
 
 ------------
+MBA with Parmap:
+
+~/docs/src/ml/imp(master)$ _build/default/src/bin/setchaintest.exe 500
+N=500
+
+make initial interval: cpu: 0.666213s wall: 0.528893s
+tighten it: cpu: 16.157421s wall: 16.369767s
+
+calculate lo2, hi2 using Parmap, using make_bounds_mat4: cpu: 0.075795s wall: 266.586505s
+
+calculate lo2, hi2 without Parmap using make_bounds_mat3: cpu: 462.568765s wall: 464.309224s
+
+Results of both calculations are the same? true
+Ratio between make_bounds_mat4 and make_bounds_mat3 wall times ~= 1.741678
+
+Extra check: calculate lo2, hi2 without Parmap using (earlier) make_bounds_mat1: cpu: 453.482607s wall: 455.165596s
+
+Results are the same? true
+
+Overall time:
+cpu: 932.958165s wall: 1202.967443s
+
+------------
 MBP with Parmap:
 
 ~/docs/src/ml/imp(master)$ date; time _build/default/src/bin/setchaintest.exe 1000; date
