@@ -1,6 +1,7 @@
 
 (** IDENTICAL TO setchains.ml as of git tag cafac79, but using earlier 
-    make_bounds_mat3 rather than the Parmap-based make_bounds_mat4. *)
+    make_bounds_mat3 rather than the Parmap-based make_bounds_mat4.
+    See line 345. *)
 
 (** Functions inspired by Hartfiel's _Markov Set-Chains_, Springer 1998.
     Please see this book for definitions of terms, proofs, algorithms. *)
