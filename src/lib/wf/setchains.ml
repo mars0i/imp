@@ -214,16 +214,12 @@ let idx_sort v =
     p and q in Hartfiel, i.e. here the arguments should be (<=), l, q, p
     according to the normal senses of p and q. *)
 let recombine relation p q lh =
-  (* sanity check *)
-  let m, n = M.shape lh in
-  if (n, m) <> (M.shape p) then raise (Failure "Incompatible row and column vectors");
-  (* working code *)
   let pbar = M.clone p in
   let rec find_crossover idxs =
     match idxs with
     | i::idxs' -> 
         let qi = M.get q 0 i in
-        let sum_rest = sum_except pbar 0 i in (* pbar begins <= 1 if p<=q, or >= 1 if p, q swapped *)
+        let sum_rest = sum_except pbar 0 i in (* pbar begins <= 1 if p<=q, or >= 1 if p, q swapped *) (* TODO Can this be made more efficient?? *)
         if relation (qi +. sum_rest) 1.
         then M.set pbar 0 i (1. -. sum_rest) (* return--last iter put it over/under *)
         else (M.set pbar 0 i qi;             (* still <= 1, or >=1; try next one *)
@@ -236,13 +232,11 @@ let recombine relation p q lh =
 (** Given column vec l and tight row vecs p and q, return stochastic vec lo
     with high values from q where l is low, low values from p where l is high.*)
 let recombine_lo p q l = 
-  sanity_check_vec_interval p q;
   recombine (>=) p q l
 
 (** Given column vec h and tight row vecs p and q, return stochastic vec hi
     with high values from q where h is high, low values from p where h is low.*)
 let recombine_hi p q h = 
-  sanity_check_vec_interval p q;
   recombine (<=) q p h (* note swapped args *)
 
 (* TODO: rewrite with Pervasives.modf? *)
@@ -265,7 +259,7 @@ let calc_bound_val_from_flat_idx recomb p_mat q_mat prev_bound_mat width idx =
   let prev_col = M.col prev_bound_mat j in (* row, col are just perspectives on underlying mat *)
   let p_row, q_row = M.row p_mat i, M.row q_mat i in
   let bar_row = recomb p_row q_row prev_col in
-  M.(get (bar_row *@ prev_col) 0 0)
+  M.(get (bar_row *@ prev_col) 0 0)  (* TODO is this really the fastest way to calculate this sum?  Maybe it would be better to do it by hand. *)
 
 let calc_bound_val_for_parmap recomb p_mat q_mat prev_bound_mat width idx _ =
   calc_bound_val_from_flat_idx recomb p_mat q_mat prev_bound_mat width idx
