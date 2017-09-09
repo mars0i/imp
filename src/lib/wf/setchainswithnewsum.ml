@@ -1,3 +1,7 @@
+(* just like setchains.ml but with the old recombine replaced by one
+ * slightly modified to follow suggetion at 
+ * https://stackoverflow.com/a/46127060/1455243 *)
+
 (** Functions inspired by Hartfiel's _Markov Set-Chains_, Springer 1998.
     Please see this book for definitions of terms, proofs, algorithms. *)
 
@@ -249,7 +253,7 @@ let recombine_new relation p q lh =
   find_crossover (idx_sort lh);
   pbar
 
-let recombine = recombine_old
+let recombine = recombine_new
 
 (** Given column vec l and tight row vecs p and q, return stochastic vec lo
     with high values from q where l is low, low values from p where l is high.*)

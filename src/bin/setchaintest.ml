@@ -4,6 +4,7 @@ module S = Wf.Setchains
 module SS = Wf.Setchainswithnewsum
 module Slow1 = Wf.Slow1setchains
 module Slow3 = Wf.Slow3setchains
+module M = Owl.Mat
 
 module Command = Core.Command
 module Spec = Core.Command.Spec
@@ -33,7 +34,7 @@ let run_test n () =
   let noparmap_duration = Unix.gettimeofday() -. noparmap_start_time in
   *)
 
-  Printf.printf "\nResults of both calculations are the same? %B\n%!" ((lo2, hi2) = (lo2', hi2'));
+  Printf.printf "\nResults of both calculations are the same? %B diffs: %.70f %.70f\n%!" ((lo2, hi2) = (lo2', hi2')) M.(sum (lo2 - lo2')) M.(sum (hi2 - hi2'));
   Printf.printf "Ratio ~= %f\n%!"
                 (newrecombine_duration /. parmap_duration);
   (*
