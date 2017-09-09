@@ -1,6 +1,7 @@
 module W = Wf.Wrightfisher
 module U = Matutils.Utils
 module S = Wf.Setchains
+module SS = Wf.Setchainswithnewsum
 module Slow1 = Wf.Slow1setchains
 module Slow3 = Wf.Slow3setchains
 
@@ -20,14 +21,21 @@ let run_test n () =
   let lo2, hi2 = Matutils.Utils.time3 S.make_kth_bounds_mats p q 2 in
   let parmap_duration = Unix.gettimeofday() -. parmap_start_time in
 
+  print_string "\ncalculate lo2, hi2 without new recombine algorithm: ";
+  let newrecombine_start_time = Unix.gettimeofday() in
+  let lo2', hi2' = Matutils.Utils.time3 SS.make_kth_bounds_mats p q 2  in
+  let newrecombine_duration = Unix.gettimeofday() -. newrecombine_start_time in
+
+  (*
   print_string "\ncalculate lo2, hi2 without Parmap using make_bounds_mat3: ";
   let noparmap_start_time = Unix.gettimeofday() in
   let lo2', hi2' = Matutils.Utils.time3 Slow3.make_kth_bounds_mats p q 2  in
   let noparmap_duration = Unix.gettimeofday() -. noparmap_start_time in
+  *)
 
   Printf.printf "\nResults of both calculations are the same? %B\n%!" ((lo2, hi2) = (lo2', hi2'));
-  Printf.printf "Ratio between make_bounds_mat4 and make_bounds_mat3 wall times ~= %f\n%!"
-                (noparmap_duration /. parmap_duration);
+  Printf.printf "Ratio ~= %f\n%!"
+                (newrecombine_duration /. parmap_duration);
   (*
   print_string "\nExtra check: calculate lo2, hi2 without Parmap using (earlier) make_bounds_mat1: ";
   let lo2'', hi2'' = Matutils.Utils.time3 Slow1.make_kth_bounds_mats p q 2  in

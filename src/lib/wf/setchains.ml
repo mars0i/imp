@@ -213,7 +213,7 @@ let idx_sort v =
     from p where l is low.  Note that the latter swaps the normal meanings of 
     p and q in Hartfiel, i.e. here the arguments should be (<=), l, q, p
     according to the normal senses of p and q. *)
-let recombine relation p q lh =
+let recombine_old relation p q lh =
   let pbar = M.clone p in
   let rec find_crossover idxs =
     match idxs with
@@ -228,6 +228,46 @@ let recombine relation p q lh =
   in 
   find_crossover (idx_sort lh);
   pbar
+
+(* new version using suggestion of Evik Tak: https://stackoverflow.com/a/46127060/1455243 *)
+let recombine_new relation p q lh =
+  let pbar = M.clone p in
+  let psum = ref (M.sum pbar) in  (* FIXME make this functional *)
+  let rec find_crossover idxs =
+    match idxs with
+    | i::idxs' -> 
+        let qi = M.get q 0 i in
+        let sum_rest = !psum -. (M.get pbar 0 i) in (* pbar begins <= 1 if p<=q, or >= 1 if p, q swapped *)
+        let sum_rest_plus_qi = (qi +. sum_rest) in
+        if relation sum_rest_plus_qi 1.
+        then M.set pbar 0 i (1. -. sum_rest) (* return--last iter put it over/under *)
+        else (M.set pbar 0 i qi;             (* still <= 1, or >=1; try next one *)
+              psum := sum_rest_plus_qi;
+              find_crossover idxs') 
+    | [] -> raise (Failure "bad vectors") (* this should never happen *)
+  in 
+  find_crossover (idx_sort lh);
+  pbar
+
+(* Check whether two row vectors are identical and return info on first non-match *)
+let find_first_difference v1 v2 =
+  let _, n = M.shape v1 in
+  let rec findit i =
+    if i >= n then ((-2), 0., 0.)
+    else let v1i, v2i = M.get v1 0 i, M.get v2 0 i in
+         if v1i <> v2i then (i, v1i, v2i)
+         else findit (i + 1)
+  in findit 0
+
+(* let recombine = recombine_old *)
+let recombine relation p q lh =
+  let old_recombined = recombine_old relation p q lh in
+  let new_recombined = recombine_new relation p q lh in
+  if (not (M.equal old_recombined new_recombined))
+  then
+    let (idx, oldval, newval) = find_first_difference old_recombined new_recombined in
+    raise (Failure (Printf.sprintf "Old and new not same at index %d with values old=%.30f new=%.30f ya=%.30f\n" idx oldval newval (oldval /. newval)))
+  else old_recombined
 
 (** Given column vec l and tight row vecs p and q, return stochastic vec lo
     with high values from q where l is low, low values from p where l is high.*)
