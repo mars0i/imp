@@ -158,11 +158,6 @@ let mat_vertices ?digits ?uniq p q =
 
 
 (************************************************************)
-(* Find vertices of a list of 2D stochastic vectors *)
-(* TODO
-let twoD_vertices vs = calculate min and max of first coord, or mins of each coord.  *)
-
-(************************************************************)
 (** Hi-Lo Method (several pages near the end of chapter 2) *)
 
 (** Use separate compare functions for row and column vectors to avoid
@@ -229,9 +224,15 @@ let recombine_old relation p q lh =
   find_crossover (idx_sort lh);
   pbar
 
-(* new version using suggestion of Evik Tak: https://stackoverflow.com/a/46127060/1455243
- * note that the result is not precisely the same; it differs because of float mess. *)
-let recombine_new relation p q lh =
+(* This version of recombine uses suggestion of Evik Tak: https://stackoverflow.com/a/46127060/1455243 *)
+(** Given a relation (>=), a column l vec and two tight row vecs p and q s.t. 
+    p<=q, return a stochastic row vec ("p bar") with high values from q where l
+    is low and low values from p where l is high.  Or pass (<=), l, and tight
+    row vecs s.t. p >= q to return a stoch row vec ("q bar") with low values 
+    from p where l is low.  Note that the latter swaps the normal meanings of 
+    p and q in Hartfiel, i.e. here the arguments should be (<=), l, q, p
+    according to the normal senses of p and q. *)
+let recombine relation p q lh =
   let pbar = M.clone p in
   let psum = ref (M.sum pbar) in  (* FIXME make this functional *)
   let rec find_crossover idxs =
@@ -249,8 +250,6 @@ let recombine_new relation p q lh =
   in 
   find_crossover (idx_sort lh);
   pbar
-
-let recombine = recombine_old
 
 (** Given column vec l and tight row vecs p and q, return stochastic vec lo
     with high values from q where l is low, low values from p where l is high.*)
@@ -270,67 +269,19 @@ let flat_idx_to_rowcol width idx =
 
 (** Given the original P and Q matrices [p_mat] and [q_mat], and a previous
     tight bounds matrix [prev_bound_mat], calculate the value at i j for the
-    next tight bounds matrix.  Used by [hilo_mult].*)
-let calc_bound_val recomb p_mat q_mat prev_bound_mat i j =
-  let prev_col = M.col prev_bound_mat j in (* row, col are just perspectives on underlying mat *)
-  let p_row, q_row = M.row p_mat i, M.row q_mat i in
-  let bar_row = recomb p_row q_row prev_col in
-  M.(get (bar_row *@ prev_col) 0 0)
-
-let calc_bound_val_from_flat_idx recomb p_mat q_mat prev_bound_mat width idx =
+    next tight bounds matrix, where i j is calculated from vector index idx 
+    and width.  i.e. if we laid out a matrix one row after another in
+    vector form, idx would be an index into it, and width is the row width
+    of the original matrix.  Used by [hilo_mult].  Final, ignored argument,
+    is included because Parmap.array_float_parmapi expect to map a function 
+    that has an extra argument that we ignore.   
+    SEE doc/nonoptimizedcode.ml for a clearer version of this function.  *)
+let calc_bound_val_for_parmap recomb p_mat q_mat prev_bound_mat width idx _ =
   let i, j = flat_idx_to_rowcol width idx in
   let prev_col = M.col prev_bound_mat j in (* row, col are just perspectives on underlying mat *)
   let p_row, q_row = M.row p_mat i, M.row q_mat i in
   let bar_row = recomb p_row q_row prev_col in
   M.(get (bar_row *@ prev_col) 0 0)  (* TODO is this really the fastest way to calculate this sum?  Maybe it would be better to do it by hand. *)
-
-let calc_bound_val_for_parmap recomb p_mat q_mat prev_bound_mat width idx _ =
-  calc_bound_val_from_flat_idx recomb p_mat q_mat prev_bound_mat width idx
-
-(** Alternate version of hilo_mult *)
-let hilo_mult4 recomb p_mat q_mat prev_bound_mat = 
-  let (m, n) = M.shape p_mat in
-  let len = m * n in
-  let bounds_array = A.make len 0. in (* does nothing but needed to feed parmap--in long run, find a more elegant way *)
-  let _ = Pmap.array_float_parmapi ~result:bounds_array 
-                                   (calc_bound_val_for_parmap recomb p_mat q_mat prev_bound_mat m)
-                                   bounds_array (* this arg will be ignored! *)
-  in M.of_array bounds_array m n
-
-(** Alternate version of hilo_mult *)
-let hilo_mult3 recomb p_mat q_mat prev_bound_mat = 
-  let (m, n) = M.shape p_mat in
-  let len = m * n in
-  let bounds_array = A.init len (calc_bound_val_from_flat_idx recomb p_mat q_mat prev_bound_mat m)
-  in
-  M.of_array bounds_array m n
-
-(** Alternate version of hilo_mult *)
-let hilo_mult2 recomb p_mat q_mat prev_bound_mat = 
-  let (m, n) = M.shape p_mat in
-  let new_bound_mat = M.empty m n in
-  for j = 0 to n - 1 do    (* j indexes columns in L, as on pp. 50f *)
-    for i = 0 to n - 1 do  (* and i indexes rows in p, q *)
-      M.(set new_bound_mat i j (calc_bound_val recomb p_mat q_mat prev_bound_mat i j))
-    done
-  done;
-  new_bound_mat
-
-(** Alternate version of hilo_mult *)
-let hilo_mult1 recomb p_mat q_mat prev_bound_mat = 
-  let (m, n) = M.shape p_mat in
-  let prev_cols = M.to_cols prev_bound_mat in
-  let p_rows = M.to_rows p_mat in
-  let q_rows = M.to_rows q_mat in
-  let new_bound_mat = M.empty m n in
-  for j = 0 to n - 1 do    (* j indexes columns in L and in p and q, as on pp. 50f *)
-    for i = 0 to m - 1 do  (* and i indexes rows in p, q *)
-      let prev_col = prev_cols.(j) in 
-      let bar_row = recomb p_rows.(i) q_rows.(i) prev_col in
-      M.(set new_bound_mat i j (get (bar_row *@ prev_col) 0 0)) (* result of multiplication is 1x1 *)
-    done
-  done;
-  new_bound_mat
 
 (** Given [recombine_lo] or [recombine_hi], the original tight interval bounds
     P and Q, and either the previous tight component lo or hi bound (as
@@ -339,8 +290,17 @@ let hilo_mult1 recomb p_mat q_mat prev_bound_mat =
       If recomb is recombine_lo, the arguments should be P, Q, and the 
       previous lo matrix.  
       If recomb is recombine_hi, the arguments should be (notice!) Q, P,
-      and the previous hi matrix. *)
-let hilo_mult = hilo_mult4;;
+      and the previous hi matrix. 
+    SEE doc/nonoptimizedcode.ml for clearer versions of this function.  *)
+let hilo_mult recomb p_mat q_mat prev_bound_mat = 
+  let (m, n) = M.shape p_mat in
+  let len = m * n in
+  let bounds_array = A.make len 0. in (* does nothing but needed to feed parmap--in long run, find a more elegant way *)
+  let _ = Pmap.array_float_parmapi ~result:bounds_array 
+                                   (calc_bound_val_for_parmap recomb p_mat q_mat prev_bound_mat m)
+                                   bounds_array (* this arg will be ignored! *)
+  in M.of_array bounds_array m n
+
 
 (** Starting from the original P and Q tight interval bounds and the previous
     component tight lo bound, make the netxt lo matrix. *)
