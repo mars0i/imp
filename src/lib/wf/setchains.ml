@@ -51,6 +51,8 @@ let tighten_one_coord relation idx this_vec other_vec =
   if relation (other_sum +. this_elt) 1. then this_elt
   else 1. -. other_sum
 
+(* This can probably be sped up in the way that recombine was using 
+   Evik Tak's suggestion: https://stackoverflow.com/a/46127060/1455243 *)
 (** Returns a tight version of [this_vec], which could be either the lower
     or upper vector of the interval.  You must also pass [other_vec], i.e.
     whichever end vector of the interval is not this_vec. Relation should be
