@@ -169,3 +169,30 @@ Overall time:
 cpu: 1776.204222s, wall: 7550.979390s
 
 ========================
+Comparing the mat4 version with the same except using a revised
+recombine function
+[I'm getting 30-40% improvement on MBA with small matrices (<= 400x400)
+but below we have a 50% improvement on a 1000x1000 matrix.  or put
+differently, this is a 2X speedup.  I would suspect that the bigger the 
+matrix, the more the new algorithm helps, so if I ever go to larger ones,
+it might help more.]
+
+
+~/docs/src/ml/imp(master)$ _build/default/src/bin/setchaintest.exe 1000
+N=1000
+
+make initial interval: cpu: 0.865285s, wall: 0.598718s
+tighten it: cpu: 32.982244s, wall: 32.987595s
+
+calculate lo2, hi2 using Parmap, using make_bounds_mat4: cpu: 0.076868s, wall: 392.584228s
+
+calculate lo2, hi2 with new recombine algorithm: cpu: 0.064255s, wall: 192.421106s
+
+Results of both calculations are the same? false
+diffs:
+ -0.0000000000000001032820580828481524786118733965564802474829911738823940
+-0.0000000000000303376886397308150045137864481148426420986652374267578125
+Ratio ~= 0.490140
+
+Overall time:
+cpu: 34.002852s, wall: 618.605792s
