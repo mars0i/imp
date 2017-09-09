@@ -181,7 +181,6 @@ let col_vec_idx_cmp mat i i' =
     vector, raising an exception if neither. *)
 let idx_sort v =
   let rows, cols = M.shape v in
-  if rows > 1 && cols > 1 then raise (Failure "Argument is not a vector.");
   let size, idx_cmp = if rows = 1
                       then cols, row_vec_idx_cmp 
                       else rows, col_vec_idx_cmp in
@@ -224,15 +223,7 @@ let recombine_old relation p q lh =
   find_crossover (idx_sort lh);
   pbar
 
-(* This version of recombine uses suggestion of Evik Tak: https://stackoverflow.com/a/46127060/1455243 *)
-(** Given a relation (>=), a column l vec and two tight row vecs p and q s.t. 
-    p<=q, return a stochastic row vec ("p bar") with high values from q where l
-    is low and low values from p where l is high.  Or pass (<=), l, and tight
-    row vecs s.t. p >= q to return a stoch row vec ("q bar") with low values 
-    from p where l is low.  Note that the latter swaps the normal meanings of 
-    p and q in Hartfiel, i.e. here the arguments should be (<=), l, q, p
-    according to the normal senses of p and q. *)
-let recombine relation p q lh =
+let recombine_old relation p q lh =
   let pbar = M.clone p in
   let psum = ref (M.sum pbar) in  (* FIXME make this functional *)
   let rec find_crossover idxs =
@@ -249,6 +240,31 @@ let recombine relation p q lh =
     | [] -> raise (Failure "bad vectors") (* this should never happen *)
   in 
   find_crossover (idx_sort lh);
+  pbar
+
+(* This version of recombine uses suggestion of Evik Tak: https://stackoverflow.com/a/46127060/1455243 *)
+(** Given a relation (>=), a column l vec and two tight row vecs p and q s.t. 
+    p<=q, return a stochastic row vec ("p bar") with high values from q where l
+    is low and low values from p where l is high.  Or pass (<=), l, and tight
+    row vecs s.t. p >= q to return a stoch row vec ("q bar") with low values 
+    from p where l is low.  Note that the latter swaps the normal meanings of 
+    p and q in Hartfiel, i.e. here the arguments should be (<=), l, q, p
+    according to the normal senses of p and q. *)
+let recombine relation p q lh =
+  let pbar = M.clone p in
+  let rec find_crossover idxs psum =
+    match idxs with
+    | i::idxs' -> 
+        let qi = M.get q 0 i in
+        let sum_rest = psum -. (M.get pbar 0 i) in (* pbar begins <= 1 if p<=q, or >= 1 if p, q swapped *)
+        let sum_rest_plus_qi = (sum_rest +. qi) in
+        if relation sum_rest_plus_qi 1.
+        then M.set pbar 0 i (1. -. sum_rest) (* return--last iter put it over/under *)
+        else (M.set pbar 0 i qi;             (* still <= 1, or >=1; try next one *)
+              find_crossover idxs' sum_rest_plus_qi) 
+    | [] -> raise (Failure "bad vectors") (* this should never happen *)
+  in 
+  find_crossover (idx_sort lh) (M.sum pbar);
   pbar
 
 (** Given column vec l and tight row vecs p and q, return stochastic vec lo
