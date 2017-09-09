@@ -11,19 +11,19 @@ module F = Core.Float
 let time1 f x =
     let cpu_time, wall_time = Sys.time(), Unix.gettimeofday() in
     let result = f x in
-    Printf.printf "cpu: %fs, wall: %fs\n" (Sys.time() -. cpu_time) (Unix.gettimeofday() -. wall_time);
+    Printf.printf "cpu: %fs, wall: %fs\n%!" (Sys.time() -. cpu_time) (Unix.gettimeofday() -. wall_time);
     result
 
 let time2 f x y =
     let cpu_time, wall_time = Sys.time(), Unix.gettimeofday() in
     let result = f x y in
-    Printf.printf "cpu: %fs, wall: %fs\n" (Sys.time() -. cpu_time) (Unix.gettimeofday() -. wall_time);
+    Printf.printf "cpu: %fs, wall: %fs\n%!" (Sys.time() -. cpu_time) (Unix.gettimeofday() -. wall_time);
     result
 
 let time3 f x y z =
     let cpu_time, wall_time = Sys.time(), Unix.gettimeofday() in
     let result = f x y z in
-    Printf.printf "cpu: %fs, wall: %fs\n" (Sys.time() -. cpu_time) (Unix.gettimeofday() -. wall_time);
+    Printf.printf "cpu: %fs, wall: %fs\n%!" (Sys.time() -. cpu_time) (Unix.gettimeofday() -. wall_time);
     result
 
 (** Returns a memoizing version of function f of one argument.
