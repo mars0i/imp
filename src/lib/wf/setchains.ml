@@ -223,25 +223,6 @@ let recombine_old relation p q lh =
   find_crossover (idx_sort lh);
   pbar
 
-let recombine_old relation p q lh =
-  let pbar = M.clone p in
-  let psum = ref (M.sum pbar) in  (* FIXME make this functional *)
-  let rec find_crossover idxs =
-    match idxs with
-    | i::idxs' -> 
-        let qi = M.get q 0 i in
-        let sum_rest = !psum -. (M.get pbar 0 i) in (* pbar begins <= 1 if p<=q, or >= 1 if p, q swapped *)
-        let sum_rest_plus_qi = (qi +. sum_rest) in
-        if relation sum_rest_plus_qi 1.
-        then M.set pbar 0 i (1. -. sum_rest) (* return--last iter put it over/under *)
-        else (M.set pbar 0 i qi;             (* still <= 1, or >=1; try next one *)
-              psum := sum_rest_plus_qi;
-              find_crossover idxs') 
-    | [] -> raise (Failure "bad vectors") (* this should never happen *)
-  in 
-  find_crossover (idx_sort lh);
-  pbar
-
 (* This version of recombine uses suggestion of Evik Tak: https://stackoverflow.com/a/46127060/1455243 *)
 (** Given a relation (>=), a column l vec and two tight row vecs p and q s.t. 
     p<=q, return a stochastic row vec ("p bar") with high values from q where l
