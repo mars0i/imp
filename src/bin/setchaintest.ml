@@ -22,7 +22,7 @@ let run_test n () =
   let lo2, hi2 = Matutils.Utils.time3 S.make_kth_bounds_mats p q 2 in
   let parmap_duration = Unix.gettimeofday() -. parmap_start_time in
 
-  print_string "\ncalculate lo2, hi2 without new recombine algorithm: ";
+  print_string "\ncalculate lo2, hi2 with new recombine algorithm: ";
   let newrecombine_start_time = Unix.gettimeofday() in
   let lo2', hi2' = Matutils.Utils.time3 SS.make_kth_bounds_mats p q 2  in
   let newrecombine_duration = Unix.gettimeofday() -. newrecombine_start_time in
@@ -34,7 +34,7 @@ let run_test n () =
   let noparmap_duration = Unix.gettimeofday() -. noparmap_start_time in
   *)
 
-  Printf.printf "\nResults of both calculations are the same? %B diffs: %.70f %.70f\n%!" ((lo2, hi2) = (lo2', hi2')) M.(sum (lo2 - lo2')) M.(sum (hi2 - hi2'));
+  Printf.printf "\nResults of both calculations are the same? %B\ndiffs:\n %.70f\n%.70f\n%!" ((lo2, hi2) = (lo2', hi2')) M.(sum (lo2 - lo2')) M.(sum (hi2 - hi2'));
   Printf.printf "Ratio ~= %f\n%!"
                 (newrecombine_duration /. parmap_duration);
   (*
