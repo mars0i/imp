@@ -229,7 +229,8 @@ let recombine_old relation p q lh =
   find_crossover (idx_sort lh);
   pbar
 
-(* new version using suggestion of Evik Tak: https://stackoverflow.com/a/46127060/1455243 *)
+(* new version using suggestion of Evik Tak: https://stackoverflow.com/a/46127060/1455243
+ * note that the result is not precisely the same; it differs because of float mess. *)
 let recombine_new relation p q lh =
   let pbar = M.clone p in
   let psum = ref (M.sum pbar) in  (* FIXME make this functional *)
