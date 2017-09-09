@@ -28,10 +28,6 @@ let rec sequences p q =
       L.concat [L.map (L.cons hp) tailverts; L.map (L.cons hq) tailverts]
   | _, _ -> raise (Failure "lists are not the same length")
 
-(** Return the sum of all values in matrix except the one at i j. *)
-let sum_except mat i j = 
-  (M.sum mat) -. (M.get mat i j)
-
 (************************************************************)
 
 (** Reusable sanity check.  The arguments p and q should be Owl vectors,
@@ -200,29 +196,6 @@ let idx_sort v =
     Among other things, the functionals will usually require arguments in
     a different order depending on which function is passed.  *)
 
-(** Given a relation (>=), a column l vec and two tight row vecs p and q s.t. 
-    p<=q, return a stochastic row vec ("p bar") with high values from q where l
-    is low and low values from p where l is high.  Or pass (<=), l, and tight
-    row vecs s.t. p >= q to return a stoch row vec ("q bar") with low values 
-    from p where l is low.  Note that the latter swaps the normal meanings of 
-    p and q in Hartfiel, i.e. here the arguments should be (<=), l, q, p
-    according to the normal senses of p and q. *)
-let recombine_old relation p q lh =
-  let pbar = M.clone p in
-  let rec find_crossover idxs =
-    match idxs with
-    | i::idxs' -> 
-        let qi = M.get q 0 i in
-        let sum_rest = sum_except pbar 0 i in (* pbar begins <= 1 if p<=q, or >= 1 if p, q swapped *) (* TODO Can this be made more efficient?? *)
-        if relation (qi +. sum_rest) 1.
-        then M.set pbar 0 i (1. -. sum_rest) (* return--last iter put it over/under *)
-        else (M.set pbar 0 i qi;             (* still <= 1, or >=1; try next one *)
-          find_crossover idxs') 
-    | [] -> raise (Failure "bad vectors") (* this should never happen *)
-  in 
-  find_crossover (idx_sort lh);
-  pbar
-
 (* This version of recombine uses suggestion of Evik Tak: https://stackoverflow.com/a/46127060/1455243 *)
 (** Given a relation (>=), a column l vec and two tight row vecs p and q s.t. 
     p<=q, return a stochastic row vec ("p bar") with high values from q where l
@@ -258,7 +231,6 @@ let recombine_lo p q l =
 let recombine_hi p q h = 
   recombine (<=) q p h (* note swapped args *)
 
-(* TODO: rewrite with Pervasives.modf? *)
 let flat_idx_to_rowcol width idx =
   let row = idx / width in
   let col = idx mod width in
@@ -316,7 +288,7 @@ let make_hi_mat p_mat q_mat prev_hi_mat =
     Hartfiel treats the initial state as # 1, not 0, so this function is
     1-based as well.  i.e. n=2 is the first calculated bounds matrices after
     the initial state.
-    NOTE args do not need to be swapped ieven [reccombine_hi] is used; they
+    NOTE args do not need to be swapped even if [reccombine_hi] is used; they
     will be swapped internall by recomb. *)
 let rec make_kth_bounds_mat_from_prev recomb p_mat q_mat prev_bound_mat k =
   if k <= 1 then prev_bound_mat

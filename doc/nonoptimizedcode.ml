@@ -40,3 +40,31 @@ let hilo_mult  recomb p_mat q_mat prev_bound_mat =
   M.of_array bounds_array m n
 
 (******************************************************)
+(** Alternate version of recombine copied from git commit 33c1218 *)
+
+(** Return the sum of all values in matrix except the one at i j. *)
+let sum_except mat i j = 
+  (M.sum mat) -. (M.get mat i j)
+
+(** Given a relation (>=), a column l vec and two tight row vecs p and q s.t. 
+    p<=q, return a stochastic row vec ("p bar") with high values from q where l
+    is low and low values from p where l is high.  Or pass (<=), l, and tight
+    row vecs s.t. p >= q to return a stoch row vec ("q bar") with low values 
+    from p where l is low.  Note that the latter swaps the normal meanings of 
+    p and q in Hartfiel, i.e. here the arguments should be (<=), l, q, p
+    according to the normal senses of p and q. *)
+let recombine_old relation p q lh =
+  let pbar = M.clone p in
+  let rec find_crossover idxs =
+    match idxs with
+    | i::idxs' -> 
+        let qi = M.get q 0 i in
+        let sum_rest = sum_except pbar 0 i in (* pbar begins <= 1 if p<=q, or >= 1 if p, q swapped *) (* TODO Can this be made more efficient?? *)
+        if relation (qi +. sum_rest) 1.
+        then M.set pbar 0 i (1. -. sum_rest) (* return--last iter put it over/under *)
+        else (M.set pbar 0 i qi;             (* still <= 1, or >=1; try next one *)
+          find_crossover idxs') 
+    | [] -> raise (Failure "bad vectors") (* this should never happen *)
+  in 
+  find_crossover (idx_sort lh);
+  pbar
