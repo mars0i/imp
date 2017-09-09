@@ -154,7 +154,7 @@ let mat_vertices ?digits ?uniq p q =
 
 
 (************************************************************)
-(** Hi-Lo Method (several pages near the end of chapter 2) *)
+(** Hi-Lo Method.  See Hartfiel section 2.4, pp.  46-54 *)
 
 (** Use separate compare functions for row and column vectors to avoid
     having a test for row vs. col inside the compare function. *)
@@ -183,20 +183,18 @@ let idx_sort v =
   let idxs = L.range 0 `To (size - 1) in
   L.fast_sort (idx_cmp v) idxs
 
-(* Possibly fix to avoid so much redundant addition. *)
-
-
 (** "Recombination" functions (by analogy with genetic recombination) that
     take two vectors and create a new vector from parts of each of them,
     though in this case the order in which the elements are considered is
-    not the linear order of the vectors. 
+    not the linear order within vectors. 
     (Don't forget to tighten the arguments first.) 
-    NOTE: Functions that take a function argument such as [relation] or
-    [recomb] are mainly intended to be used for building other functions.
-    Among other things, the functionals will usually require arguments in
-    a different order depending on which function is passed.  *)
+    NOTE: Functions like this one that take a function argument such as 
+    [relation] or [recomb] are mainly intended to be used for building 
+    other functions.  Among other things, the functionals will usually 
+    require arguments in a different order depending on which function 
+    is passed.  *)
 
-(* This version of recombine uses suggestion of Evik Tak: https://stackoverflow.com/a/46127060/1455243 *)
+(* This version of recombine uses suggestion by Evik Tak: https://stackoverflow.com/a/46127060/1455243 *)
 (** Given a relation (>=), a column l vec and two tight row vecs p and q s.t. 
     p<=q, return a stochastic row vec ("p bar") with high values from q where l
     is low and low values from p where l is high.  Or pass (<=), l, and tight
@@ -231,6 +229,11 @@ let recombine_lo p q l =
 let recombine_hi p q h = 
   recombine (<=) q p h (* note swapped args *)
 
+(** Calculate a pair of matrix indexes from an index into a vector and
+    a row width for the matrix.  i.e. if we laid out a matrix, one row 
+    after another in vector form, idx would be an index into it, and width
+    woud be the row width of the original matrix.  The corresponding index
+    pair is recovered by this function. *)
 let flat_idx_to_rowcol width idx =
   let row = idx / width in
   let col = idx mod width in
