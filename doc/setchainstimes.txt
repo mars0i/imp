@@ -149,3 +149,23 @@ Overall time:
 cpu: 3467.339869s, wall: 12655.236911s
 Fri Sep  8 14:45:49 CDT 2017
 
+-------------------------
+MBP at git commit c16dab6
+
+~/docs/src/ml/imp(master)$ _build/default/src/bin/setchaintest.exe 1000
+N=1000
+
+make initial interval: cpu: 0.863182s, wall: 0.595229s
+tighten it: cpu: 33.839317s, wall: 33.845300s
+
+calculate lo2, hi2 using Parmap, using make_bounds_mat4: cpu: 0.069711s, wall: 394.275939s
+
+calculate lo2, hi2 without Parmap using make_bounds_mat3: cpu: 1741.425243s, wall: 7122.256252s
+
+Results of both calculations are the same? true
+Ratio between make_bounds_mat4 and make_bounds_mat3 wall times ~= 18.064140
+
+Overall time:
+cpu: 1776.204222s, wall: 7550.979390s
+
+========================
