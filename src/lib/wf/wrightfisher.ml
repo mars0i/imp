@@ -60,14 +60,6 @@ let prob_ij fitns allele_popsize prev_freq next_freq =
   let p = weight_i fitns allele_popsize prev_freq in
   Pdf.binomial next_freq p allele_popsize
 
-let prob_ij_old fitns allele_popsize prev_freq next_freq =
-  let wt = weight_i fitns allele_popsize prev_freq in
-  let other_wt = 1. -. wt in
-  let j = float next_freq in
-  let j' = float (allele_popsize - next_freq) in
-  let comb = Math.combination_float allele_popsize next_freq in (* see note above *)
-  comb  *.  wt**j  *.  other_wt**j'
-
 (** Make a transition matrix from fitnesses *)
 let make_tranmat allele_popsize fitns =
   (* prob_ij with an extra ignored argument: *)
