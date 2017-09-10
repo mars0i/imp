@@ -9,6 +9,7 @@
 
 module Mat = Owl.Mat
 module Math = Owl.Maths (* note British->US translation *)
+module Pdf = Owl.Stats.Pdf
 module Pl = Owl.Plot
 module L = Batteries.List
 module A = Batteries.Array
@@ -54,10 +55,12 @@ let weight_i {w11; w12; w22} allele_popsize freq  =
   (a_hom +. het) /. (a_hom +. 2. *. het +. b_hom)
 
 (** Wright-Fisher transition probability from frequency prev_freq (row index)
-    to frequency next_freq (column index). NOTE Can't handle population sizes 
-    larger than 1029 because after that Owl.Maths.combination_float tries to 
-    generate a number larger than max_float=1.79769313486231571e+308. *)
+    to frequency next_freq (column index). *)
 let prob_ij fitns allele_popsize prev_freq next_freq =
+  let p = weight_i fitns allele_popsize prev_freq in
+  Pdf.binomial next_freq p allele_popsize
+
+let prob_ij_old fitns allele_popsize prev_freq next_freq =
   let wt = weight_i fitns allele_popsize prev_freq in
   let other_wt = 1. -. wt in
   let j = float next_freq in
