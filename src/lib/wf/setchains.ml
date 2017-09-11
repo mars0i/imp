@@ -276,13 +276,13 @@ let hilo_mult recomb p_mat q_mat prev_bound_mat =
 
 (** Starting from the original P and Q tight interval bounds and the previous
     component tight lo bound, make the netxt lo matrix. *)
-let make_lo_mat p_mat q_mat prev_lo_mat =
+let lo_mult p_mat q_mat prev_lo_mat =
   hilo_mult recombine_lo p_mat q_mat prev_lo_mat
 
 (** Starting from the original P and Q tight interval bounds and the previous
     component tight hi bound, make the netxt hi matrix.
-    NOTE args are in same order as make_lo_mat. *)
-let make_hi_mat p_mat q_mat prev_hi_mat =
+    NOTE args are in same order as lo_mult. *)
+let hi_mult p_mat q_mat prev_hi_mat =
   hilo_mult recombine_hi p_mat q_mat prev_hi_mat (* note swapped args *)
 
 (** Given [recombine_lo] or [recombine_hi], the original tight interval bounds
@@ -305,7 +305,7 @@ let make_kth_lo_mat_from_prev p_mat q_mat prev_lo_mat k =
 
 (** Starting from the original P and Q tight interval bounds and the previous
     component tight hi bound, make the kth hi matrix.
-    NOTE args are in same order as make_lo_mat. *)
+    NOTE args are in same order as lo_mult. *)
 let make_kth_hi_mat_from_prev p_mat q_mat prev_hi_mat k =
   make_kth_bounds_mat_from_prev recombine_hi p_mat q_mat prev_hi_mat k (* note swapped args *)
 
