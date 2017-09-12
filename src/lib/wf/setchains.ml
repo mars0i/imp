@@ -258,6 +258,9 @@ let calc_bound_val_for_parmap recomb p_mat q_mat prev_bound_mat width idx _ =
 (** Given [recombine_lo] or [recombine_hi], the original tight interval bounds
     P and Q, and either the previous tight component lo or hi bound (as
     appropriate), return the next lo or hi tight component bound.
+    This function uses [Parmap] to split the work between additional cores.
+    You can control this behavior with [Parmap.set_default_ncores].  e.g.
+    Parmap.set_default_ncores will disable this behavior.
     NOTE:
       If recomb is recombine_lo, the arguments should be P, Q, and the 
       previous lo matrix.  
