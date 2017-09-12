@@ -270,10 +270,15 @@ let calc_bound_val_for_parmap recomb p_mat q_mat prev_bound_mat width idx _ =
 let hilo_mult recomb p_mat q_mat prev_bound_mat = 
   let (m, n) = M.shape p_mat in
   let len = m * n in
-  let bounds_array = A.make len 0. in (* does nothing but needed to feed parmap--in long run, find a more elegant way *)
-  let _ = Pmap.array_float_parmapi ~result:bounds_array 
-                                   (calc_bound_val_for_parmap recomb p_mat q_mat prev_bound_mat m)
-                                   bounds_array (* this arg will be ignored! *)
+  let bounds_array =
+    if 1 = Parmap.get_default_ncores() then
+      A.init len (calc_bound_val_from_flat_idx recomb p_mat q_mat prev_bound_mat m)
+    else (
+      let bounds_array' = A.make len 0. in
+      let _ = Pmap.array_float_parmapi
+                ~result:bounds_array' 
+		(calc_bound_val_for_parmap recomb p_mat q_mat prev_bound_mat m)
+		bounds_array' (* this arg will be ignored! *)
   in M.of_array bounds_array m n
 
 
