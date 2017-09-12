@@ -264,15 +264,11 @@ let calc_bound_val_for_parmap recomb p_mat q_mat prev_bound_mat width idx _ =
       If recomb is recombine_hi, the arguments should be (notice!) Q, P,
       and the previous hi matrix. 
     SEE doc/nonoptimizedcode.ml for clearer versions of this function.  *)
-let hilo_mult ?ncores recomb p_mat q_mat prev_bound_mat = 
+let hilo_mult recomb p_mat q_mat prev_bound_mat = 
   let (m, n) = M.shape p_mat in
   let len = m * n in
   let bounds_array = A.make len 0. in (* does nothing but needed to feed parmap--in long run, find a more elegant way *)
-  let numcores = match ncores with
-                 | Some x -> x
-                 | None -> Pmap.get_default_ncores ()
-  in
-  let _ = Pmap.array_float_parmapi ~ncores:numcores ~result:bounds_array 
+  let _ = Pmap.array_float_parmapi ~result:bounds_array 
                                    (calc_bound_val_for_parmap recomb p_mat q_mat prev_bound_mat m)
                                    bounds_array (* this arg will be ignored! *)
   in M.of_array bounds_array m n
