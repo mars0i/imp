@@ -248,19 +248,25 @@ let flat_idx_to_rowcol width idx =
     is included because Parmap.array_float_parmapi expect to map a function 
     that has an extra argument that we ignore.   
     SEE doc/nonoptimizedcode.ml for a clearer version of this function.  *)
-let calc_bound_val_for_parmap recomb p_mat q_mat prev_bound_mat width idx _ =
+let calc_bound_val recomb p_mat q_mat prev_bound_mat width idx =
   let i, j = flat_idx_to_rowcol width idx in
   let prev_col = M.col prev_bound_mat j in (* row, col are just perspectives on underlying mat *)
   let p_row, q_row = M.row p_mat i, M.row q_mat i in
   let bar_row = recomb p_row q_row prev_col in
   M.(get (bar_row *@ prev_col) 0 0)  (* TODO is this really the fastest way to calculate this sum?  Maybe it would be better to do it by hand. *)
 
+(** Wrapper for calc_bound_val (which see), adding an additional, ignored argument. *)
+let calc_bound_val_for_parmap recomb p_mat q_mat prev_bound_mat width idx _ =
+  calc_bound_val recomb p_mat q_mat prev_bound_mat width idx
+
 (** Given [recombine_lo] or [recombine_hi], the original tight interval bounds
     P and Q, and either the previous tight component lo or hi bound (as
     appropriate), return the next lo or hi tight component bound.
-    This function uses [Parmap] to split the work between additional cores.
-    You can control this behavior with [Parmap.set_default_ncores].  e.g.
-    Parmap.set_default_ncores will disable this behavior.
+    This function normally uses [Parmap] to split the work between additional
+    cores.  You can control this behavior with [Parmap.set_default_ncores].
+    e.g. [Parmap.set_default_ncores] will disable this behavior, and will cause
+    this function to perform its operations without [Parmap], which can 
+    facilitate debugging.
     NOTE:
       If recomb is recombine_lo, the arguments should be P, Q, and the 
       previous lo matrix.  
@@ -272,13 +278,14 @@ let hilo_mult recomb p_mat q_mat prev_bound_mat =
   let len = m * n in
   let bounds_array =
     if 1 = Parmap.get_default_ncores() then
-      A.init len (calc_bound_val_from_flat_idx recomb p_mat q_mat prev_bound_mat m)
-    else (
-      let bounds_array' = A.make len 0. in
+      A.init len (calc_bound_val recomb p_mat q_mat prev_bound_mat m)
+    else
+     (let bounds_array' = A.make len 0. in
       let _ = Pmap.array_float_parmapi
                 ~result:bounds_array' 
 		(calc_bound_val_for_parmap recomb p_mat q_mat prev_bound_mat m)
 		bounds_array' (* this arg will be ignored! *)
+      in bounds_array')
   in M.of_array bounds_array m n
 
 
