@@ -312,11 +312,24 @@ let make_kth_lo_mat_from_prev p_mat q_mat prev_lo_mat k =
 let make_kth_hi_mat_from_prev p_mat q_mat prev_hi_mat k =
   make_kth_bounds_mat_from_prev recombine_hi p_mat q_mat prev_hi_mat k (* note swapped args *)
 
-(** Convenience function to make both the kth lo and hi matrices. *)
+(** Convenience function to make both the kth lo and hi matrices from an 
+    earlier pair of bound matrices and the original matrices. 
+    [make_kth_bounds_mats_from_prev p_mat q_mat prev_lo prev_hi 1] returns
+    [prev_lo] and [prev_hi].  
+    [make_kth_bounds_mats_from_prev p_mat q_mat prev_lo prev_hi 2] returns
+    the next bounds matrices after [prev_lo] and [prev_hi], and for k=30,
+    you'll get the 29th pair after [prev_lo] and [prev_hi]. *)
 let make_kth_bounds_mats_from_prev p_mat q_mat prev_lo_mat prev_hi_mat k =
   (make_kth_lo_mat_from_prev p_mat q_mat prev_lo_mat k),
   (make_kth_hi_mat_from_prev p_mat q_mat prev_hi_mat k)
 
+(** Convenience function to make both the kth lo and hi matrices.  Following 
+    Hartfiel, [make_kth_bounds_mats p_mat q_mat 1] returns [p_mat] and [qmat].
+    Note that this [make_kth_bounds_mats p_mat q_mat 2] returns the first bounds
+    matrices after p_mat, q_mat.  Note that this function can *only* be used to
+    create the kth matrices starting from the initial matrices.  If you want to
+    make kth matrices from earlier (k-n)th matrices, use
+    [make_kth_bounds_mats_from_prev].*)
 let make_kth_bounds_mats p_mat q_mat k = 
   make_kth_bounds_mats_from_prev p_mat q_mat p_mat q_mat k
 
