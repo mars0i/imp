@@ -291,45 +291,48 @@ let hi_mult p_mat q_mat prev_hi_mat =
 (** Given [recombine_lo] or [recombine_hi], the original tight interval bounds
     P and Q, and either the previous tight component lo or hi bound (as 
     appropriate), return the kth lo or hi tight component bound.  Note that
-    Hartfiel treats the initial state as # 1, not 0, so this function is
-    1-based as well.  i.e. n=2 is the first calculated bounds matrices after
-    the initial state.
+    Hartfiel treats the initial state as # 1, not 0, but this function is
+    0-based.  i.e. starting from the initial matrices, k=1 will produce the 
+    first calculated bounds matrices after the initial state; Hartfiel calls 
+    this (e.g.) L_2.
     NOTE args do not need to be swapped even if [reccombine_hi] is used; they
     will be swapped internall by recomb. *)
 let rec make_kth_bounds_mat_from_prev recomb p_mat q_mat prev_bound_mat k =
-  if k <= 1 then prev_bound_mat
+  if k <= 0 then prev_bound_mat
   else let bound_mat = hilo_mult recomb p_mat q_mat prev_bound_mat in
   make_kth_bounds_mat_from_prev recomb p_mat q_mat bound_mat (k - 1)
 
 (** Starting from the original P and Q tight interval bounds and the previous
-    component tight lo bound, make the kth lo matrix. *)
+    component tight lo bound, make the kth lo matrix after the previous one. *)
 let make_kth_lo_mat_from_prev p_mat q_mat prev_lo_mat k =
   make_kth_bounds_mat_from_prev recombine_lo p_mat q_mat prev_lo_mat k
 
 (** Starting from the original P and Q tight interval bounds and the previous
-    component tight hi bound, make the kth hi matrix.
+    component tight hi bound, make the kth hi matrix after the previous one.
     NOTE args are in same order as lo_mult. *)
 let make_kth_hi_mat_from_prev p_mat q_mat prev_hi_mat k =
   make_kth_bounds_mat_from_prev recombine_hi p_mat q_mat prev_hi_mat k (* note swapped args *)
 
 (** Convenience function to make both the kth lo and hi matrices from an 
     earlier pair of bound matrices and the original matrices. 
-    [make_kth_bounds_mats_from_prev p_mat q_mat prev_lo prev_hi 1] returns
+    [make_kth_bounds_mats_from_prev p_mat q_mat prev_lo prev_hi 0] returns
     [prev_lo] and [prev_hi].  
-    [make_kth_bounds_mats_from_prev p_mat q_mat prev_lo prev_hi 2] returns
+    [make_kth_bounds_mats_from_prev p_mat q_mat prev_lo prev_hi 1] returns
     the next bounds matrices after [prev_lo] and [prev_hi], and for k=30,
-    you'll get the 29th pair after [prev_lo] and [prev_hi]. *)
+    you'll get the 30th pair after [prev_lo] and [prev_hi]  If [prev_lo]
+    and [prev_hi] are the initial matrices, this will be what Hartfiel
+    calls L_30 and H_30. *)
 let make_kth_bounds_mats_from_prev p_mat q_mat prev_lo_mat prev_hi_mat k =
   (make_kth_lo_mat_from_prev p_mat q_mat prev_lo_mat k),
   (make_kth_hi_mat_from_prev p_mat q_mat prev_hi_mat k)
 
-(** Convenience function to make both the kth lo and hi matrices.  Following 
-    Hartfiel, [make_kth_bounds_mats p_mat q_mat 1] returns [p_mat] and [qmat].
-    Note that this [make_kth_bounds_mats p_mat q_mat 2] returns the first bounds
-    matrices after p_mat, q_mat.  Note that this function can *only* be used to
-    create the kth matrices starting from the initial matrices.  If you want to
-    make kth matrices from earlier (k-n)th matrices, use
-    [make_kth_bounds_mats_from_prev].*)
+(** Convenience function to make both the kth lo and hi matrices.  
+    [make_kth_bounds_mats p_mat q_mat 0] returns [p_mat] and [qmat].
+    Note that this [make_kth_bounds_mats p_mat q_mat 1] returns the first bounds
+    matrices after p_mat, q_mat, which Hartfiel calls L_2, H_2.  Note that this 
+    function can *only* be used to create the kth matrices starting from the 
+    initial matrices.  If you want to make kth matrices from earlier (k-n)th
+    matrices, use [make_kth_bounds_mats_from_prev].*)
 let make_kth_bounds_mats p_mat q_mat k = 
   make_kth_bounds_mats_from_prev p_mat q_mat p_mat q_mat k
 
