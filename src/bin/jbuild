@@ -4,4 +4,6 @@
  ((names (wrightfisherPDFs setchaintest))
 	(public_names (wrightfisherPDFs setchaintest))
   (package wf)
-  (libraries (core wf matutils))))
+  (libraries (core wf matutils))
+	(modes (native)) ; replace native with byte to make bytecode executable
+	))
