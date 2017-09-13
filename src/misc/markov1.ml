@@ -3,7 +3,8 @@
 (* Note that owl comes with a built-in plot module that can make 3D
  * wireframe plots and countour heatmaps as well as various 2D plots. *)
 
-module LL = Batteries.LazyList;;
+module LL = Containers.Iter.LazyList;;
+
 module P = Matutils.Probmat;;
 
 let s = P.vec_from_int_list [0; 0; 0; 1; 0;]

@@ -1,5 +1,6 @@
-module L  = Batteries.List
 module M = Owl.Mat
+module L  = Containers.List
+
 module P = Matutils.Probmat
 
 let omega_size = 2

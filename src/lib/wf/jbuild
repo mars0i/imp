@@ -4,4 +4,4 @@
  ((name        wf)
   (public_name wf)
   (modules (wrightfisher setchains))
-  (libraries (batteries core owl parmap matutils))))
+  (libraries (containers containers.iter owl parmap matutils))))

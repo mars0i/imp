@@ -1,8 +1,8 @@
 (** Functions inspired by Hartfiel's _Markov Set-Chains_, Springer 1998.
     Please see this book for definitions of terms, proofs, algorithms. *)
 
-module L = Batteries.List
-module A = Batteries.Array
+module L = Containers.List
+module A = Containers.Array
 module M = Owl.Mat
 module Pmap = Parmap
 

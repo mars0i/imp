@@ -3,9 +3,10 @@
 (* For names mentioned, see references section at end of file. *)
 
 module M  = Owl.Mat
-module A  = Batteries.Array
-module L  = Batteries.List
-module LL = Batteries.LazyList
+module A  = Containers.Array
+module L  = Containers.List
+(* module LL = Containers.Iter.Lazy_list *)
+module LL = CCLazy_list
 
 
 (*********** misc. convenience definitions **********)

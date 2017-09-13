@@ -11,9 +11,11 @@ module Mat = Owl.Mat
 module Math = Owl.Maths (* note British->US translation *)
 module Pdf = Owl.Stats.Pdf
 module Pl = Owl.Plot
-module L = Batteries.List
-module A = Batteries.Array
-module LL = Batteries.LazyList
+
+module L = Containers.List
+module A = Containers.Array
+module LL = Containers.Iter.LazyList
+
 module U = Matutils.Utils
 
 let ( *@ ) = Mat.( *@ )  (* = dot: matrix multiplication *)

@@ -1,7 +1,7 @@
 module M  = Owl.Mat
-module A = Batteries.Array
-module L = Batteries.List
-module F = Core.Float
+module A = Containers.Array
+module L = Containers.List
+module I = Containers.Int
 
 
 (** Measure execution time of function of one argument.  Note that if used 
@@ -283,7 +283,7 @@ let mat_from_int_lists ls =
 
 (** Rounds second arg to number of decimal digits specified by first arg. *)
 let roundto digits x =
-  let scale = F.int_pow 10. digits in
+  let scale = float (I.pow 10 digits) in
   (F.round (scale *. x)) /. scale
 
 let int_is_positive = ((<) 0);;

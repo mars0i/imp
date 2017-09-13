@@ -4,4 +4,4 @@
  ((name        matutils)
   (public_name matutils)
   (modules (probmat utils))
-  (libraries (batteries core owl))))
+  (libraries (containers containers.iter core owl))))
