@@ -6,7 +6,6 @@ module M  = Owl.Mat
 module A  = Batteries.Array
 module L  = Batteries.List
 module LL = Batteries.LazyList
-module S  = Batteries.String
 
 
 (*********** misc. convenience definitions **********)
