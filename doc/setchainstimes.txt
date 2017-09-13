@@ -196,3 +196,66 @@ Ratio ~= 0.490140
 
 Overall time:
 cpu: 34.002852s, wall: 618.605792s
+
+============================================
+Direct comparison of native and bytecode executables on MBA using
+Parmap with each (git commit 8a673b5, 9/13/2017)
+Summary: On small N, native code is 2-3X faster.
+
+~/docs/src/ml/imp/_build/default/src/bin(master)*$ time ./setchaintest.exe 200
+N=200
+
+make initial interval: cpu: 0.090938s, wall: 0.056915s
+tighten it: cpu: 0.192116s, wall: 0.110117s
+
+calculate lo2, hi2: cpu: 0.039276s, wall: 7.862371s
+
+Overall time:
+cpu: 0.322889s, wall: 8.029953s
+
+real	0m8.078s
+user	0m15.000s
+sys	0m0.306s
+~/docs/src/ml/imp/_build/default/src/bin(master)*$ time ./setchaintest.bc 200
+N=200
+
+make initial interval: cpu: 0.104946s, wall: 0.109268s
+tighten it: cpu: 0.289372s, wall: 0.296000s
+
+calculate lo2, hi2: cpu: 0.060670s, wall: 21.134923s
+
+Overall time:
+cpu: 0.455491s, wall: 21.540708s
+
+real	0m23.742s
+user	0m42.552s
+sys	0m0.700s
+~/docs/src/ml/imp/_build/default/src/bin(master)*$ time ./setchaintest.exe 300
+N=300
+
+make initial interval: cpu: 0.256737s, wall: 0.137042s
+tighten it: cpu: 0.317037s, wall: 0.304283s
+
+calculate lo2, hi2: cpu: 0.066700s, wall: 28.021989s
+
+Overall time:
+cpu: 0.641098s, wall: 28.463746s
+
+real	0m28.516s
+user	0m53.250s
+sys	0m0.631s
+~/docs/src/ml/imp/_build/default/src/bin(master)*$ time ./setchaintest.bc 300
+N=300
+
+make initial interval: cpu: 0.239196s, wall: 0.243882s
+tighten it: cpu: 0.697073s, wall: 0.703823s
+
+calculate lo2, hi2: cpu: 0.081037s, wall: 74.106956s
+
+Overall time:
+cpu: 1.017735s, wall: 75.055104s
+
+real	1m17.252s
+user	2m23.376s
+sys	0m1.184s
+
