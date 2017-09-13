@@ -1,0 +1,15 @@
+Notes on Batteries vs. Containers vs. Core for this project
+
+Batteries has a LazyList
+Containers has one in Containers.Iter (containers_iter.cm*").
+Not sure about Core.
+
+All three have List.range, but each does it differently.
+
+Containers has List.fold_while.  Cool.
+In general its List looks very nice.
+
+I used Core.Float for an integer/float power function.  This is my only
+use of Core apart from commandline processing.  Batteries and Containers
+have pow functions in Int and Float.  I don't think I have to use the
+Core kind of function.
