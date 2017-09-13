@@ -19,21 +19,21 @@ let run_test n () =
 
   print_string "\ncalculate lo2, hi2: ";
   (* let parmap_start_time = Unix.gettimeofday() in (* yes silly to do this twice for same function call *) *)
-  let lo2, hi2 = Matutils.Utils.time3 S.make_kth_bounds_mats p q 2 in
+  let lo2, hi2 = Matutils.Utils.time3 S.make_kth_bounds_mats p q 1 in
   (* let parmap_duration = Unix.gettimeofday() -. parmap_start_time in *)
   (fun _ -> ()) (lo2, hi2);
 
   (*
   print_string "\ncalculate lo2, hi2 with new recombine algorithm: ";
   let newrecombine_start_time = Unix.gettimeofday() in
-  let lo2', hi2' = Matutils.Utils.time3 SS.make_kth_bounds_mats p q 2  in
+  let lo2', hi2' = Matutils.Utils.time3 SS.make_kth_bounds_mats p q 1  in
   let newrecombine_duration = Unix.gettimeofday() -. newrecombine_start_time in
   *)
 
   (*
   print_string "\ncalculate lo2, hi2 without Parmap using make_bounds_mat3: ";
   let noparmap_start_time = Unix.gettimeofday() in
-  let lo2', hi2' = Matutils.Utils.time3 Slow3.make_kth_bounds_mats p q 2  in
+  let lo2', hi2' = Matutils.Utils.time3 Slow3.make_kth_bounds_mats p q 1  in
   let noparmap_duration = Unix.gettimeofday() -. noparmap_start_time in
   *)
 
@@ -44,7 +44,7 @@ let run_test n () =
   *)
   (*
   print_string "\nExtra check: calculate lo2, hi2 without Parmap using (earlier) make_bounds_mat1: ";
-  let lo2'', hi2'' = Matutils.Utils.time3 Slow1.make_kth_bounds_mats p q 2  in
+  let lo2'', hi2'' = Matutils.Utils.time3 Slow1.make_kth_bounds_mats p q 1  in
   Printf.printf "Results are the same? %B\n" ((lo2, hi2) = (lo2'', hi2''));
   *)
   print_string "\nOverall time:\n"
