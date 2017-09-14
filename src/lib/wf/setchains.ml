@@ -273,17 +273,17 @@ let calc_bound_val_for_parmapi recomb p_mat q_mat prev_bound_mat width idx _ =
       and the previous hi matrix. 
     SEE doc/nonoptimizedcode.ml for clearer versions of this function.  *)
 let hilo_mult ?(fork=true) recomb p_mat q_mat prev_bound_mat = 
-  let (m, n) = M.shape p_mat in
-  let len = m * n in
+  let (rows, cols) = M.shape p_mat in
+  let len = rows * cols in
   let bounds_array =
     if fork 
     then let bounds_array' = A.make len 0. in
          Pmap.array_float_parmapi
            ~result:bounds_array' 
-           (calc_bound_val_for_parmapi recomb p_mat q_mat prev_bound_mat m)
+           (calc_bound_val_for_parmapi recomb p_mat q_mat prev_bound_mat cols)
            bounds_array' (* this arg will be ignored *)
-    else A.init len (calc_bound_val recomb p_mat q_mat prev_bound_mat m)
-  in M.of_array bounds_array m n
+    else A.init len (calc_bound_val recomb p_mat q_mat prev_bound_mat cols)
+  in M.of_array bounds_array rows cols
 
 
 (** Starting from the original P and Q tight interval bounds and the previous
