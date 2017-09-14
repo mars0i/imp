@@ -1,0 +1,5 @@
+Note that after you iterate the matrix bounds for a while (or not),
+hilo_mult'iplying (which is just regular dot-multiplying in this case,
+since the lower and upper vectors are the same) both the hi and lo
+matrices simply extract the row corresponding to the element where all
+of the initial probability is
