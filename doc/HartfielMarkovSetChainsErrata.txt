@@ -36,14 +36,24 @@ are identical in each of these matrices.)
   rounded from longer decimals.  It seems likely that my results are
   correct to at least four decimal places; I wouldn't think that floating
   point errors could do that much damage in four iterations of
-  calculations on small matrices.  In that case, there are two small
+  calculations on small matrices.  In that case, there are four small
   errors in the rounded values in H_5.
 
 Using the normal mathematical 1-based indexes (not OCaml's zero-based
 indexes):
 
-The text lists the 1,2 element as 0.654, but I get 0.65476...., so it
-looks like the reported result should be 0.655.
+The texts lists the 3, 1 element of L_5 as 0.29, but I get approx
+0.0295774, which is close to rounding to 0.029, but is a little bit
+closer to 0.30.
 
-The text lists the 3,1 element as 0.101, but I get 0.1080....
-(Perhaps a zero was accidentally inserted.)
+The text lists the 1,2 element in H_5 as 0.654, but I get approx 0.65476,
+so it looks like the reported result should be 0.655.
+
+The text lists the 3,1 element of H_5 as 0.101, but I get  approx
+0.1080....  (Perhaps a zero was accidentally inserted.)
+
+The text lists the 3,3 element of H_5 as 0.353, but I get approx
+0.351853,  which  actually rounds to 0.352.
+
+On the top of p. 54, starting from Hartfiel's lo5 and hi5, I'm getting
+0.5934 rather than 0.5940 for the 2nd element in the lo vec at 5
