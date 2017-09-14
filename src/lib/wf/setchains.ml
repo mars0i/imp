@@ -263,7 +263,7 @@ let calc_bound_val_for_parmapi recomb p_mat q_mat prev_bound_mat width idx _ =
     P and Q, and either the previous tight component lo or hi bound (as
     appropriate), return the next lo or hi tight component bound.
     This function normally uses [Parmap] to split the work between additional
-    cores.  If [~dontfork] is present with any value, won't use Parmap to
+    cores.  If [~fork] is present with any value, won't use Parmap to
     divide the work between processes.
     NOTE:
       If recomb is recombine_lo, the arguments should be P, Q, and the 
@@ -271,34 +271,34 @@ let calc_bound_val_for_parmapi recomb p_mat q_mat prev_bound_mat width idx _ =
       If recomb is recombine_hi, the arguments should be (notice!) Q, P,
       and the previous hi matrix. 
     SEE doc/nonoptimizedcode.ml for clearer versions of this function.  *)
-let hilo_mult ?dontfork recomb p_mat q_mat prev_bound_mat = 
+let hilo_mult ?(fork=true) recomb p_mat q_mat prev_bound_mat = 
   let (m, n) = M.shape p_mat in
   let len = m * n in
   let bounds_array =
-    match dontfork with
-    | Some _ -> A.init len (calc_bound_val recomb p_mat q_mat prev_bound_mat m)
-    | None -> let bounds_array' = A.make len 0. in
-              Pmap.array_float_parmapi
-                ~result:bounds_array' 
-                (calc_bound_val_for_parmapi recomb p_mat q_mat prev_bound_mat m)
-                bounds_array' (* this arg will be ignored *)
+    if fork 
+    then let bounds_array' = A.make len 0. in
+         Pmap.array_float_parmapi
+           ~result:bounds_array' 
+           (calc_bound_val_for_parmapi recomb p_mat q_mat prev_bound_mat m)
+           bounds_array' (* this arg will be ignored *)
+    else A.init len (calc_bound_val recomb p_mat q_mat prev_bound_mat m)
   in M.of_array bounds_array m n
 
 
 (** Starting from the original P and Q tight interval bounds and the previous
     component tight lo bound, make the netxt lo matrix.
-    If [~dontfork] is present with any value, won't use Parmap to divide the 
+    If [~fork] is present with any value, won't use Parmap to divide the 
     work between processes. *)
-let lo_mult ?dontfork p_mat q_mat prev_lo_mat =
-  hilo_mult ~dontfork recombine_lo p_mat q_mat prev_lo_mat
+let lo_mult ?(fork=true) p_mat q_mat prev_lo_mat =
+  hilo_mult ~fork recombine_lo p_mat q_mat prev_lo_mat
 
 (** Starting from the original P and Q tight interval bounds and the previous
     component tight hi bound, make the netxt hi matrix.
     NOTE args are in same order as lo_mult.
-    If [~dontfork] is present with any value, won't use Parmap to divide the 
+    If [~fork] is present with any value, won't use Parmap to divide the 
     work between processes. *)
-let hi_mult ?dontfork p_mat q_mat prev_hi_mat =
-  hilo_mult ~dontfork recombine_hi p_mat q_mat prev_hi_mat (* note swapped args *)
+let hi_mult ?(fork=true) p_mat q_mat prev_hi_mat =
+  hilo_mult ~fork recombine_hi p_mat q_mat prev_hi_mat (* note swapped args *)
 
 (** Given [recombine_lo] or [recombine_hi], the original tight interval bounds
     P and Q, and either the previous tight component lo or hi bound (as 
