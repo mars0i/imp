@@ -250,6 +250,7 @@ let flat_idx_to_rowcol width idx =
     SEE doc/nonoptimizedcode.ml for a clearer version of this function.  *)
 let calc_bound_val recomb p_mat q_mat prev_bound_mat width idx =
   let i, j = flat_idx_to_rowcol width idx in
+  Printf.printf "width %d, idx %d, i %d, j %d\n" width idx i j; (* DEBUG *)
   let prev_col = M.col prev_bound_mat j in (* row, col are just perspectives on underlying mat *)
   let p_row, q_row = M.row p_mat i, M.row q_mat i in
   let bar_row = recomb p_row q_row prev_col in
