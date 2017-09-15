@@ -51,6 +51,18 @@ let memo f =
 let sub_lazy_list start finish ll =
   LL.take (finish - start + 1) (LL.drop start ll)
 
+let lazy_take_at_idxs ns ll =
+  let f acc elt =
+    let i, ns', ll' = acc in
+    match ns' with
+    | [] -> acc
+    | n::nstl -> if i = n
+                 then (i+1, nstl, LL.cons elt ll')
+                 else (i+1, ns', ll')
+  in
+  let _, _, result = LL.fold_left f (0, ns, LL.nil) ll in
+  LL.rev result
+
 (** Return true iff pred is true for all corresponding elements of
     matrices m1 and m2. Short-circuits on the first false. *)
 let forall2 pred m1 m2 =
