@@ -1,0 +1,7 @@
+(jbuild_version 1)
+
+(library 
+ ((name        models)
+  (public_name models)
+  (modules (wrightfisher setchains))
+  (libraries (batteries core owl parmap matutils))))
