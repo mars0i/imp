@@ -1,4 +1,4 @@
-module W = Models.Wrightfisher
+module WF = Models.Wrightfisher
 module U = Utils.Genl
 module S = Models.Setchains
 (* module SS = Models.Setchainswithnewsum *)
@@ -12,7 +12,7 @@ module Spec = Core.Command.Spec
 let run_test n () =
   Printf.printf "N=%d\n\n%!" n;
   print_string "make initial interval: ";
-  let p', q' = W.(U.time3 S.make_wf_interval n {w11=1.0; w12=0.3; w22=0.1}
+  let p', q' = WF.(U.time3 S.make_wf_interval n {w11=1.0; w12=0.3; w22=0.1}
                                                {w11=1.0; w12=0.9; w22=0.5}) in
   print_string "tighten it: ";
   let p, q = U.time2 S.tighten_mat_interval p' q' in

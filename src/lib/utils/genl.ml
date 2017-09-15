@@ -1,8 +1,10 @@
+(** General-purpose utility functions for matrices, sequences, etc. *)
+
 module M  = Owl.Mat
 module A = Batteries.Array
 module L = Batteries.List
+module LL = Batteries.LazyList
 module F = Core.Float
-
 
 (** Measure execution time of function of one argument.  Note that if used 
     with partial application on a function that expects multiple arguments,
@@ -26,6 +28,9 @@ let time3 f x y z =
     Printf.printf "cpu: %fs, wall: %fs\n%!" (Sys.time() -. cpu_time) (Unix.gettimeofday() -. wall_time);
     result
 
+let is_odd n = n mod 2 <> 0
+let is_even n = n mod 2 = 0
+
 (** Returns a memoizing version of function f of one argument.
     By Andrej Bauer: https://stackoverflow.com/a/14503530/1455243
     Caveats: 
@@ -40,6 +45,11 @@ let memo f =
               Not_found -> let y = f x in
               m := (x, y) :: !m ;
               y
+
+(** Return a lazy list that's a sublist of the argument, from element start 
+    (zero-based) to element finish, inclusive. *)
+let sub_lazy_list start finish ll =
+  LL.take (finish - start + 1) (LL.drop start ll)
 
 (** Return true iff pred is true for all corresponding elements of
     matrices m1 and m2. Short-circuits on the first false. *)

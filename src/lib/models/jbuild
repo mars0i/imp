@@ -3,5 +3,5 @@
 (library 
  ((name        models)
   (public_name models)
-  (modules (wrightfisher setchains))
+  (modules (wrightfisher setchains credalsetPDF))
   (libraries (batteries core owl parmap utils))))

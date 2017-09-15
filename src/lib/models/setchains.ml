@@ -7,7 +7,7 @@ module M = Owl.Mat
 module Pmap = Parmap
 
 module U = Utils.Genl
-module W = Wrightfisher
+module WF = Wrightfisher
 
 (************************************************************)
 (** Utility helper functions *)
@@ -355,10 +355,10 @@ let make_kth_bounds_mats p_mat q_mat k =
 
 [@@@ warning "-8"] (* disable match warning https://stackoverflow.com/a/46006016/1455243 *)
 let make_wf_interval popsize fitns1 fitns2 =
-  let [wf1; wf2] = L.map (W.make_tranmat popsize) [fitns1; fitns2] in
+  let [wf1; wf2] = L.map (WF.make_tranmat popsize) [fitns1; fitns2] in
   M.min2 wf1 wf2, M.max2 wf1 wf2
 [@@@ warning "+8"]
 (* example :
-let p', q' = W.(make_wf_interval 100 {w11=1.0; w12=0.3; w22=0.1} {w11=1.0; w12=0.9; w22=0.5});;
+let p', q' = WF.(make_wf_interval 100 {w11=1.0; w12=0.3; w22=0.1} {w11=1.0; w12=0.9; w22=0.5});;
 let p, q = tighten_mat_interval p' q';;
 *)

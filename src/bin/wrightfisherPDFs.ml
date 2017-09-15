@@ -8,6 +8,7 @@
 module Command = Core.Command
 module Spec = Core.Command.Spec
 module WF = Models.Wrightfisher
+module PDF = Models.CredalsetPDF
 
 let sprintf = Printf.sprintf
 
@@ -73,9 +74,9 @@ let commandline =
       let fitn_recs = WF.group_fitns fitn_floats in
       let distlists = WF.make_distlists popsize [initfreq] fitn_recs in
       let pdfdim = match twoD, threeD with
-                   | true, true   -> WF.BothDs
-                   | true, false  -> WF.TwoD
-                   | false, true | false, false -> WF.ThreeD (* default *)
-      in WF.make_pdfs ~rows ~cols ~altitude ~azimuth ~every ~pdfdim ?plot_max ?fontsize ~leftright:(not updown) basename startgen lastgen distlists)
+                   | true, true   -> PDF.BothDs
+                   | true, false  -> PDF.TwoD
+                   | false, true | false, false -> PDF.ThreeD (* default *)
+      in PDF.make_pdfs ~rows ~cols ~altitude ~azimuth ~every ~pdfdim ?plot_max ?fontsize ~leftright:(not updown) basename startgen lastgen distlists)
 
 let () = Command.run ~version:"1.1" ~build_info:"wrightfisherPDFS, (c) 2017 Marshall Abrams" commandline

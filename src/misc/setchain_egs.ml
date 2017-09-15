@@ -1,4 +1,5 @@
-(** Examples from Hartfiel's _Markov Set-Chains_, Springer 1998. *)
+(** Examples from Hartfiel's _Markov Set-Chains_, Springer 1998.
+    For use with module Models.Setchains. *)
 
 
 (************************************************************)
