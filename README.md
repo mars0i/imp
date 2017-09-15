@@ -1,8 +1,8 @@
 imp
 ===
 
-Imprecise probability and population genetics in [OCaml](http://ocaml.org/). Experimental
-work in progress.
+Imprecise probability and population genetics in
+[OCaml](http://ocaml.org/). Experimental work in progress.
 
 Some of this will be reorganized in the future.  Some of it was
 written when I was learning OCaml.  (I am still learning OCaml.)
@@ -29,9 +29,7 @@ Note that the low and high vectors are not typically stochastic vectors,
 nor the low and high matrices typically transition matrices.
 (Stochastic vectors are row vectors and it's each row of a matrix that
 sums to 1, so multiplication of a vector and a matrix typically
-happens with the vector on the left.  I use the
-[Owl](https://github.com/ryanrhymes/owl) library; both vectors
-and matrices are Owl matrices.)
+happens with the vector on the left.)
 
 ### src/lib/utils
 
