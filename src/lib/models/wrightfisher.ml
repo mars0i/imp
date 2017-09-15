@@ -220,8 +220,7 @@ let add_2D_plot ?plot_max ?fontsize h ys zs =
   done
 
 
-(* Turned into spaghetti when I tried to add option of two different plots.  needs redoing.
- *)
+(* Turned into spaghetti when I tried to add option of two different plots.  needs redoing. *)
 (** Make a series of n 3D plot pdfs from distlists using basename.
     Example:
       let distlists = make_distlists 500 [200] 
