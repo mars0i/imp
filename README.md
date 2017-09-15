@@ -7,9 +7,9 @@ work in progress.
 Some of this will be reorganized in the future.  Some of it was
 written when I was learning OCaml.  (I am still learning OCaml.)
 
-### What's here
+## What's here
 
-#### src/lib/models
+### src/lib/models
 
 #### wrightfisher.ml: simultaneous Wright-Fisher models, PDF plot generation:
 
@@ -33,20 +33,20 @@ happens with the vector on the left.  I use the
 [Owl](https://github.com/ryanrhymes/owl) library; both vectors
 and matrices are Owl matrices.)
 
-#### src/lib/utils
+### src/lib/utils
 
 #### genl.ml: general-purpose utilities    
 #### prob.ml: probability-related utilities
 
 
-#### src/misc
+### src/misc
 miscellaneous code, potentially useful now or in the future,
 including:
 
 #### setchain_egs.ml: definitions for specific examples in Hartfiel (see above)
 
 
-#### src/bin
+### src/bin
 
 #### wrightfisherPDFs.ml: source for command line executable that generates simultaneous Wright-Fisher model PDFs
 
