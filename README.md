@@ -27,7 +27,7 @@ stochastic vectors such that each element `x` is s.t. `l <= x <= h`,
 where `l` and `h` are correspoding elements of low and high vectors.
 Note that the low and high vectors are not typically stochastic vectors,
 nor the low and high matrices typically transition matrices.
-(Stochastic vectors are row vectors and it's each row of a matrix that
+(Stochastic vectors here are row vectors, and it's each row of a matrix that
 sums to 1, so multiplication of a vector and a matrix typically
 happens with the vector on the left.)
 
