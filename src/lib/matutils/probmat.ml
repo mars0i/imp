@@ -14,9 +14,6 @@ module LL = Batteries.LazyList
 let ( *@ ) = M.( *@ )  (* = dot: matrix multiplication *)
 let (/$) = M.(/$) (* divide matrix by float *)
 
-(** length of a row vector or number of columns of a matrix *)
-let size m = snd (M.shape m)
-
 
 (*********** algebras of indexes representing atoms **********)
 
@@ -92,7 +89,7 @@ let prob_sum probs atom_idxs =
     elements in the vector.  Each pair contains a list of indexes 
     representing atoms in a set followed by the probability of that set. *)
 let algebra_probs probs = 
-  let i = (size probs) - 1 in
+  let i = (snd (M.shape probs)) - 1 in
   let idx_sets = LL.at algebra_sets i in
   let make_entry event = (event, prob_sum probs event) in
   L.map make_entry idx_sets 
