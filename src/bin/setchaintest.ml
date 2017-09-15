@@ -1,9 +1,9 @@
-module W = Wf.Wrightfisher
+module W = Models.Wrightfisher
 module U = Matutils.Utils
-module S = Wf.Setchains
-(* module SS = Wf.Setchainswithnewsum *)
-(* module Slow1 = Wf.Slow1setchains *)
-(* module Slow3 = Wf.Slow3setchains *)
+module S = Models.Setchains
+(* module SS = Models.Setchainswithnewsum *)
+(* module Slow1 = Models.Slow1setchains *)
+(* module Slow3 = Models.Slow3setchains *)
 (* module M = Owl.Mat *)
 
 module Command = Core.Command

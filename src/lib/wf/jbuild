@@ -1,7 +1,0 @@
-(jbuild_version 1)
-
-(library 
- ((name        wf)
-  (public_name wf)
-  (modules (wrightfisher setchains))
-  (libraries (batteries core owl parmap matutils))))

@@ -7,7 +7,7 @@
 
 module Command = Core.Command
 module Spec = Core.Command.Spec
-module WF = Wf.Wrightfisher
+module WF = Models.Wrightfisher
 
 let sprintf = Printf.sprintf
 

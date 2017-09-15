@@ -1,6 +1,6 @@
 #require "parmap";;
 #load "matutils.cma";;
-#load "wf.cma";;
-module W = Wf.Wrightfisher;;
-module S = Wf.Setchains;;
+#load "models.cma";;
+module W = Models.Wrightfisher;;
+module S = Models.Setchains;;
 
