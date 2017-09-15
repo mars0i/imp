@@ -6,7 +6,7 @@ module A = Batteries.Array
 module M = Owl.Mat
 module Pmap = Parmap
 
-module U = Matutils.Utils
+module U = Utils.Genl
 module W = Wrightfisher
 
 (************************************************************)

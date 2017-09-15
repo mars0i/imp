@@ -1,5 +1,5 @@
 #require "parmap";;
-#load "matutils.cma";;
+#load "utils.cma";;
 #load "models.cma";;
 module W = Models.Wrightfisher;;
 module S = Models.Setchains;;

@@ -4,4 +4,4 @@
  ((name        models)
   (public_name models)
   (modules (wrightfisher setchains))
-  (libraries (batteries core owl parmap matutils))))
+  (libraries (batteries core owl parmap utils))))
