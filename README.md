@@ -49,3 +49,9 @@ including:
 #### wrightfisherPDFs.ml: source for command line executable that generates simultaneous Wright-Fisher model PDFs
 
 #### setchaintest.ml: miscellaneous tests for setchains.ml
+
+
+### doc
+
+Miscellaneous notes.  Don't expect to find any systematic
+documentation here.
