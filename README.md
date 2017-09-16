@@ -84,11 +84,14 @@ objective imprecise probability, which is what particularly interest me.)
 A few good books:
 
 * A handbook-style introductory survey, *Introduction
-to Imprecise Probaibiliies* edited by Augustin et al.
-* The perhaps easier *Lower Previsions* by Troffaes and de Cooman
+to Imprecise Probaibilities* edited by Augustin et al.  Remember that
+when it comes to math, one person's introduction is another person's
+advanced textbook.
+* The perhaps easier *Lower Previsions* by Troffaes and de Cooman.
+  The same comment applies, however.
 * A philosophical classic, *The Enterprise of Knowledge* by Isaac Levi
 * The philosophical and mathematical classic of the field, *Statistical
-Reasoning with Imprecise Probaiblities* by Peter Walley
+Reasoning with Imprecise Probaiblities* by Peter Walley.
 * *Markov Set-Chains* by Darald J. Hartfiel. A beautiful little book on
 methods for extending Markov chains for one kind of imprecise probability
 (or uncertainty, which is how Hartfiel frames the domain).
