@@ -63,7 +63,7 @@ Miscellaneous notes.  Don't expect to find any systematic
 documentation here.
 
 
-## Resources
+## Resources for learning about imprecise probability or population genetics
 
 ### Imprecise probability
 
