@@ -89,12 +89,13 @@ when it comes to math, one person's introduction is another person's
 advanced textbook.)
 * The perhaps easier *Lower Previsions* by Troffaes and de Cooman.
   (The same comment applies.)
-* A philosophical classic, *The Enterprise of Knowledge* by Isaac Levi
+* A philosophical classic, *The Enterprise of Knowledge* by Isaac
+  Levi.
 * The philosophical and mathematical classic of the field, *Statistical
 Reasoning with Imprecise Probaiblities* by Peter Walley.
 * *Markov Set-Chains* by Darald J. Hartfiel. A beautiful little book on
 methods for extending Markov chains for one kind of imprecise probability
-(or uncertainty, which is how Hartfiel frames the domain).
+(or uncertainty, which is how Hartfiel frames it).
 
 There's much more.
 
