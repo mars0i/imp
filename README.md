@@ -1,8 +1,10 @@
-imp
+impev
 ===
 
-Imprecise probability and population genetics in
-[OCaml](http://ocaml.org/). Experimental work in progress.
+[Imprecise
+probability](https://en.wikipedia.org/wiki/Imprecise_probability) and
+evolutionary population genetics in [OCaml](http://ocaml.org/).
+Experimental work in progress.
 
 Some of this will be reorganized in the future.  Some of it was
 written when I was learning OCaml.  (I am still learning OCaml.)
