@@ -23,9 +23,8 @@ by Seamus Bradley in the *Stanford Encyclopedia of Philosophy*.
 papers](https://scholar.google.com/citations?user=CKPeC3IAAAAJ&hl=en).
 (There are many other important writers on imprecise probability (IP),
 but most of the work is focused on IP as an extension of Bayesian
-probability.  Fine is the person who has written the most on objective
-imprecise probability, which is the sort of IP that most interests
-me.)
+probability.  Fine and his collaborators have done the most work on
+objective imprecise probability, which is what interest me.)
 
 A few good books:  A handbook-style introductory survey, *Introduction
 to Imprecise Probaibiliies* edited by Augustin et al.; the perhaps
