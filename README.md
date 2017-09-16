@@ -3,7 +3,7 @@ impev
 
 [Imprecise
 probability](https://en.wikipedia.org/wiki/Imprecise_probability) and
-population genetics in [OCaml](http://ocaml.org/) using
+[population genetics](https://en.wikipedia.org/wiki/Population_genetics) in [OCaml](http://ocaml.org/) using
 [Owl](https://github.com/ryanrhymes/owl) and other libraries.
 Experimental work in progress.
 
