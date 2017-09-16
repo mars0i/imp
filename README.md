@@ -115,7 +115,7 @@ covered in introductory texts.
 * *Elements of Evolutionary Genetics* by Charlesworth and
 Charlesworth.  Yes, it's a thick book, but that's because the
 Charlesworths take care to explain ideas clearly and to explore
-many details and subtleties.  A beautiful book.
+many details and subtleties.  Beautiful.
 
 * *Evolutionary Theory: Mathematical and Conceptual Foundations* by
 Sean H. Rice.  A philosophically sensitive book by a mathematical
