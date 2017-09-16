@@ -3,11 +3,40 @@ impev
 
 [Imprecise
 probability](https://en.wikipedia.org/wiki/Imprecise_probability) and
-evolutionary population genetics in [OCaml](http://ocaml.org/).
+population genetics in [OCaml](http://ocaml.org/) using
+[Owl](https://github.com/ryanrhymes/owl) and other libraries.
 Experimental work in progress.
 
 Some of this will be reorganized in the future.  Some of it was
 written when I was learning OCaml.  (I am still learning OCaml.)
+
+Other resources on imprecise probability:
+
+[SIPTA: The Society for Imprecise Probability: Theories and
+Applications](http://www.sipta.org).
+
+[Imprecise
+Probabilities](https://plato.stanford.edu/entries/imprecise-probabilities)
+by Seamus Bradley in the *Stanford Encyclopedia of Philosophy*.
+
+[Terrence L. Fine's
+papers](https://scholar.google.com/citations?user=CKPeC3IAAAAJ&hl=en).
+(There are many other important writers on imprecise probability (IP),
+but most of the work is focused on IP as an extension of Bayesian
+probability.  Fine is the person who has written the most on objective
+imprecise probability, which is the sort of IP that most interests
+me.)
+
+A few good books:  A handbook-style introductory survey, *Introduction
+to Imprecise Probaibiliies* edited by Augustin et al.; the perhaps
+easier *Lower Previsions* by Troffaes and de Cooman; a philosophical
+classic, *The Enterprise of Knowledge* by Isaac Levi; the
+philosophical and mathematical classic of the field, *Statistical
+Reasoning with Imprecise Probaiblities* by Peter Walley; and *Markov
+Set-Chains* by Darald J. Hartfiel--a beautiful little book on methods
+for extending Markov chains to one kind of imprecise probability (or
+uncertainty, which is how Hartfiel frames the domain). There's much
+more.
 
 ## What's here
 
