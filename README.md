@@ -127,5 +127,5 @@ many details and subtleties.  Beautiful.
 
 * *Evolutionary Theory: Mathematical and Conceptual Foundations* by
 Sean H. Rice.  A philosophically sensitive book by a mathematical
-biologist.  Running through it is a unique but illuminating
-conceptual organization for population genetics and related areas.
+biologist.  Rice provides a unique but illuminating conceptual
+organization for population genetics and related areas.
