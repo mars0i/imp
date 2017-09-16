@@ -84,9 +84,9 @@ objective imprecise probability, which is what particularly interest me.)
 A few good books:
 
 * A handbook-style introductory survey, *Introduction
-to Imprecise Probaibilities* edited by Augustin et al.  Remember that
+to Imprecise Probabilities* edited by Augustin et al.  Remember that
 when it comes to math, one person's introduction is another person's
-advanced textbook.
+advanced textbook, and vice versa.
 * The perhaps easier *Lower Previsions* by Troffaes and de Cooman.
   The same comment applies, however.
 * A philosophical classic, *The Enterprise of Knowledge* by Isaac Levi
