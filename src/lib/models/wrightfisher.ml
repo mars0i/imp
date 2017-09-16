@@ -71,11 +71,6 @@ let next_dist tranmat dist =
 let make_dists tranmat init_dist =
   LL.from_loop init_dist (next_dist tranmat)
 
-(** Convenience function: Takes elements from start to finish, inclusive, 
-    from a LazyList, and convert the result to a List. *)
-let take_to_list start finish ll = 
-  LL.to_list (U.sub_lazy_list start finish ll)
-
 (** Given a list of transition matrices, mats, and a list of
     probability distributions, dists, returns a new list of
     probability distributions produced by multiplying all

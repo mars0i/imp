@@ -51,6 +51,11 @@ let memo f =
 let sub_lazy_list start finish ll =
   LL.take (finish - start + 1) (LL.drop start ll)
 
+(** Convenience function: Takes elements from start to finish, inclusive, 
+    from a LazyList, and convert the result to a List. *)
+let take_to_list start finish ll = 
+  LL.to_list (sub_lazy_list start finish ll)
+
 (** Return true iff pred is true for all corresponding elements of
     matrices m1 and m2. Short-circuits on the first false. *)
 let forall2 pred m1 m2 =
