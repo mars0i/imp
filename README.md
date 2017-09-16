@@ -106,13 +106,18 @@ issues.
 
 My favorite textbooks include:
 
-* *Population Genetics: A Concise Guide* by John H. Gillespie. (The
-first and second editions are similar, but there is valuable material
-in each that's not in the other.)
+* *Population Genetics: A Concise Guide* by John H. Gillespie.  A
+great way to get into the mindset of population genetics.  The first
+and second editions are similar, but there is valuable material in
+each that's not in the other.  Includes some topics that are rarely
+covered in introductory texts.
 
 * *Elements of Evolutionary Genetics* by Charlesworth and
-  Charlesworth.
+Charlesworth.  Yes, it's a thick book, but that's because the
+Charlesworths take care to explain ideas clearly and to explore
+many details and subtleties.  A beautiful book.
 
 * *Evolutionary Theory: Mathematical and Conceptual Foundations* by
-  Sean H. Rice.
-
+Sean H. Rice.  A philosophically sensitive book by a mathematical
+biologist.  Presents population genetics and related areas using a
+unique but illuminating conceptual organization.
