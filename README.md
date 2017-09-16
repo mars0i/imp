@@ -10,7 +10,9 @@ Experimental work in progress.
 Some of this will be reorganized in the future.  Some of it was
 written when I was learning OCaml.  (I am still learning OCaml.)
 
-Other resources on imprecise probability:
+## Resources
+
+### Imprecise probability
 
 [SIPTA: The Society for Imprecise Probability: Theories and
 Applications](http://www.sipta.org).
@@ -24,18 +26,38 @@ papers](https://scholar.google.com/citations?user=CKPeC3IAAAAJ&hl=en).
 (There are many other important writers on imprecise probability (IP),
 but most of the work is focused on IP as an extension of Bayesian
 probability.  Fine and his collaborators have done the most work on
-objective imprecise probability, which is what interest me.)
+objective imprecise probability, which is what particularly interest me.)
 
-A few good books:  A handbook-style introductory survey, *Introduction
-to Imprecise Probaibiliies* edited by Augustin et al.; the perhaps
-easier *Lower Previsions* by Troffaes and de Cooman; a philosophical
-classic, *The Enterprise of Knowledge* by Isaac Levi; the
-philosophical and mathematical classic of the field, *Statistical
-Reasoning with Imprecise Probaiblities* by Peter Walley; and *Markov
-Set-Chains* by Darald J. Hartfiel--a beautiful little book on methods
-for extending Markov chains to one kind of imprecise probability (or
-uncertainty, which is how Hartfiel frames the domain). There's much
-more.
+A few good books:
+
+* A handbook-style introductory survey, *Introduction
+to Imprecise Probaibiliies* edited by Augustin et al.
+* The perhaps easier *Lower Previsions* by Troffaes and de Cooman
+* A philosophical classic, *The Enterprise of Knowledge* by Isaac Levi
+* The philosophical and mathematical classic of the field, *Statistical
+Reasoning with Imprecise Probaiblities* by Peter Walley
+* *Markov Set-Chains* by Darald J. Hartfiel--a beautiful little book on
+methods for extending Markov chains to one kind of imprecise probability
+(or uncertainty, which is how Hartfiel frames the domain).
+
+There's much more.
+
+### Population genetics
+
+Where to start?  This is a huge area in evolutionary biology.  My
+favorite textbooks include:
+
+* *Population Genetics: A Concise Guide* by John H. Gillespie. (The
+first and second editions are similar, but there is valuable material
+in each that's not in the other.)
+
+* *Elements of Evolutionary Genetics* by Charlesworth and
+  Charlesworth.
+
+* *Evolutionary Theory: Mathematical and Conceptual Foundations* by
+  Sean H. Rice.
+
+
 
 ## What's here
 
