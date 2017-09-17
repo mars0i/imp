@@ -349,6 +349,18 @@ let make_kth_bounds_mats_from_prev p_mat q_mat prev_lo_mat prev_hi_mat k =
 let make_kth_bounds_mats p_mat q_mat k = 
   make_kth_bounds_mats_from_prev p_mat q_mat p_mat q_mat k
 
+  (** Given a transition matrix interval [(lo_mat, hi_mat)] and a probability 
+    interval that's represented by a single frequency [freq] to which all 
+    probability is assigned for the single distribution in the interval, 
+    lo-multiply hi-multiply the distribution times [lo_mat] and [hi_mat]
+    respectively.  (When the probabilty interval is of this kind, this function
+    should be more efficient than lo_mult and hi_mult, and even more efficient
+    than the normal dot product, which does the same thing when the interval
+    contains only one distribution.) *)
+let freq_interval_mult freq (lo_mat, hi_mat) =
+  (M.row lo_k, M.row hi_k)
+
+
   (* Given a transition matrix interval [p_mat], [q_mat], return the kth 
    probability interval, assuming that the initial state was an interval 
    consisting of a single distribution that put all probability on one 
@@ -362,9 +374,8 @@ let make_kth_bounds_mats p_mat q_mat k =
    puts all probability on one frequency, then the effect of the dot
    product of the vector with the matrix is simply to extract the matrix
    that's indexed by that frequency.  That's what this function does.) *)
-let make_kth_dist_interval_from_freq p_mat q_mat init_freq k =
-  let lo_k, hi_k = make_kth_bounds_mats p_mat q_mat k in
-  (M.row lo_k, M.row hi_k)
+let make_kth_dist_interval_from_freq init_freq p_mat q_mat k =
+  freq_interval_mult freq (make_kth_bounds_mats p_mat q_mat k)
 
 
 (***************************************)
