@@ -9,8 +9,6 @@
 module Mat = Owl.Mat
 module Prob = Owl.Stats.Pdf
 module L = Batteries.List
-module LL = Batteries.LazyList
-module U = Utils.Genl
 module T = Tranmats
 
 let make_init_dist allele_popsize a1count =
