@@ -349,6 +349,23 @@ let make_kth_bounds_mats_from_prev p_mat q_mat prev_lo_mat prev_hi_mat k =
 let make_kth_bounds_mats p_mat q_mat k = 
   make_kth_bounds_mats_from_prev p_mat q_mat p_mat q_mat k
 
+  (* Given a transition matrix interval [p_mat], [q_mat], return the kth 
+   probability interval, assuming that the initial state was an interval 
+   consisting of a single distribution that put all probability on one 
+   frequency [init_freq].
+   (To get the kth probability distribution interval from the kth
+   lo and hi mats, you lo_mult the low bound of the distribution
+   interval with the lo mat, and you hi_mult the high bound of the
+   distribuition with the hi mat.  However, if the interval contains
+   a single probability distribution, then you can just use normal
+   dot product multiplication.  *And* if the single distribution
+   puts all probability on one frequency, then the effect of the dot
+   product of the vector with the matrix is simply to extract the matrix
+   that's indexed by that frequency.  That's what this function does.) *)
+let make_kth_dist_interval_from_freq p_mat q_mat init_freq k =
+  let lo_k, hi_k = make_kth_bounds_mats p_mat q_mat k in
+  (M.row lo_k, M.row hi_k)
+
 
 (***************************************)
 (** Make example intervals *)
@@ -362,3 +379,4 @@ let make_wf_interval popsize fitns1 fitns2 =
 let p', q' = WF.(make_wf_interval 100 {w11=1.0; w12=0.3; w22=0.1} {w11=1.0; w12=0.9; w22=0.5});;
 let p, q = tighten_mat_interval p' q';;
 *)
+
