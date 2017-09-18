@@ -170,7 +170,8 @@ let make_pdfs ?(leftright=true) ?(pdfdim=ThreeD) ?(rows=1) ?(cols=1)
   in L.iteri make_pdf page_groups
 
 
-(* Make a series of n 2D plot pdfs from dists using basename. [DEPRECATED] *)
+(** Simple (possibly obsolete) function to make a series of n 2D plot pdfs
+    from LazyList [dists] using [basename]. *)
 let make_2D_pdfs basename dists n =
   let dist_length = snd (Mat.shape (LL.at dists 0)) in
   let xs = Mat.sequential 1 dist_length in (* vector of x-axis indices *)
