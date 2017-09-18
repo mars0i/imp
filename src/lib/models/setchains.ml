@@ -251,7 +251,6 @@ let flat_idx_to_rowcol width idx =
     SEE doc/nonoptimizedcode.ml for a clearer version of this function.  *)
 let calc_bound_val recomb p_mat q_mat prev_bound_mat width idx =
   let i, j = flat_idx_to_rowcol width idx in
-  Printf.printf "width %d, idx %d, i %d, j %d\n" width idx i j; (* DEBUG *)
   let prev_col = M.col prev_bound_mat j in (* row, col are just perspectives on underlying mat *)
   let p_row, q_row = M.row p_mat i, M.row q_mat i in
   let bar_row = recomb p_row q_row prev_col in
@@ -380,7 +379,7 @@ let singleton_interval_mult p (lo_mat, hi_mat) =
    than the normal dot product, which does the same thing when the interval
    contains only one distribution.) *)
 let freq_mult freq (lo_mat, hi_mat) =
-  (M.row lo_mat, M.row hi_mat)
+  (M.row lo_mat freq, M.row hi_mat freq)
 
 (** Given a transition matrix interval [p_mat], [q_mat], return the kth 
     probability interval, assuming that the initial state was an interval 
@@ -405,20 +404,22 @@ let next_bounds_mats_for_from_loop pmat qmat (lo,hi) =
   let lo', hi' = lo_mult pmat qmat lo, hi_mult pmat qmat hi in
   (lo,hi), (lo', hi')
 
-(** TODO needs testing *)
+(* TODO needs testing *)
 (** lazy_bounds_mats [p_mat] [q_mat] returns a LazyList of bounds matrix pairs
     starting from the initial transition matrix interval defined [pmat] defined
     by [qmat] *)
 let lazy_bounds_mats_list p_mat q_mat =
   LL.from_loop (p_mat, q_mat) (next_bounds_mats_for_from_loop p_mat q_mat)
 
-(** TODO needs testing *)
+(* TODO needs testing *)
+(* FIXME? See poss off-by-one issue for lazy_prob_intervals_from_freq. *)
 (** lazy_prob_intervals [p] [q] [bounds_mats_list] expects two vectors defining
     a probability interval, and a LazyList of bounds matrix pairs, and returns
     a LazyList of probability intervals for each timestep. *)
 let lazy_prob_intervals p q bounds_mats_list =
   LL.map (prob_interval_mult p q) bounds_mats_list
 
+(* FIXME? See poss off-by-one issue for lazy_prob_intervals_from_freq. *)
 (** lazy_singleton_intervals [p] [bounds_mats_list] expects a vector 
     representing the sole probability distribution in an intial probability
     interval, and a LazyList of bounds matrix pairs.  It returns a LazyList of
@@ -429,7 +430,10 @@ let lazy_prob_intervals p q bounds_mats_list =
 let lazy_singleton_intervals p bounds_mats_list =
   LL.map (singleton_interval_mult p) bounds_mats_list
 
-(** TODO needs testing *)
+(* TODO needs testing *)
+(* FIXME There's an off-by-one issue?? The zeroth entry is the freq-th row 
+   of pmat and of qmat rather than two copies of the all-mass-on-one-element
+   distribution. *)
 (** lazy_prob_intervals_from_freq [freq] [bounds_mats_list] expects an initial
     frequency for a single population and a LazyList of bounds matrix pairs,
     and returns a LazyList of probability intervals for each timestep. Like
@@ -438,6 +442,9 @@ let lazy_singleton_intervals p bounds_mats_list =
     all probability on a single frequency. *)
 let lazy_prob_intervals_from_freq freq bounds_mats_list =
   LL.map (freq_mult freq) bounds_mats_list
+
+(* TODO FUNCTIONS IN credalsetsPDF.ml EXPECT TO SEE A *LIST* NOT
+   A PAIR FOR EACH TICK. *)
 
 
 (***************************************)
