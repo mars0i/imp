@@ -402,7 +402,7 @@ let make_kth_dist_interval_from_freq init_freq p_mat q_mat k =
     passed as the third argument [(lo,hi)], unchanged, and the next bounds
     matrix pair.  For use with [Batteries.LazyList.from_loop] *)
 let next_bounds_mats_for_from_loop pmat qmat (lo,hi) =
-  let lo', hi' = S.lo_mult pmat qmat lo, S.hi_mult pmat qmat hi in
+  let lo', hi' = lo_mult pmat qmat lo, hi_mult pmat qmat hi in
   (lo,hi), (lo', hi')
 
 (** TODO needs testing *)
