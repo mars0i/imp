@@ -207,7 +207,7 @@ let subsample_in_rows every old_mat =
        let new_mat = M.empty height new_width in
        for i = 0 to height - 1 do
          for j = 0 to new_width - 1 do
-           new_mat.{i,j} <- old_mat.{i, j*every}
+	   M.set new_mat i j (M.get old_mat i (j*every))
          done
        done;
        new_mat
