@@ -1,0 +1,10 @@
+   (To get the kth probability distribution interval from the kth
+   lo and hi mats, you lo_mult the low bound of the distribution
+   interval with the lo mat, and you hi_mult the high bound of the
+   distribuition with the hi mat.  However, if the interval contains
+   a single probability distribution, then you can just use normal
+   dot product multiplication.  *And* if the single distribution
+   puts all probability on one frequency, then the effect of the dot
+   product of the vector with the matrix is simply to extract the matrix
+   that's indexed by that frequency.  That's what this function does.) *)
+
