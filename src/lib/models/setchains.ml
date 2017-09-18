@@ -3,6 +3,7 @@
 
 module L = Batteries.List
 module A = Batteries.Array
+module LL = Batteries.LazyList
 module M = Owl.Mat
 module Pmap = Parmap
 
@@ -315,11 +316,13 @@ let rec make_kth_bounds_mat_from_prev recomb p_mat q_mat prev_bound_mat k =
   else let bound_mat = hilo_mult recomb p_mat q_mat prev_bound_mat in
   make_kth_bounds_mat_from_prev recomb p_mat q_mat bound_mat (k - 1)
 
+(** TODO revise to use lo_mult *)
 (** Starting from the original P and Q tight interval bounds and the previous
     component tight lo bound, make the kth lo matrix after the previous one. *)
 let make_kth_lo_mat_from_prev p_mat q_mat prev_lo_mat k =
   make_kth_bounds_mat_from_prev recombine_lo p_mat q_mat prev_lo_mat k
 
+(** TODO revise to use hi_mult *)
 (** Starting from the original P and Q tight interval bounds and the previous
     component tight hi bound, make the kth hi matrix after the previous one.
     NOTE args are in same order as lo_mult. *)
@@ -349,33 +352,92 @@ let make_kth_bounds_mats_from_prev p_mat q_mat prev_lo_mat prev_hi_mat k =
 let make_kth_bounds_mats p_mat q_mat k = 
   make_kth_bounds_mats_from_prev p_mat q_mat p_mat q_mat k
 
-  (** Given a transition matrix interval [(lo_mat, hi_mat)] and a probability 
-    interval that's represented by a single frequency [freq] to which all 
-    probability is assigned for the single distribution in the interval, 
-    lo-multiply hi-multiply the distribution times [lo_mat] and [hi_mat]
-    respectively.  (When the probabilty interval is of this kind, this function
-    should be more efficient than lo_mult and hi_mult, and even more efficient
-    than the normal dot product, which does the same thing when the interval
-    contains only one distribution.) *)
+(** TODO needs testing *)
+(** Given a transition matrix interval [(lo_mat, hi_mat)] and a probability 
+   interval containing a single distribution vector, lo-multiply and hi-multiply
+   the distribution times [lo_mat] and [hi_mat] respectively *)
+let prob_interval_mult p q (lo_mat, hi_mat) =
+  lo_mult p q lo_mat, hi_mult p q hi_mat
+
+(** TODO needs testing *)
+(** Given a transition matrix interval [(lo_mat, hi_mat)] and a probability 
+   interval, lo-multiply and hi-multiply the distribution times [lo_mat] and
+   [hi_mat] respectively.  (When the probabilty interval is of this kind, this 
+   function should be more efficient than lo_mult and hi_mult since it uses the
+   normal matrix dot product rather than lo_mult and hi_mult, which are 
+   equivalent to dot product when the interval contains only one element.  If
+   in addition the element puts all probability on one value, freq_mult should
+   be even more efficient.) *)
+let singleton_interval_mult p (lo_mat, hi_mat) =
+  M.(p *@ lo_mat, p *@ hi_mat)
+
+(** Given a transition matrix interval [(lo_mat, hi_mat)] and a probability 
+   interval that's represented by a single frequency [freq] to which all 
+   probability is assigned for the single distribution in the interval, 
+   lo-multiply hi-multiply the distribution times [lo_mat] and [hi_mat]
+   respectively.  (When the probabilty interval is of this kind, this function
+   should be more efficient than lo_mult and hi_mult, and even more efficient
+   than the normal dot product, which does the same thing when the interval
+   contains only one distribution.) *)
 let freq_mult freq (lo_mat, hi_mat) =
   (M.row lo_mat, M.row hi_mat)
 
-
-  (* Given a transition matrix interval [p_mat], [q_mat], return the kth 
-   probability interval, assuming that the initial state was an interval 
-   consisting of a single distribution that put all probability on one 
-   frequency [init_freq].
-   (To get the kth probability distribution interval from the kth
-   lo and hi mats, you lo_mult the low bound of the distribution
-   interval with the lo mat, and you hi_mult the high bound of the
-   distribuition with the hi mat.  However, if the interval contains
-   a single probability distribution, then you can just use normal
-   dot product multiplication.  *And* if the single distribution
-   puts all probability on one frequency, then the effect of the dot
-   product of the vector with the matrix is simply to extract the matrix
-   that's indexed by that frequency.  That's what this function does.) *)
+(** Given a transition matrix interval [p_mat], [q_mat], return the kth 
+    probability interval, assuming that the initial state was an interval 
+    consisting of a single distribution that put all probability on one 
+    frequency [init_freq].
+    (To get the kth probability distribution interval from the kth
+    lo and hi mats, you lo_mult the low bound of the distribution
+    interval with the lo mat, and you hi_mult the high bound of the
+    distribuition with the hi mat.  However, if the interval contains
+    a single probability distribution, then you can just use normal
+    dot product multiplication.  *And* if the single distribution
+    puts all probability on one frequency, then the effect of the dot
+    product of the vector with the matrix is simply to extract the matrix
+    that's indexed by that frequency.  That's what this function does.) *)
 let make_kth_dist_interval_from_freq init_freq p_mat q_mat k =
   freq_mult init_freq (make_kth_bounds_mats p_mat q_mat k)
+
+(** Return pair of pairs: The first pair is the bounds matrices that were
+    passed as the third argument [(lo,hi)], unchanged, and the next bounds
+    matrix pair.  For use with [Batteries.LazyList.from_loop] *)
+let next_bounds_mats_for_from_loop pmat qmat (lo,hi) =
+  let lo', hi' = S.lo_mult pmat qmat lo, S.hi_mult pmat qmat hi in
+  (lo,hi), (lo', hi')
+
+(** TODO needs testing *)
+(** lazy_bounds_mats [p_mat] [q_mat] returns a LazyList of bounds matrix pairs
+    starting from the initial transition matrix interval defined [pmat] defined
+    by [qmat] *)
+let lazy_bounds_mats_list p_mat q_mat =
+  LL.from_loop (p_mat, q_mat) (next_bounds_mats_for_from_loop p_mat q_mat)
+
+(** TODO needs testing *)
+(** lazy_prob_intervals [p] [q] [bounds_mats_list] expects two vectors defining
+    a probability interval, and a LazyList of bounds matrix pairs, and returns
+    a LazyList of probability intervals for each timestep. *)
+let lazy_prob_intervals p q bounds_mats_list =
+  LL.map (prob_interval_mult p q) bounds_mats_list
+
+(** lazy_singleton_intervals [p] [bounds_mats_list] expects a vector 
+    representing the sole probability distribution in an intial probability
+    interval, and a LazyList of bounds matrix pairs.  It returns a LazyList of
+    probability intervals for each timestep. Like [lazy_prob_intervals] but 
+    should be more efficient if the probability interval consists of a single
+    distribution.  If that distribution puts all probability on a single 
+    frequency, then [lazy_prob_intervals_from_freq] should be more efficient. *)
+let lazy_singleton_intervals p bounds_mats_list =
+  LL.map (singleton_interval_mult p) bounds_mats_list
+
+(** TODO needs testing *)
+(** lazy_prob_intervals_from_freq [freq] [bounds_mats_list] expects an initial
+    frequency for a single population and a LazyList of bounds matrix pairs,
+    and returns a LazyList of probability intervals for each timestep. Like
+    [lazy_prob_intervals] and [lazy_singleton_intervals] but more efficient
+    if the probability interval consists of a single distribution that puts
+    all probability on a single frequency. *)
+let lazy_prob_intervals_from_freq freq bounds_mats_list =
+  LL.map (freq_mult freq) bounds_mats_list
 
 
 (***************************************)
