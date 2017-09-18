@@ -358,7 +358,7 @@ let make_kth_bounds_mats p_mat q_mat k =
     than the normal dot product, which does the same thing when the interval
     contains only one distribution.) *)
 let freq_mult freq (lo_mat, hi_mat) =
-  (M.row lo_k, M.row hi_k)
+  (M.row lo_mat, M.row hi_mat)
 
 
   (* Given a transition matrix interval [p_mat], [q_mat], return the kth 
@@ -375,7 +375,7 @@ let freq_mult freq (lo_mat, hi_mat) =
    product of the vector with the matrix is simply to extract the matrix
    that's indexed by that frequency.  That's what this function does.) *)
 let make_kth_dist_interval_from_freq init_freq p_mat q_mat k =
-  freq_interval_mult freq (make_kth_bounds_mats p_mat q_mat k)
+  freq_mult init_freq (make_kth_bounds_mats p_mat q_mat k)
 
 
 (***************************************)
