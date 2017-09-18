@@ -9,9 +9,9 @@ module LL = Batteries.LazyList
 
 let ( *@ ) = Mat.( *@ )  (* = dot: matrix multiplication *)
 
-(** Return pair of old distribution vector (i.e. the second argument) and
-    distribution vector (i.e. the product of the two arguments), for use 
-    as an element in a Batteries.LazyList *)
+(** Return pair of old distribution vector (i.e. the second argument [dist]
+    of this function) and a distribution vector (i.e. the product of the two 
+    arguments).  For use with [Batteries.LazyList.from_loop] *)
 let next_dist tranmat dist = 
   (dist, dist *@ tranmat)
 
