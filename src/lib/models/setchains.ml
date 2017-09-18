@@ -357,7 +357,7 @@ let make_kth_bounds_mats p_mat q_mat k =
     should be more efficient than lo_mult and hi_mult, and even more efficient
     than the normal dot product, which does the same thing when the interval
     contains only one distribution.) *)
-let freq_interval_mult freq (lo_mat, hi_mat) =
+let freq_mult freq (lo_mat, hi_mat) =
   (M.row lo_k, M.row hi_k)
 
 
