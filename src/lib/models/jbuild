@@ -4,4 +4,5 @@
  ((name        models)
   (public_name models)
   (modules (wrightfisher setchains tranmats credalsetPDF))
-  (libraries (batteries core owl parmap utils))))
+  (libraries (batteries core owl parmap utils))
+  (ocamlopt_flags "-O3")))

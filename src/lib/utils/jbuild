@@ -4,4 +4,5 @@
  ((name        utils)
   (public_name utils)
   (modules (prob genl))
-  (libraries (batteries core owl))))
+  (libraries (batteries core owl))
+  (ocamlopt_flags "-O3")))

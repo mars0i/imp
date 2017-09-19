@@ -5,4 +5,5 @@
 	(public_names (wrightfisherPDFs setchaintest))
   (package models)
   (libraries (core models utils))
-  (modes (native)))) ; replace native with byte to make bytecode executable
+  (modes (native)) ; replace native with byte to make bytecode executable
+ (ocamlopt_flags "-O3")))
