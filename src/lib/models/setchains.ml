@@ -356,7 +356,7 @@ let make_kth_bounds_mats p_mat q_mat k =
    interval containing a single distribution vector, lo-multiply and hi-multiply
    the distribution times [lo_mat] and [hi_mat] respectively *)
 let prob_interval_mult p q (lo_mat, hi_mat) =
-  lo_mult p q lo_mat, hi_mult p q hi_mat
+  [lo_mult p q lo_mat; hi_mult p q hi_mat]
 
 (** TODO needs testing *)
 (** Given a transition matrix interval [(lo_mat, hi_mat)] and a probability 
@@ -368,7 +368,7 @@ let prob_interval_mult p q (lo_mat, hi_mat) =
    in addition the element puts all probability on one value, freq_mult should
    be even more efficient.) *)
 let singleton_interval_mult p (lo_mat, hi_mat) =
-  M.(p *@ lo_mat, p *@ hi_mat)
+  M.([p *@ lo_mat; p *@ hi_mat])
 
 (** Given a transition matrix interval [(lo_mat, hi_mat)] and a probability 
    interval that's represented by a single frequency [freq] to which all 
@@ -379,7 +379,7 @@ let singleton_interval_mult p (lo_mat, hi_mat) =
    than the normal dot product, which does the same thing when the interval
    contains only one distribution.) *)
 let freq_mult freq (lo_mat, hi_mat) =
-  (M.row lo_mat freq, M.row hi_mat freq)
+  [M.row lo_mat freq; M.row hi_mat freq]
 
 (** Given a transition matrix interval [p_mat], [q_mat], return the kth 
     probability interval, assuming that the initial state was an interval 
@@ -410,6 +410,9 @@ let next_bounds_mats_for_from_loop pmat qmat (lo,hi) =
     by [qmat] *)
 let lazy_bounds_mats_list p_mat q_mat =
   LL.from_loop (p_mat, q_mat) (next_bounds_mats_for_from_loop p_mat q_mat)
+
+(** Note functions in credalsetsPDF.ml expect to see a *list* not
+   a pair for each tick. *)
 
 (* TODO needs testing *)
 (* FIXME? See poss off-by-one issue for lazy_prob_intervals_from_freq. *)
@@ -443,9 +446,6 @@ let lazy_singleton_intervals p bounds_mats_list =
 let lazy_prob_intervals_from_freq freq bounds_mats_list =
   LL.map (freq_mult freq) bounds_mats_list
 
-(* TODO FUNCTIONS IN credalsetsPDF.ml EXPECT TO SEE A *LIST* NOT
-   A PAIR FOR EACH TICK. *)
-
 
 (***************************************)
 (** Make example intervals *)
@@ -453,7 +453,8 @@ let lazy_prob_intervals_from_freq freq bounds_mats_list =
 [@@@ warning "-8"] (* disable match warning https://stackoverflow.com/a/46006016/1455243 *)
 let make_wf_interval popsize fitns1 fitns2 =
   let [wf1; wf2] = L.map (WF.make_tranmat popsize) [fitns1; fitns2] in
-  M.min2 wf1 wf2, M.max2 wf1 wf2
+  let low, high = M.min2 wf1 wf2, M.max2 wf1 wf2 in
+  tighten_mat_interval low high
 [@@@ warning "+8"]
 (* example :
 let p', q' = WF.(make_wf_interval 100 {w11=1.0; w12=0.3; w22=0.1} {w11=1.0; w12=0.9; w22=0.5});;
