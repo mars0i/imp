@@ -47,7 +47,8 @@ let make_tranmat allele_popsize fitns =
     make_distslists.  Arg 1, size is the number of alleles, i.e. 2N; arg 2,
     init_freqs, is a list of all initial frequencies for the population 
     (usually there is only one, so the list will have only one element); 
-    arg 3, fitn_list is a list of fitness structures. *)
+    arg 3, fitn_list is a list of fitness structures. Note that the first
+    element will simply be init_freqs. *)
 let make_distlists size init_freqs fitn_list =
   let init_dists = L.map (make_init_dist size) init_freqs in
   let tranmats = L.map (make_tranmat size) fitn_list in
