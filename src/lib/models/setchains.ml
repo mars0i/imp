@@ -415,36 +415,37 @@ let lazy_bounds_mats_list p_mat q_mat =
    a pair for each tick. *)
 
 (* TODO needs testing *)
-(* FIXME? See poss off-by-one issue for lazy_prob_intervals_from_freq. *)
 (** lazy_prob_intervals [p] [q] [bounds_mats_list] expects two vectors defining
     a probability interval, and a LazyList of bounds matrix pairs, and returns
-    a LazyList of probability intervals for each timestep. *)
+    a LazyList of probability intervals for each timestep.  Note that the first
+    element will be the initial interval [p; q]. *)
 let lazy_prob_intervals p q bounds_mats_list =
-  LL.map (prob_interval_mult p q) bounds_mats_list
+  LL.cons [p; q] (LL.map (prob_interval_mult p q) bounds_mats_list)
 
-(* FIXME? See poss off-by-one issue for lazy_prob_intervals_from_freq. *)
 (** lazy_singleton_intervals [p] [bounds_mats_list] expects a vector 
     representing the sole probability distribution in an intial probability
     interval, and a LazyList of bounds matrix pairs.  It returns a LazyList of
     probability intervals for each timestep. Like [lazy_prob_intervals] but 
     should be more efficient if the probability interval consists of a single
     distribution.  If that distribution puts all probability on a single 
-    frequency, then [lazy_prob_intervals_from_freq] should be more efficient. *)
+    frequency, then [lazy_prob_intervals_from_freq] should be more efficient. 
+    Note that the first element will be the initial interval [p; p]. *)
 let lazy_singleton_intervals p bounds_mats_list =
-  LL.map (singleton_interval_mult p) bounds_mats_list
+  LL.cons [p; p] (LL.map (singleton_interval_mult p) bounds_mats_list)
 
 (* TODO needs testing *)
-(* FIXME There's an off-by-one issue?? The zeroth entry is the freq-th row 
-   of pmat and of qmat rather than two copies of the all-mass-on-one-element
-   distribution. *)
 (** lazy_prob_intervals_from_freq [freq] [bounds_mats_list] expects an initial
     frequency for a single population and a LazyList of bounds matrix pairs,
     and returns a LazyList of probability intervals for each timestep. Like
     [lazy_prob_intervals] and [lazy_singleton_intervals] but more efficient
     if the probability interval consists of a single distribution that puts
-    all probability on a single frequency. *)
+    all probability on a single frequency.  Note that the first element will
+    be the initial interval: a list containing two copies of a vector with
+    1.0 at index freq and 0.0 everywhere else. *)
 let lazy_prob_intervals_from_freq freq bounds_mats_list =
-  LL.map (freq_mult freq) bounds_mats_list
+  let size, _ = M.shape (fst (LL.hd bounds_mats_list)) in
+  let init_dist = (WF.make_init_dist size freq) in
+  LL.cons [init_dist; init_dist] (LL.map (freq_mult freq) bounds_mats_list)
 
 
 (***************************************)
