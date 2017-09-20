@@ -96,7 +96,7 @@ let add_2D_plot ?plot_max ?fontsize h ys zs =
                     [{w11=1.0; w12=0.8; w22=0.7}; {w11=1.0; w12=0.3; w22=0.7}];;
       make_pdfs "foo" 4 5 distlists;; 
     
-    leftright-true Lay out plots from left to right before down, vs down first
+    leftright=true Lay out plots from left to right before down, vs down first
     pdfdim=ThreeD  Make 3D plots, vs. TwoD for 2D or BothDs for both 3D and 2D
     rows=1         Number of rows of plots in PDF
     cols=1         Number of columns of plots in PDF
