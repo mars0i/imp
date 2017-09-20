@@ -404,6 +404,15 @@ let next_bounds_mats_for_from_loop pmat qmat (lo,hi) =
   let lo', hi' = lo_mult pmat qmat lo, hi_mult pmat qmat hi in
   (lo,hi), (lo', hi')
 
+(** Tip: The next few functions create a LazyList in which each element is
+    constructed from the preceding one by a method that usually forks 
+    multiple operating system processes.  If you abort the processing
+    before it completes, you may end up with a partially constructed or
+    otherwise somehow corrupted element in the LazyList.  Since a LazyList
+    won't recalculate an element once it's been created the first time,
+    your lazy list may become useless, and you'll have to regenerate it
+    from scratch.  (That's my interpretation of something that happened once.) *)
+
 (* TODO needs testing *)
 (** lazy_bounds_mats [p_mat] [q_mat] returns a LazyList of bounds matrix pairs
     starting from the initial transition matrix interval defined [pmat] defined
