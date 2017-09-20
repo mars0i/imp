@@ -73,18 +73,21 @@ let add_3D_plot ?plot_max ?fontsize h altitude azimuth xs ys zs =
 (* let set_ydigits h n = () *)
 let set_ydigits h n = Plplot.plsyax n 0
 
+let twoD_margin = 7.
+
 (** Add a single 2D plot to handle h. To be used with make_pdfs.  *)
-let add_2D_plot ?plot_max ?fontsize h ys zs =
+let add_2D_plot ?plot_max ?fontsize h ys zs =  (* Note ys are x-coordinates, zs are y-coordinates. *)
   let open Pl in
   let size = match fontsize with | Some x -> x | None -> default_fontsize in
   set_font_size h size;
   set_xlabel h "freq of A allele";
   set_ylabel h "probability";
   set_ydigits h 50;
-  let _, n = Mat.shape ys in
+  let m, n = Mat.shape ys in
+  Pl.set_xrange h (~-. twoD_margin) ((float m) +. twoD_margin);
   for i=0 to (n - 1) do 
     plot ~h ~spec:[plot_color] (Mat.col ys i) (Mat.col zs i);
-    match plot_max with
+    match plot_max with  (* inexpensive--ok in inner loop *)
     | Some y -> Pl.set_yrange h 0. y
     | None -> ()
   done
