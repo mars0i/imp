@@ -461,11 +461,15 @@ let lazy_prob_intervals_from_freq freq bounds_mats_list =
 (** Make example intervals *)
 
 [@@@ warning "-8"] (* disable match warning https://stackoverflow.com/a/46006016/1455243 *)
-let make_wf_interval popsize fitns1 fitns2 =
+let make_untight_wf_interval popsize fitns1 fitns2 =
   let [wf1; wf2] = L.map (WF.make_tranmat popsize) [fitns1; fitns2] in
-  let low, high = M.min2 wf1 wf2, M.max2 wf1 wf2 in
-  tighten_mat_interval low high
+  M.min2 wf1 wf2, M.max2 wf1 wf2
 [@@@ warning "+8"]
+
+let make_wf_interval popsize fitns1 fitns2 =
+  let low, high = make_untight_wf_interval popsize fitns1 fitns2 in
+  tighten_mat_interval low high
+
 (* example :
 let p', q' = WF.(make_wf_interval 100 {w11=1.0; w12=0.3; w22=0.1} {w11=1.0; w12=0.9; w22=0.5});;
 let p, q = tighten_mat_interval p' q';;
