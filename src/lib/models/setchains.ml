@@ -400,8 +400,8 @@ let make_kth_dist_interval_from_freq init_freq p_mat q_mat k =
 (** Return pair of pairs: The first pair is the bounds matrices that were
     passed as the third argument [(lo,hi)], unchanged, and the next bounds
     matrix pair.  For use with [Batteries.LazyList.from_loop] *)
-let next_bounds_mats_for_from_loop pmat qmat (lo,hi) =
-  let lo', hi' = lo_mult pmat qmat lo, hi_mult pmat qmat hi in
+let next_bounds_mats_for_from_loop ?(fork=true) pmat qmat (lo,hi) =
+  let lo', hi' = lo_mult ~fork pmat qmat lo, hi_mult ~fork pmat qmat hi in
   (lo,hi), (lo', hi')
 
 (** Tip: The next few functions create a LazyList in which each element is
@@ -417,8 +417,8 @@ let next_bounds_mats_for_from_loop pmat qmat (lo,hi) =
 (** lazy_bounds_mats [p_mat] [q_mat] returns a LazyList of bounds matrix pairs
     starting from the initial transition matrix interval defined [pmat] defined
     by [qmat] *)
-let lazy_bounds_mats_list p_mat q_mat =
-  LL.from_loop (p_mat, q_mat) (next_bounds_mats_for_from_loop p_mat q_mat)
+let lazy_bounds_mats_list ?(fork=true) p_mat q_mat =
+  LL.from_loop (p_mat, q_mat) (next_bounds_mats_for_from_loop ~fork p_mat q_mat)
 
 (** Note functions in credalsetsPDF.ml expect to see a *list* not
    a pair for each tick. *)
