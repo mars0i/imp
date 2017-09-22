@@ -18,6 +18,9 @@ let make_init_dist allele_popsize a1count =
 
 type fitnesses = {w11 : float; w12 : float; w22 : float}
 
+(** Return a new fitnesses record in which w11 and w12 have changed places. *)
+let swap_fitns {w11; w12; w22} = {w11=w22; w12=w12; w22=w11}
+
 (** 1.59 in Ewens *)
 let weight_i {w11; w12; w22} allele_popsize freq  =
   let i, i' = float freq, float (allele_popsize - freq) in
