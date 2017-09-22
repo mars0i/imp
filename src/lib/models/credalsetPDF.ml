@@ -56,7 +56,7 @@ let default_fontsize = 3.25
 let default_plot_color = Pl.RGB (160, 40, 0)
 
 (** Add a single 3D plot to handle h. To be used with make_3D_pdfs.  *)
-let add_3D_plot ?plot_max ?fontsize ?colors h altitude azimuth xs ys zs =
+let add_3D_plot ?plot_max ?fontsize ?colors ?addl_3D_fn h altitude azimuth xs ys zs =
   let open Pl in
   let size = match fontsize with Some x -> x | None -> default_fontsize in
   let plot_color = L.hd (match colors with Some x -> x | None -> [default_plot_color]) in (* only first color is used for 3D *)
@@ -66,6 +66,7 @@ let add_3D_plot ?plot_max ?fontsize ?colors h altitude azimuth xs ys zs =
   set_zlabel h "probability";
   mesh ~h ~spec:[plot_color; NoMagColor; ZLine Y; 
                  Altitude altitude; Azimuth azimuth] xs ys zs;
+  match addl_3D_fn with | Some f -> f h | None -> ();
   match plot_max with
   | Some z -> Pl.set_zrange h 0. z
   | None -> ()
@@ -78,7 +79,7 @@ let twoD_x_margin = 5.
 let twoD_y_bottom = ~-.0.012
 
 (** Add a single 2D plot to handle h. To be used with make_pdfs.  *)
-let add_2D_plot ?plot_max ?fontsize ?colors h ys zs =  (* Note ys are x-coordinates, zs are y-coordinates. *)
+let add_2D_plot ?plot_max ?fontsize ?colors ?addl_2D_fn h ys zs =  (* Note ys are x-coordinates, zs are y-coordinates. *)
   let open Pl in
   let size = match fontsize with | Some x -> x | None -> default_fontsize in
   let plot_colors = match colors with Some x -> x | None -> [default_plot_color] in
@@ -92,6 +93,7 @@ let add_2D_plot ?plot_max ?fontsize ?colors h ys zs =  (* Note ys are x-coordina
   for i=0 to (n - 1) do 
     let plot_color = L.at plot_colors (i mod num_plot_colors) in
     plot ~h ~spec:[plot_color] (Mat.col ys i) (Mat.col zs i);
+    match addl_2D_fn with | Some f -> f h | None -> ();
     match plot_max with  (* inexpensive--ok in inner loop *)
     | Some y -> Pl.set_yrange h twoD_y_bottom y
     | None -> () (* I'd like to apply the lower margin here, too, but needs Plplot guts to hack default margins process *)
@@ -111,12 +113,17 @@ let add_2D_plot ?plot_max ?fontsize ?colors h ys zs =  (* Note ys are x-coordina
     altitude=20.   Viewing position: altitude parameter to mesh, plmesh
     azimuth=300.   Viewing position: azimuth parameter to mesh, plmesh
     every=1        Sample data every k frequencies rather than all frequencies 
-    
+    plot_max       Maximum height displayed (default: let Owl.Plot decide).
+    fontsize       Font size.  Of course
+    colors         2D: list of Plot.RGB's to cycle through (vs default_plot_color)
+    addl_2D_fn     Additional function to run on the file handle for 2D plots
+    addl_3D_fn     Additional function to run on the file handle for 3D plots
+
     Note will throw an error if you try to make 3D plots with only one set of 
     input fitnesses. *)
 let make_pdfs ?(leftright=true) ?(pdfdim=ThreeD) ?(rows=1) ?(cols=1) 
               ?(altitude=20.) ?(azimuth=300.) ?(every=1)
-              ?plot_max ?fontsize ?colors
+              ?plot_max ?fontsize ?colors ?addl_2D_fn ?addl_3D_fn
               basename start_gen last_gen distlists =
   let plots_per_page = rows * cols in
   let max_row, max_col = rows - 1, cols - 1 in
@@ -156,15 +163,15 @@ let make_pdfs ?(leftright=true) ?(pdfdim=ThreeD) ?(rows=1) ?(cols=1)
             * pre_title: either a newline (for 3D) plots or an empty string, so that
             * titles on 3D plots will be pushed down a bit.*)
            let gen, pre_title = match pdfdim, !first_of_two with
-                               | BothDs, true  -> add_2D_plot ?plot_max ?fontsize ?colors h ys zs;
+                               | BothDs, true  -> add_2D_plot ?plot_max ?fontsize ?colors ?addl_2D_fn h ys zs;
                                                   first_of_two := false;
                                                   group_start + (idx / 2), ""
-                               | BothDs, false -> add_3D_plot ?plot_max ?fontsize ?colors h altitude azimuth xs ys zs;
+                               | BothDs, false -> add_3D_plot ?plot_max ?fontsize ?colors ?addl_3D_fn h altitude azimuth xs ys zs;
                                                   first_of_two := true;
                                                   group_start + (idx / 2), "\n"
-                               | TwoD, _       -> add_2D_plot ?plot_max ?fontsize ?colors h ys zs;
+                               | TwoD, _       -> add_2D_plot ?plot_max ?fontsize ?colors ?addl_2D_fn h ys zs;
                                                   group_start + idx, ""
-                               | ThreeD, _     -> add_3D_plot ?plot_max ?fontsize ?colors h altitude azimuth xs ys zs;
+                               | ThreeD, _     -> add_3D_plot ?plot_max ?fontsize ?colors ?addl_3D_fn h altitude azimuth xs ys zs;
                                                   group_start + idx, "\n"
            in Pl.set_title h (pre_title ^ (Printf.sprintf "Generation %d" gen))
           )
