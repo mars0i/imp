@@ -66,7 +66,7 @@ let add_3D_plot ?plot_max ?fontsize ?colors ?addl_3D_fn h altitude azimuth xs ys
   set_zlabel h "probability";
   mesh ~h ~spec:[plot_color; NoMagColor; ZLine Y; 
                  Altitude altitude; Azimuth azimuth] xs ys zs;
-  match addl_3D_fn with | Some f -> f h | None -> ();
+  match addl_3D_fn with | Some f -> f h xs ys zs | None -> ();
   match plot_max with
   | Some z -> Pl.set_zrange h 0. z
   | None -> ()
@@ -93,7 +93,7 @@ let add_2D_plot ?plot_max ?fontsize ?colors ?addl_2D_fn h ys zs =  (* Note ys ar
   for i=0 to (n - 1) do 
     let plot_color = L.at plot_colors (i mod num_plot_colors) in
     plot ~h ~spec:[plot_color] (Mat.col ys i) (Mat.col zs i);
-    match addl_2D_fn with | Some f -> f h | None -> ();
+    match addl_2D_fn with | Some f -> f h ys zs | None -> ();
     match plot_max with  (* inexpensive--ok in inner loop *)
     | Some y -> Pl.set_yrange h twoD_y_bottom y
     | None -> () (* I'd like to apply the lower margin here, too, but needs Plplot guts to hack default margins process *)
