@@ -74,7 +74,8 @@ let add_3D_plot ?plot_max ?fontsize ?colors h altitude azimuth xs ys zs =
 (* let set_ydigits h n = () *)
 let set_ydigits h n = Plplot.plsyax n 0
 
-let twoD_margin = 5.
+let twoD_x_margin = 5.
+let twoD_y_bottom = ~-.0.012
 
 (** Add a single 2D plot to handle h. To be used with make_pdfs.  *)
 let add_2D_plot ?plot_max ?fontsize ?colors h ys zs =  (* Note ys are x-coordinates, zs are y-coordinates. *)
@@ -87,13 +88,13 @@ let add_2D_plot ?plot_max ?fontsize ?colors h ys zs =  (* Note ys are x-coordina
   set_ylabel h "probability";
   set_ydigits h 50;
   let m, n = Mat.shape ys in
-  Pl.set_xrange h (~-. twoD_margin) ((float m) +. twoD_margin);
+  Pl.set_xrange h (~-. twoD_x_margin) ((float m) +. twoD_x_margin);
   for i=0 to (n - 1) do 
     let plot_color = L.at plot_colors (i mod num_plot_colors) in
     plot ~h ~spec:[plot_color] (Mat.col ys i) (Mat.col zs i);
     match plot_max with  (* inexpensive--ok in inner loop *)
-    | Some y -> Pl.set_yrange h 0. y
-    | None -> ()
+    | Some y -> Pl.set_yrange h twoD_y_bottom y
+    | None -> () (* I'd like to apply the lower margin here, too, but needs Plplot guts to hack default margins process *)
   done
 
 (* Turned into spaghetti when I tried to add option of two different plots.  needs redoing. *)
