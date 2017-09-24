@@ -66,7 +66,7 @@ let add_3D_plot ?plot_max ?fontsize ?colors ?addl_3D_fn h altitude azimuth xs ys
   set_zlabel h "probability";
   mesh ~h ~spec:[plot_color; NoMagColor; ZLine Y; 
                  Altitude altitude; Azimuth azimuth] xs ys zs;
-  match addl_3D_fn with | Some f -> f h | None -> ();
+  match addl_3D_fn with | Some f -> f h xs ys zs | None -> ();
   match plot_max with
   | Some z -> Pl.set_zrange h 0. z
   | None -> ()
@@ -93,7 +93,7 @@ let add_2D_plot ?plot_max ?fontsize ?colors ?addl_2D_fn h ys zs =  (* Note ys ar
   for i=0 to (n - 1) do 
     let plot_color = L.at plot_colors (i mod num_plot_colors) in
     plot ~h ~spec:[plot_color] (Mat.col ys i) (Mat.col zs i);
-    match addl_2D_fn with | Some f -> f h | None -> ();
+    match addl_2D_fn with | Some f -> f h ys zs | None -> ();
     match plot_max with  (* inexpensive--ok in inner loop *)
     | Some y -> Pl.set_yrange h twoD_y_bottom y
     | None -> () (* I'd like to apply the lower margin here, too, but needs Plplot guts to hack default margins process *)
@@ -116,8 +116,8 @@ let add_2D_plot ?plot_max ?fontsize ?colors ?addl_2D_fn h ys zs =  (* Note ys ar
     plot_max       Maximum height displayed (default: let Owl.Plot decide).
     fontsize       Font size.  Of course
     colors         2D: list of Plot.RGB's to cycle through (vs default_plot_color)
-    addl_2D_fn     Additional function to run on the file handle for 2D plots
-    addl_3D_fn     Additional function to run on the file handle for 3D plots
+    addl_2D_fn     Additional function to run on the file handle, data for 2D plots
+    addl_3D_fn     Additional function to run on the file handl, data  for 3D plots
 
     Note will throw an error if you try to make 3D plots with only one set of 
     input fitnesses. *)
