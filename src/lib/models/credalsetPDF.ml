@@ -78,6 +78,11 @@ let set_ydigits h n = Plplot.plsyax n 0
 let twoD_x_margin = 5.
 let twoD_y_bottom = ~-.0.012
 
+(* TO ADD
+let fill_bounds h ys zs = let [|x1; x2|] = Array.map M.transpose (M.to_cols ys) in let [|y1; y2|] = Array.map M.transpose (M.to_cols zs) in Owl.Plot.region ~h x1 y1 x2 y2;;
+*)
+
+
 (** Add a single 2D plot to handle h. To be used with make_pdfs.  *)
 let add_2D_plot ?plot_max ?fontsize ?colors ?addl_2D_fn h ys zs =  (* Note ys are x-coordinates, zs are y-coordinates. *)
   let open Pl in
