@@ -93,11 +93,11 @@ let add_2D_plot ?plot_max ?fontsize ?colors ?addl_2D_fn h ys zs =  (* Note ys ar
   for i=0 to (n - 1) do 
     let plot_color = L.at plot_colors (i mod num_plot_colors) in
     plot ~h ~spec:[plot_color] (Mat.col ys i) (Mat.col zs i);
-    match addl_2D_fn with | Some f -> f h ys zs | None -> ();
     match plot_max with  (* inexpensive--ok in inner loop *)
     | Some y -> Pl.set_yrange h twoD_y_bottom y
     | None -> () (* I'd like to apply the lower margin here, too, but needs Plplot guts to hack default margins process *)
-  done
+  done;
+  match addl_2D_fn with | Some f -> f h ys zs | None -> ()
 
 (* Turned into spaghetti when I tried to add option of two different plots.  needs redoing. *)
 (** Make a series of n 3D plot pdfs from distlists using basename.
