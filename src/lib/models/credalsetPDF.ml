@@ -8,6 +8,14 @@ module LL = Batteries.LazyList
 module WF = Wrightfisher
 module U = Utils.Genl
 
+let default_fontsize = 3.25
+let default_plot_color = Pl.RGB (160, 40, 0)
+let twoD_x_margin = 5.
+let twoD_y_bottom = ~-.0.012
+let interval_fill_color = default_plot_color
+(* let interval_fill_color = Pl.RGB (180, 180, 180) *)
+(* let interval_shrink_increment = 0.05 (* amount to shrink interval fill vertically so boundary lines will be visible *) *)
+
 (* Given a list of probability distribution vectors, tries to sort them
    so that similar lists are close in the order. *) 
 let l2_sort_dists dists = L.sort U.l2_compare dists
@@ -52,9 +60,6 @@ let make_coords ?(every=1) dist_list =
 (* QUESTION: does using meshgrid obviate the need for set_ydigits below?
    Are there other advantages/disadvantages of meshgrid?  (It's harder to understand.) *)
 
-let default_fontsize = 3.25
-let default_plot_color = Pl.RGB (160, 40, 0)
-
 (** Add a single 3D plot to handle h. To be used with make_3D_pdfs.  *)
 let add_3D_plot ?plot_max ?fontsize ?colors ?addl_3D_fn h altitude azimuth xs ys zs =
   let open Pl in
@@ -75,13 +80,6 @@ let add_3D_plot ?plot_max ?fontsize ?colors ?addl_3D_fn h altitude azimuth xs ys
 (* let set_ydigits h n = () *)
 let set_ydigits h n = Plplot.plsyax n 0
 
-let twoD_x_margin = 5.
-let twoD_y_bottom = ~-.0.012
-
-(* TO ADD
-let fill_bounds h ys zs = let [|x1; x2|] = Array.map M.transpose (M.to_cols ys) in let [|y1; y2|] = Array.map M.transpose (M.to_cols zs) in Owl.Plot.region ~h x1 y1 x2 y2;;
-*)
-
 
 (** Add a single 2D plot to handle h. To be used with make_pdfs.  *)
 let add_2D_plot ?plot_max ?fontsize ?colors ?addl_2D_fn h ys zs =  (* Note ys are x-coordinates, zs are y-coordinates. *)
@@ -95,14 +93,31 @@ let add_2D_plot ?plot_max ?fontsize ?colors ?addl_2D_fn h ys zs =  (* Note ys ar
   set_ydigits h 50;
   let m, n = Mat.shape ys in
   Pl.set_xrange h (~-. twoD_x_margin) ((float m) +. twoD_x_margin);
+  match addl_2D_fn with | Some f -> f h ys zs | None -> ();
   for i=0 to (n - 1) do 
     let plot_color = L.at plot_colors (i mod num_plot_colors) in
     plot ~h ~spec:[plot_color] (Mat.col ys i) (Mat.col zs i);
-    match plot_max with  (* inexpensive--ok in inner loop *)
-    | Some y -> Pl.set_yrange h twoD_y_bottom y
-    | None -> () (* I'd like to apply the lower margin here, too, but needs Plplot guts to hack default margins process *)
   done;
-  match addl_2D_fn with | Some f -> f h ys zs | None -> ()
+  match plot_max with
+  | Some y -> Pl.set_yrange h twoD_y_bottom y
+  | None -> () (* I'd like to apply the lower margin here, too, but needs Plplot guts to hack default margins process *)
+
+(** Function that can be passed to add_2D_plot via the [~addl_2D_fn] argument.
+    Fills the region between the upper and lower curves with
+    interval_fill_color. *)
+(* FIXME PASSING THIS IS MESSING UP THE y max on the plot *)
+[@@@ warning "-8"] (* disable match warning https://stackoverflow.com/a/46006016/1455243 *)
+let fill_bounds h ys zs =  (* args are modeled on add_2D_plot *)
+  let [|x1; x2|] = Mat.to_cols ys in
+  let [|y1; y2|] = Mat.to_cols zs in
+  let open Pl in
+  region ~h ~spec:[interval_fill_color; FillPattern 8] x1 y1 x2 y2
+[@@@ warning "+8"]
+
+(*
+Models.CredalsetPDF.(make_pdfs "fi" ~pdfdim:TwoD ~rows:3 ~cols:4 ~colors:Owl.Plot.[RGB (0,0,200); RGB (200,0,0)] ~plot_max:0.15 ~addl_2D_fn:fill_bounds 1 12 distlists);;
+*)
+
 
 (* Turned into spaghetti when I tried to add option of two different plots.  needs redoing. *)
 (** Make a series of n 3D plot pdfs from distlists using basename.
