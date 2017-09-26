@@ -12,6 +12,7 @@ let default_fontsize = 3.25
 let default_plot_color = Pl.RGB (160, 40, 0)
 let twoD_x_margin = 5.
 let twoD_y_bottom = ~-.0.012
+let twoD_line_width = 2.
 let interval_fill_color = default_plot_color
 (* let interval_fill_color = Pl.RGB (180, 180, 180) *)
 (* let interval_shrink_increment = 0.05 (* amount to shrink interval fill vertically so boundary lines will be visible *) *)
@@ -96,11 +97,12 @@ let add_2D_plot ?plot_max ?fontsize ?colors ?addl_2D_fn h ys zs =  (* Note ys ar
   match addl_2D_fn with | Some f -> f h ys zs | None -> ();
   for i=0 to (n - 1) do 
     let plot_color = L.at plot_colors (i mod num_plot_colors) in
-    plot ~h ~spec:[plot_color] (Mat.col ys i) (Mat.col zs i);
+    plot ~h ~spec:[plot_color; LineWidth twoD_line_width] (Mat.col ys i) (Mat.col zs i);
   done;
   match plot_max with
   | Some y -> Pl.set_yrange h twoD_y_bottom y
   | None -> () (* I'd like to apply the lower margin here, too, but needs Plplot guts to hack default margins process *)
+
 
 (** Function that can be passed to add_2D_plot via the [~addl_2D_fn] argument.
     Fills the region between the upper and lower curves with
@@ -110,8 +112,10 @@ let add_2D_plot ?plot_max ?fontsize ?colors ?addl_2D_fn h ys zs =  (* Note ys ar
 let fill_bounds h ys zs =  (* args are modeled on add_2D_plot *)
   let [|x1; x2|] = Mat.to_cols ys in
   let [|y1; y2|] = Mat.to_cols zs in
+  let xs = Mat.(x1 @|| x2) in
+  let ys = Mat.(y1 @|| y2) in
   let open Pl in
-  region ~h ~spec:[interval_fill_color; FillPattern 8] x1 y1 x2 y2
+  draw_polygon ~h ~spec:[interval_fill_color; FillPattern 0] xs ys
 [@@@ warning "+8"]
 
 (*
