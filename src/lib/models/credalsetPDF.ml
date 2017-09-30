@@ -12,7 +12,7 @@ let default_fontsize = 3.25
 let default_plot_color = Pl.RGB (225, 225, 225)
 let twoD_x_margin = 1.5
 let twoD_y_bottom = ~-.0.012
-let twoD_line_width = 5.
+let twoD_line_width = 1.
 let interval_fill_color = default_plot_color
 (* let interval_fill_color = Pl.RGB (180, 180, 180) *)
 (* let interval_shrink_increment = 0.05 (* amount to shrink interval fill vertically so boundary lines will be visible *) *)
@@ -72,10 +72,10 @@ let add_3D_plot ?plot_max ?fontsize ?colors ?addl_3D_fn h altitude azimuth xs ys
   set_zlabel h "probability";
   mesh ~h ~spec:[plot_color; NoMagColor; ZLine Y; 
                  Altitude altitude; Azimuth azimuth] xs ys zs;
-  match addl_3D_fn with | Some f -> f h xs ys zs | None -> ();
-  match plot_max with
+  (match addl_3D_fn with | Some f -> f h xs ys zs | None -> ()); (* bare matches should always be wrapped *)
+  (match plot_max with                                           (* even at end of fn so you don't forget if move it *)
   | Some z -> Pl.set_zrange h 0. z
-  | None -> ()
+  | None -> ())
 
 (* Kludge to allow running with vanilla Owl that doesn't include it: *)
 (* let set_ydigits h n = () *)
@@ -94,16 +94,16 @@ let add_2D_plot ?plot_max ?fontsize ?colors ?addl_2D_fn h ys zs =  (* Note ys ar
   set_ydigits h 50;
   let m, n = Mat.shape ys in
   Pl.set_xrange h (~-. twoD_x_margin) ((float m) +. twoD_x_margin);
+  (match plot_max with                                        (* even at end of fn so you don't forget if move it *)
+  | Some y -> Pl.set_yrange h twoD_y_bottom y
+  | None -> ()); (* I'd like to apply the lower margin here, too, but needs Plplot guts to hack default margins process *)
+  (* Add addl plot stuff if a function was passed: *)
+  (match addl_2D_fn with | Some f -> f h ys zs | None -> ()); (* bare matches should always be wrapped *)
   (* Add one curve to a single plot area for each column in data matrices: *)
   for i=0 to (n - 1) do 
     let plot_color = L.at plot_colors (i mod num_plot_colors) in
     plot ~h ~spec:[plot_color; LineWidth twoD_line_width] (Mat.col ys i) (Mat.col zs i);
-  done;
-  (* Add addl plot stuff if a function was passed: *)
-  match addl_2D_fn with | Some f -> f h ys zs | None -> ();
-  match plot_max with
-  | Some y -> Pl.set_yrange h twoD_y_bottom y
-  | None -> () (* I'd like to apply the lower margin here, too, but needs Plplot guts to hack default margins process *)
+  done
 
 
 (** Function that can be passed to add_2D_plot via the [~addl_2D_fn] argument.
@@ -119,7 +119,7 @@ let fill_bounds ?(spec=[interval_fill_color; FillPattern 0]) h ys zs =  (* args 
   draw_polygon ~h ~spec xs ys
 [@@@ warning "+8"]
 
-(*
+(* TODO Wrap this:
 Models.CredalsetPDF.(make_pdfs "fi" ~pdfdim:TwoD ~rows:3 ~cols:4 ~colors:Owl.Plot.[RGB (0,0,200); RGB (200,0,0)] ~plot_max:0.15 ~addl_2D_fn:fill_bounds 1 12 distlists);;
 *)
 
