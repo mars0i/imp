@@ -10,9 +10,9 @@ module U = Utils.Genl
 
 let default_fontsize = 3.25
 let default_plot_color = Pl.RGB (225, 225, 225)
-let twoD_x_margin = 5.
+let twoD_x_margin = 1.5
 let twoD_y_bottom = ~-.0.012
-let twoD_line_width = 1.
+let twoD_line_width = 5.
 let interval_fill_color = default_plot_color
 (* let interval_fill_color = Pl.RGB (180, 180, 180) *)
 (* let interval_shrink_increment = 0.05 (* amount to shrink interval fill vertically so boundary lines will be visible *) *)
@@ -94,13 +94,13 @@ let add_2D_plot ?plot_max ?fontsize ?colors ?addl_2D_fn h ys zs =  (* Note ys ar
   set_ydigits h 50;
   let m, n = Mat.shape ys in
   Pl.set_xrange h (~-. twoD_x_margin) ((float m) +. twoD_x_margin);
-  (* Add addl plot stuff if a function was passed: *)
-  match addl_2D_fn with | Some f -> f h ys zs | None -> ();
   (* Add one curve to a single plot area for each column in data matrices: *)
   for i=0 to (n - 1) do 
     let plot_color = L.at plot_colors (i mod num_plot_colors) in
-    plot ~h ~spec:[plot_color; LineWidth twoD_line_width] (Mat.col ys i) (Mat.map ((+.) 0.03) (Mat.col zs i));
+    plot ~h ~spec:[plot_color; LineWidth twoD_line_width] (Mat.col ys i) (Mat.col zs i);
   done;
+  (* Add addl plot stuff if a function was passed: *)
+  match addl_2D_fn with | Some f -> f h ys zs | None -> ();
   match plot_max with
   | Some y -> Pl.set_yrange h twoD_y_bottom y
   | None -> () (* I'd like to apply the lower margin here, too, but needs Plplot guts to hack default margins process *)
@@ -109,15 +109,14 @@ let add_2D_plot ?plot_max ?fontsize ?colors ?addl_2D_fn h ys zs =  (* Note ys ar
 (** Function that can be passed to add_2D_plot via the [~addl_2D_fn] argument.
     Fills the region between the upper and lower curves with
     interval_fill_color. *)
-(* FIXME PASSING THIS IS MESSING UP THE y max on the plot *)
 [@@@ warning "-8"] (* disable match warning https://stackoverflow.com/a/46006016/1455243 *)
-let fill_bounds h ys zs =  (* args are modeled on add_2D_plot *)
+let fill_bounds ?(spec=[interval_fill_color; FillPattern 0]) h ys zs =  (* args are modeled on add_2D_plot *)
   let [|x1; x2|] = Mat.to_cols ys in
   let [|y1; y2|] = Mat.to_cols zs in
   let xs = Mat.(concat_vertical (reverse x1) x2) in
   let ys = Mat.(concat_vertical (reverse y1) y2) in
   let open Pl in
-  draw_polygon ~h ~spec:[interval_fill_color; FillPattern 0] xs ys
+  draw_polygon ~h ~spec xs ys
 [@@@ warning "+8"]
 
 (*
