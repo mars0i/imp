@@ -119,10 +119,6 @@ let fill_bounds ?(spec=[interval_fill_color; FillPattern 0]) h ys zs =  (* args 
   draw_polygon ~h ~spec xs ys
 [@@@ warning "+8"]
 
-(* TODO Wrap this:
-Models.CredalsetPDF.(make_pdfs "fi" ~pdfdim:TwoD ~rows:3 ~cols:4 ~colors:Owl.Plot.[RGB (0,0,200); RGB (200,0,0)] ~plot_max:0.15 ~addl_2D_fn:fill_bounds 1 12 distlists);;
-*)
-
 
 (* Turned into spaghetti when I tried to add option of two different plots.  needs redoing. *)
 (** Make a series of n 3D plot pdfs from distlists using basename.
@@ -210,7 +206,22 @@ let make_pdfs ?(leftright=true) ?(pdfdim=ThreeD) ?(rows=1) ?(cols=1)
     Printf.printf "%s\n%!" filename
   in L.iteri make_pdf page_groups
 
+(** Calls make_pdfs with arguments suitable for displaying setchain bounds
+    created using Hartfiel's hi-lo algorithm.  Set [~pdfdim] to [TwoD],
+    [~addl_2D_fn] to default value [fill_bounds] to produce a gray fill,
+    and [~colors] by default to a red and a blue.  Other arguments are as 
+    for [make_pdfs] except for arguments that are specific to 3D plots. *)
+let make_setchain_bounds_pdfs ?(addl_2D_fn=fill_bounds)
+                              ?(colors=Pl.[RGB (0,0,200); RGB (200,0,0)])
+                              ?(leftright=true) ?(rows=1) ?(cols=1) ?(every=1)
+                              ?plot_max ?fontsize 
+                              basename start_gen last_gen distlists =
+  make_pdfs ~pdfdim:TwoD ~addl_2D_fn ~colors
+            ~leftright ~rows ~cols ~every ?plot_max ?fontsize
+            basename start_gen last_gen distlists
 
+
+(*
 (** Simple (possibly obsolete) function to make a series of n 2D plot pdfs
     from LazyList [dists] using [basename]. *)
 let make_2D_pdfs basename dists n =
@@ -223,3 +234,4 @@ let make_2D_pdfs basename dists n =
     Pl.scatter ~h xs dist; 
     Pl.output h
   in LL.iteri make_pdf (LL.take n dists)
+*)
