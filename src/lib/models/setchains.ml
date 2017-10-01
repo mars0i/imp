@@ -466,9 +466,13 @@ let make_untight_wf_interval popsize fitns1 fitns2 =
   M.min2 wf1 wf2, M.max2 wf1 wf2
 [@@@ warning "+8"]
 
+(** Make a (tight) interval from fitness specifications. *)
 let make_wf_interval popsize fitns1 fitns2 =
   let low, high = make_untight_wf_interval popsize fitns1 fitns2 in
-  tighten_mat_interval low high
+  let tight_low, tight_high = tighten_mat_interval low high in
+  if (low, high) <> (tight_low, tight_high) (* This should not happen; such an interval should already be tight. *)
+  then Printf.eprintf "make_wf_interval: Wright-Fisher-based interval is not tight\n";
+  tight_low, tight_high
 
 (* example :
 let p', q' = WF.(make_wf_interval 100 {w11=1.0; w12=0.3; w22=0.1} {w11=1.0; w12=0.9; w22=0.5});;
