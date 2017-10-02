@@ -460,15 +460,18 @@ let lazy_prob_intervals_from_freq freq bounds_mats_list =
 (***************************************)
 (** Make example intervals *)
 
-[@@@ warning "-8"] (* disable match warning https://stackoverflow.com/a/46006016/1455243 *)
-let make_untight_wf_interval popsize fitns1 fitns2 =
-  let [wf1; wf2] = L.map (WF.make_tranmat popsize) [fitns1; fitns2] in
-  M.min2 wf1 wf2, M.max2 wf1 wf2
-[@@@ warning "+8"]
+(** Make an interval from a popsize and list of fitness structures without
+    verifying tightness. *)
+let make_wf_interval_no_tight_check popsize fitn_list =
+  let tranmats = L.map (WF.make_tranmat popsize) fitn_list in
+  let low = L.reduce M.min2 tranmats in
+  let high = L.reduce M.max2 tranmats in
+  low, high
 
-(** Make a (tight) interval from fitness specifications. *)
-let make_wf_interval popsize fitns1 fitns2 =
-  let low, high = make_untight_wf_interval popsize fitns1 fitns2 in
+(** Make an interval from a popsize and list of fitness structures, making
+    sure that it is tight. *)
+let make_wf_interval popsize fitn_list =
+  let low, high = make_wf_interval_no_tight_check popsize fitn_list in
   let tight_low, tight_high = tighten_mat_interval low high in
   if (low, high) <> (tight_low, tight_high) (* This should not happen; such an interval should already be tight. *)
   then Printf.eprintf "make_wf_interval: Wright-Fisher-based interval is not tight\n";
