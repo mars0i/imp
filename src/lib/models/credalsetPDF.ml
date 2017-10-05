@@ -9,7 +9,7 @@ module WF = Wrightfisher
 module U = Utils.Genl
 
 let default_fontsize = 3.25
-let default_plot_color = Pl.RGB (225, 225, 225)
+let default_plot_color = Pl.RGB (160, 160, 160)
 let twoD_x_margin = 1.5
 let twoD_y_bottom = ~-.0.012
 let twoD_line_width = 1.
