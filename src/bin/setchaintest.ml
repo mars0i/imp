@@ -1,10 +1,6 @@
 module WF = Models.Wrightfisher
 module U = Utils.Genl
 module S = Models.Setchains
-(* module SS = Models.Setchainswithnewsum *)
-(* module Slow1 = Models.Slow1setchains *)
-(* module Slow3 = Models.Slow3setchains *)
-(* module M = Owl.Mat *)
 
 module Command = Core.Command
 module Spec = Core.Command.Spec
