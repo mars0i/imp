@@ -1,8 +1,8 @@
 (jbuild_version 1)
 
 (executables
- ((names (wrightfisherPDFs setchaintest))
-	(public_names (wrightfisherPDFs setchaintest))
+ ((names (wrightfisherPDFs)) ; setchaintest
+	(public_names (wrightfisherPDFs )) ; setchaintest
   (package models)
   (libraries (core models utils))
   (modes (native)) ; replace native with byte to make bytecode executable
