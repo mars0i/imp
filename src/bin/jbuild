@@ -6,5 +6,5 @@
   (package models)
   (libraries (core models utils))
   (modes (native)) ; replace native with byte to make bytecode executable
- ;(ocamlopt_flags "-O3")
+ (ocamlopt_flags (:standard -O3))
  ))
