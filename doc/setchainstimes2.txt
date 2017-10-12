@@ -1,0 +1,58 @@
+Bytecode vs. native using unix time on commandline for both:
+
+Using OCaml 4.05.0+flambda
+Here's the flags line in src/bin/jbuild:
+ (ocamlopt_flags (:standard -O3))
+
+echo bytecode: && time _build/default/src/bin/setchainPDFs.bc -r 3 -c 4 foobytecode 200 100 1 48 1.0 0.95 0.8  0.8 0.95 1.0 && echo native: && time _build/default/src/bin/setchainPDFs.exe -r 3 -c 4 foonative 200 100 1 48 1.0 0.95 0.8  0.8 0.95 1.0
+
+bytecode:
+foobytecode01to12.pdf
+foobytecode13to24.pdf
+foobytecode25to36.pdf
+foobytecode37to48.pdf
+
+real	19m37.240s
+user	37m46.592s
+sys	0m13.259s
+
+native:
+foonative01to12.pdf
+foonative13to24.pdf
+foonative25to36.pdf
+foonative37to48.pdf
+
+real	7m8.488s
+user	13m39.196s
+sys	0m8.535s
+
+native, same thing but fully recompiled with out the ocamlopt_flags
+line in jbuild:
+
+real	7m8.068s
+user	13m39.250s
+sys	0m8.471s
+
+(It's the same!  The ocamlopt_flags has no effect.)
+
+Ah, but I didn't do it right.  Above I had the flags only in the
+jbuild in my bin dir.  This time I put in the optimizations in all
+three of my jbuild files:
+
+real	6m56.430s
+user	12m45.605s
+sys	0m10.473s
+
+So that's slightly faster.
+
+BUT NOT AS FAST AS WITHOUT FLAMBDA:
+
+====================
+Using ocaml 4.05.0 without flambda, it's a little bit faster:
+
+real	6m47.142s
+user	12m54.941s
+sys	0m10.864s
+
+(I ran this twice.  Both times were similar.)
+
