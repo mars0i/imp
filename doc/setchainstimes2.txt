@@ -45,7 +45,15 @@ sys	0m10.473s
 
 So that's slightly faster.
 
-BUT NOT AS FAST AS WITHOUT FLAMBDA:
+And if I use -O2 instead of -O3, it seems to be slightly faster
+(though maybe that's just luck and really they are the same):
+
+real	6m49.315s
+user	12m57.454s
+sys	0m10.363s
+
+
+BUT NOT QUITE AS FAST AS WITHOUT FLAMBDA:
 
 ====================
 Using ocaml 4.05.0 without flambda, it's a little bit faster:
