@@ -1,3 +1,6 @@
+==========================
+MBA
+
 Bytecode vs. native using unix time on commandline for both:
 
 Using OCaml 4.05.0+flambda
@@ -55,7 +58,7 @@ sys	0m10.363s
 
 BUT NOT QUITE AS FAST AS WITHOUT FLAMBDA:
 
-====================
+-------------------
 Using ocaml 4.05.0 without flambda, it's a little bit faster:
 
 real	6m47.142s
@@ -64,3 +67,39 @@ sys	0m10.864s
 
 (I ran this twice.  Both times were similar.)
 
+
+==========================
+MBP
+
+Same exec line params as above:
+
+native, 4.05.0, flambda, -O3:
+real	0m50.297s
+user	5m23.740s
+sys	0m4.542s
+
+native, 4.05.0, flambda, -O2:
+real	0m50.430s
+user	5m23.458s
+sys	0m4.506s
+
+Same params except N=400 and initial-freq=200:
+
+native, 4.05.0, flambda, -O3:
+real	7m24.016s
+user	48m26.646s
+sys	0m12.914s
+
+native, 4.05.0, flambda, -O2:
+real	7m1.351s
+user	46m19.896s
+sys	0m11.352s
+
+native, 4.05.0, no flambda:
+real	7m15.193s
+user	48m3.962s
+sys	0m9.115s
+
+(Note I was using the computer on and off during each measurement, so 
+that might explain the differences, rather than slight optimization
+differences.)
