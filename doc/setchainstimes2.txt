@@ -67,6 +67,15 @@ sys	0m10.864s
 
 (I ran this twice.  Both times were similar.)
 
+---------------------
+
+with flambda not sure what flags. same as above but gens 1 through 72:
+
+real	10m19.268s
+user	19m25.846s
+sys	0m15.277s
+
+
 
 ==========================
 MBP
