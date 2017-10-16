@@ -469,7 +469,10 @@ let make_wf_interval_no_tight_check popsize fitn_list =
   low, high
 
 (** Make an interval from a popsize and list of fitness structures, making
-    sure that it is tight. *)
+    sure that it is tight.  Intervals made this way should always be tight, 
+    so this is just sanity check.  For large population sizes it might be 
+    it might be significantly faster to call the version without the
+    tightness test directly. *)
 let make_wf_interval popsize fitn_list =
   let low, high = make_wf_interval_no_tight_check popsize fitn_list in
   let tight_low, tight_high = tighten_mat_interval low high in
