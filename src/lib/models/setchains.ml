@@ -204,7 +204,7 @@ let idx_sort v =
     p and q in Hartfiel, i.e. here the arguments should be (<=), l, q, p
     according to the normal senses of p and q. *)
 let recombine relation p q lh =
-  let pbar = M.clone p in
+  let pbar = M.clone p in  (* p was created using M.row, so it's a view not a copy. *)
   let rec find_crossover idxs psum =
     match idxs with
     | i::idxs' -> 
@@ -277,12 +277,12 @@ let hilo_mult ?(fork=true) recomb p_mat q_mat prev_bound_mat =
   let len = rows * cols in
   let bounds_array =
     if fork 
-    then let bounds_array' = A.make len 0. in
+    then let bounds_array' = A.create_float len in
          Pmap.array_float_parmapi
            ~result:bounds_array' 
            (calc_bound_val_for_parmapi recomb p_mat q_mat prev_bound_mat cols)
            bounds_array' (* this arg will be ignored *)
-    else A.init len (calc_bound_val recomb p_mat q_mat prev_bound_mat cols)
+    else A.init len (calc_bound_val recomb p_mat q_mat prev_bound_mat cols)  (* TODO why make an array here? Just make a matrix. *)
   in M.of_array bounds_array rows cols
 
 
