@@ -160,29 +160,40 @@ let mat_vertices ?digits ?uniq p q =
 (** Use separate compare functions for row and column vectors to avoid
     having a test for row vs. col inside the compare function. *)
 
-(** Compare function for use by idx_sort for row vector *)
-let row_vec_idx_cmp mat j j' =
-  if M.get mat 0 j > M.get mat 0 j' then 1 
-  else if M.get mat 0 j < M.get mat 0 j' then -1 
-  else 0
-
 (** Compare function for use by idx_sort for col vector *)
 let col_vec_idx_cmp mat i i' =
   if M.get mat i 0 > M.get mat i' 0 then 1 
   else if M.get mat i 0 < M.get mat i' 0 then -1 
   else 0
 
-(** Given a row or column vector, return a list of indexes in
-    order of the numerical order of the values at those indexes.
-    Automatically determines whether the argument is a row or a column 
-    vector, raising an exception if neither. *)
-let idx_sort v =
-  let rows, cols = M.shape v in
-  let size, idx_cmp = if rows = 1
-                      then cols, row_vec_idx_cmp 
-                      else rows, col_vec_idx_cmp in
+(*
+ * (** Compare function for use by idx_sort for row vector *)
+ * let row_vec_idx_cmp mat j j' =
+ *   if M.get mat 0 j > M.get mat 0 j' then 1 
+ *   else if M.get mat 0 j < M.get mat 0 j' then -1 
+ *   else 0
+ * 
+ * (** Given a row or column vector, return a list of indexes in
+ *     order of the numerical order of the values at those indexes.
+ *     Automatically determines whether the argument is a row or a column 
+ *     vector, raising an exception if neither. *)
+ * let idx_sort v =
+ *   let rows, cols = M.shape v in
+ *   let size, idx_cmp = if rows = 1
+ *                       then cols, row_vec_idx_cmp 
+ *                       else rows, col_vec_idx_cmp in
+ *   let idxs = L.range 0 `To (size - 1) in
+ *   L.fast_sort (idx_cmp v) idxs
+ *)
+
+(** Given column vector, return a list of indexes in
+    order of the numerical order of the values at those indexes. *)
+let idx_sort_colvec v =
+  let _, size = M.shape v in
   let idxs = L.range 0 `To (size - 1) in
-  L.fast_sort (idx_cmp v) idxs
+  L.fast_sort (col_vec_idx_cmp v) idxs
+
+  
 
 (** "Recombination" functions (by analogy with genetic recombination) that
     take two vectors and create a new vector from parts of each of them,
@@ -203,32 +214,34 @@ let idx_sort v =
     from p where l is low.  Note that the latter swaps the normal meanings of 
     p and q in Hartfiel, i.e. here the arguments should be (<=), l, q, p
     according to the normal senses of p and q. *)
-let recombine relation p q lh =
+let recombine relation p q idxs =
   let pbar = M.clone p in  (* p was created using M.row, so it's a view not a copy. *)
-  let rec find_crossover idxs psum =
-    match idxs with
-    | i::idxs' -> 
+  let rec find_crossover idxs' psum =
+    match idxs' with
+    | i::idxs'' -> 
         let qi = M.get q 0 i in
         let sum_rest = psum -. (M.get pbar 0 i) in (* pbar begins <= 1 if p<=q, or >= 1 if p, q swapped *)
         let sum_rest_plus_qi = (sum_rest +. qi) in
         if relation sum_rest_plus_qi 1.
         then M.set pbar 0 i (1. -. sum_rest) (* return--last iter put it over/under *)
         else (M.set pbar 0 i qi;             (* still <= 1, or >=1; try next one *)
-              find_crossover idxs' sum_rest_plus_qi) 
+              find_crossover idxs'' sum_rest_plus_qi) 
     | [] -> raise (Failure "bad vectors") (* this should never happen *)
   in 
-  find_crossover (idx_sort lh) (M.sum pbar);
+  find_crossover idxs (M.sum pbar);
   pbar
 
-(** Given column vec l and tight row vecs p and q, return stochastic vec lo
-    with high values from q where l is low, low values from p where l is high.*)
-let recombine_lo p q l = 
-  recombine (>=) p q l
+(** Given tight row vecs p and q and sorted indexs, idxs, from a column vec,
+    return stochastic vec lo with high values from q where l is low, and low 
+    values from p where l is high.*)
+let recombine_lo p q idxs = 
+  recombine (>=) p q idxs
 
-(** Given column vec h and tight row vecs p and q, return stochastic vec hi
-    with high values from q where h is high, low values from p where h is low.*)
-let recombine_hi p q h = 
-  recombine (<=) q p h (* note swapped args *)
+(** Given tight row vecs p and q and sorted indexs, idxs, from a column vec,
+    return stochastic vec hi with high values from q where h is high, and low 
+    values from p where h is low.*)
+let recombine_hi p q idxs = 
+  recombine (<=) q p idxs (* note swapped args *)
 
 (** Calculate a pair of matrix indexes from an index into a vector and
     a row width for the matrix.  i.e. if we laid out a matrix, one row 
@@ -249,35 +262,17 @@ let flat_idx_to_rowcol width idx =
     is included because Parmap.array_float_parmapi expect to map a function 
     that has an extra argument that we ignore.   
     SEE doc/nonoptimizedcode.ml for a clearer version of this function.  *)
-let calc_bound_val recomb p_mat q_mat prev_bound_mat width idx =
+let calc_bound_val recomb p_mat q_mat prev_bound_mat idx_lists width idx =
   let i, j = flat_idx_to_rowcol width idx in
   let prev_col = M.col prev_bound_mat j in (* col makes a copy *)
+  let idxs = A.get idx_lists j in
   let p_row, q_row = M.row p_mat i, M.row q_mat i in (* row doesn't copy; it just provides a view *)
-  let bar_row = recomb p_row q_row prev_col in
+  let bar_row = recomb p_row q_row idxs in
   M.(get (bar_row *@ prev_col) 0 0)  (* TODO is this really the fastest way to calculate this sum?  Maybe it would be better to do it by hand. *)
 
 
 (*************************************************************************
    NOTES on how to make this more matrix-ey (but less suitable for Parmap?):
-
-   Q: Is bar_row the same for each elt that intersects it?
-      Then I'm doing extra work for no reason.
-      And if I wanted I could then pile up the bar_rows into a matrix.
-      In each case I multiply it by a col of prev_bound_mat,
-      so that will be the other side of the matrix product.
-
-      The answer depends on the recombine function.
-
-   A: I don't think it's redundant.  Because we are constructing
-      a new row from p and q old rows, but the order in which we
-      do this depends on the index sort for prev_col.  So for each
-      pair of old rows, and each prev_col, we'll get a different new
-      row.  And that's what gets multiplied, but this near row depends 
-      on the column to be multiplied, as well, since that determines
-      the index order.
-
-      So I can't just move to matrix multiplication, and there's no
-      need to consider getting rid of Parmap for now.
 
    Q: Am I doing the same index sort multiple times for no reason?
 
@@ -293,8 +288,8 @@ let calc_bound_val recomb p_mat q_mat prev_bound_mat width idx =
  **************************************************************************)
 
 (** Wrapper for calc_bound_val (which see), adding an additional, ignored argument. *)
-let calc_bound_val_for_parmapi recomb p_mat q_mat prev_bound_mat width idx _ =
-  calc_bound_val recomb p_mat q_mat prev_bound_mat width idx
+let calc_bound_val_for_parmapi recomb p_mat q_mat prev_bound_mat idx_lists width idx _ =
+  calc_bound_val recomb p_mat q_mat prev_bound_mat idx_lists width idx
 
 (** Given [recombine_lo] or [recombine_hi], the original tight interval bounds
     P and Q, and either the previous tight component lo or hi bound (as
@@ -311,14 +306,15 @@ let calc_bound_val_for_parmapi recomb p_mat q_mat prev_bound_mat width idx _ =
 let hilo_mult ?(fork=true) recomb p_mat q_mat prev_bound_mat = 
   let (rows, cols) = M.shape p_mat in
   let len = rows * cols in
+  let idx_lists = M.map_cols idx_sort_colvec prev_bound_mat in
   let bounds_array =
     if fork 
     then let bounds_array' = A.create_float len in
          Pmap.array_float_parmapi
            ~result:bounds_array' 
-           (calc_bound_val_for_parmapi recomb p_mat q_mat prev_bound_mat cols)
+           (calc_bound_val_for_parmapi recomb p_mat q_mat prev_bound_mat idx_lists cols)
            bounds_array' (* this arg will be ignored *)
-    else A.init len (calc_bound_val recomb p_mat q_mat prev_bound_mat cols)  (* TODO why make an array here? Just make a matrix. *)
+    else A.init len (calc_bound_val recomb p_mat q_mat prev_bound_mat idx_lists cols)  (* TODO why make an array here? Just make a matrix. *)
   in M.of_array bounds_array rows cols
 
 
