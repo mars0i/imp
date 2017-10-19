@@ -256,6 +256,42 @@ let calc_bound_val recomb p_mat q_mat prev_bound_mat width idx =
   let bar_row = recomb p_row q_row prev_col in
   M.(get (bar_row *@ prev_col) 0 0)  (* TODO is this really the fastest way to calculate this sum?  Maybe it would be better to do it by hand. *)
 
+
+(*************************************************************************
+   NOTES on how to make this more matrix-ey (but less suitable for Parmap?):
+
+   Q: Is bar_row the same for each elt that intersects it?
+      Then I'm doing extra work for no reason.
+      And if I wanted I could then pile up the bar_rows into a matrix.
+      In each case I multiply it by a col of prev_bound_mat,
+      so that will be the other side of the matrix product.
+
+      The answer depends on the recombine function.
+
+   A: I don't think it's redundant.  Because we are constructing
+      a new row from p and q old rows, but the order in which we
+      do this depends on the index sort for prev_col.  So for each
+      pair of old rows, and each prev_col, we'll get a different new
+      row.  And that's what gets multiplied, but this near row depends 
+      on the column to be multiplied, as well, since that determines
+      the index order.
+
+      So I can't just move to matrix multiplication, and there's no
+      need to consider getting rid of Parmap for now.
+
+   Q: Am I doing the same index sort multiple times for no reason?
+
+   A: Yes, every time I idx_sort on the same prev_col=lh.
+      So that is a place for optimization.
+      Maybe I can cache the results or better yet pre-calculate them.
+
+      In recombine, the *only* role for prev_col=lh is to find the
+      indexes.  So I could just pass in the index list rather than
+      prev_col.
+
+
+ **************************************************************************)
+
 (** Wrapper for calc_bound_val (which see), adding an additional, ignored argument. *)
 let calc_bound_val_for_parmapi recomb p_mat q_mat prev_bound_mat width idx _ =
   calc_bound_val recomb p_mat q_mat prev_bound_mat width idx
