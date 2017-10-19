@@ -1,0 +1,19 @@
+   Q: Is bar_row the same for each elt that intersects it?
+      Then I'm doing extra work for no reason.
+      And if I wanted I could then pile up the bar_rows into a matrix.
+      In each case I multiply it by a col of prev_bound_mat,
+      so that will be the other side of the matrix product.
+
+      The answer depends on the recombine function.
+
+   A: I don't think it's redundant.  Because we are constructing
+      a new row from p and q old rows, but the order in which we
+      do this depends on the index sort for prev_col.  So for each
+      pair of old rows, and each prev_col, we'll get a different new
+      row.  And that's what gets multiplied, but this near row depends 
+      on the column to be multiplied, as well, since that determines
+      the index order.
+
+      So I can't just move to matrix multiplication, and there's no
+      need to consider getting rid of Parmap for now.
+
