@@ -241,7 +241,6 @@ let calc_bound_val recomb p_mat q_mat prev_bound_mat idx_lists width idx =
   let i, j = flat_idx_to_rowcol width idx in
   let prev_col = M.col prev_bound_mat j in (* col makes a copy *)
   let idxs = A.get idx_lists j in
-  Printf.printf "%d\n" (L.length idxs);
   let p_row, q_row = M.row p_mat i, M.row q_mat i in (* row doesn't copy; it just provides a view *)
   let bar_row = recomb p_row q_row idxs in
   M.(get (bar_row *@ prev_col) 0 0)  (* TODO is this really the fastest way to calculate this sum?  Maybe it would be better to do it by hand. *)
