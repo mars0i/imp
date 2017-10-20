@@ -157,43 +157,18 @@ let mat_vertices ?digits ?uniq p q =
 (************************************************************)
 (** Hi-Lo Method.  See Hartfiel section 2.4, pp.  46-54 *)
 
-(** Use separate compare functions for row and column vectors to avoid
-    having a test for row vs. col inside the compare function. *)
-
 (** Compare function for use by idx_sort for col vector *)
 let col_vec_idx_cmp mat i i' =
   if M.get mat i 0 > M.get mat i' 0 then 1 
   else if M.get mat i 0 < M.get mat i' 0 then -1 
   else 0
 
-
-(** Compare function for use by idx_sort for row vector *)
-let row_vec_idx_cmp mat j j' =
-  if M.get mat 0 j > M.get mat 0 j' then 1 
-  else if M.get mat 0 j < M.get mat 0 j' then -1 
-  else 0
-
-(** Given a row or column vector, return a list of indexes in
-    order of the numerical order of the values at those indexes.
-    Automatically determines whether the argument is a row or a column 
-    vector, raising an exception if neither. *)
-let idx_sort v =
-  let rows, cols = M.shape v in
-  let size, idx_cmp = if rows = 1
-                      then cols, row_vec_idx_cmp 
-                      else rows, col_vec_idx_cmp in
-  let idxs = L.range 0 `To (size - 1) in
-  L.fast_sort (idx_cmp v) idxs
-
-
 (** Given column vector, return a list of indexes in
     order of the numerical order of the values at those indexes. *)
 let idx_sort_colvec v =
-  let _, size = M.shape v in
+  let size, _ = M.shape v in
   let idxs = L.range 0 `To (size - 1) in
   L.fast_sort (col_vec_idx_cmp v) idxs
-
-  
 
 (** "Recombination" functions (by analogy with genetic recombination) that
     take two vectors and create a new vector from parts of each of them,
@@ -307,7 +282,7 @@ let calc_bound_val_for_parmapi recomb p_mat q_mat prev_bound_mat idx_lists width
 let hilo_mult ?(fork=true) recomb p_mat q_mat prev_bound_mat = 
   let (rows, cols) = M.shape p_mat in
   let len = rows * cols in
-  let idx_lists = M.map_cols idx_sort prev_bound_mat in
+  let idx_lists = M.map_cols idx_sort_colvec prev_bound_mat in
   let bounds_array =
     if fork 
     then let bounds_array' = A.create_float len in
@@ -518,3 +493,26 @@ let p', q' = WF.(make_wf_interval 100 {w11=1.0; w12=0.3; w22=0.1} {w11=1.0; w12=
 let p, q = tighten_mat_interval p' q';;
 *)
 
+
+(* NOT IN USE:
+ * (** Use separate compare functions for row and column vectors to avoid
+ *     having a test for row vs. col inside the compare function. *)
+ * 
+ * (** Compare function for use by idx_sort for row vector *)
+ * let row_vec_idx_cmp mat j j' =
+ *   if M.get mat 0 j > M.get mat 0 j' then 1 
+ *   else if M.get mat 0 j < M.get mat 0 j' then -1 
+ *   else 0
+ * 
+ * (** Given a row or column vector, return a list of indexes in
+ *     order of the numerical order of the values at those indexes.
+ *     Automatically determines whether the argument is a row or a column 
+ *     vector, raising an exception if neither. *)
+ * let idx_sort v =
+ *   let rows, cols = M.shape v in
+ *   let size, idx_cmp = if rows = 1
+ *                       then cols, row_vec_idx_cmp 
+ *                       else rows, col_vec_idx_cmp in
+ *   let idxs = L.range 0 `To (size - 1) in
+ *   L.fast_sort (idx_cmp v) idxs
+ *) 
