@@ -71,8 +71,10 @@ let commandline =
       let fitn_recs = WF.group_fitns fitn_floats in
       Printf.printf "making matrix interval ... %!";
       let pmat, qmat = SC.make_wf_interval popsize fitn_recs in
-      Printf.printf "making lazy bounds mats and prob intervals lists ... %!";
-      let distlists = SC.lazy_prob_intervals_from_freq initfreq (SC.lazy_bounds_mats_list pmat qmat) in
+      Printf.printf "making lazy bounds mats list ... %!";
+      let bounds_mats =  SC.lazy_bounds_mats_list pmat qmat in
+      Printf.printf "making lazy prob intervals list ... %!";
+      let distlists = SC.lazy_prob_intervals_from_freq initfreq bounds_mats in
       Printf.printf "making pdfs ... \n%!";
       PDF.make_pdfs ~pdfdim:TwoD ~addl_2D_fn:PDF.fill_bounds ~colors:bottom_top_colors
                     ~rows ~cols ~every ?plot_max ?fontsize ~leftright:(not updown)

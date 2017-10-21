@@ -272,7 +272,7 @@ let hilo_mult ?(fork=true) recomb p_mat q_mat prev_bound_mat =
   let bounds_array =
     if fork 
     then let bounds_array' = A.create_float len in
-         Pmap.array_float_parmapi
+         Pmap.array_float_parmapi (* ~ncores:4 *)
            ~result:bounds_array' 
            (calc_bound_val_for_parmapi recomb p_mat q_mat prev_bound_mat idx_lists cols)
            bounds_array' (* this arg will be ignored *)
