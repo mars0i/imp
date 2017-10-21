@@ -69,8 +69,11 @@ let commandline =
                 +> anon (sequence ("fitn" %: float)))
     (fun rows cols plot_max fontsize every updown basename popsize initfreq startgen lastgen fitn_floats () ->
       let fitn_recs = WF.group_fitns fitn_floats in
+      Printf.printf "making matrix interval ... %!";
       let pmat, qmat = SC.make_wf_interval popsize fitn_recs in
+      Printf.printf "making lazy bounds mats list and prob intervals ... %!";
       let distlists = SC.lazy_prob_intervals_from_freq initfreq (SC.lazy_bounds_mats_list pmat qmat) in
+      Printf.printf "making pdfs ... \n%!";
       PDF.make_pdfs ~pdfdim:TwoD ~addl_2D_fn:PDF.fill_bounds ~colors:bottom_top_colors
                     ~rows ~cols ~every ?plot_max ?fontsize ~leftright:(not updown)
                     basename startgen lastgen distlists)
