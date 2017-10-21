@@ -228,41 +228,28 @@ let flat_idx_to_rowcol width idx =
   let col = idx mod width in
   row, col
 
-(** Given the original P and Q matrices [p_mat] and [q_mat], and a previous
-    tight bounds matrix [prev_bound_mat], calculate the value at i j for the
-    next tight bounds matrix, where i j is calculated from vector index idx 
-    and width.  i.e. if we laid out a matrix one row after another in
+(** Given a [recomb] function ([recombine_lo] or [recombine_hi]), the original
+    P and Q matrices [p_mat] and [q_mat], a previous
+    tight bounds matrix [prev_bound_mat], and an array of sorted lists of 
+    indexes [idx_lists], calculate the value at i j for the
+    next tight bounds matrix, where i j is calculated from vector index [idx]
+    and [width].  i.e. if we laid out a matrix one row after another in
     vector form, idx would be an index into it, and width is the row width
-    of the original matrix.  Used by [hilo_mult].  Final, ignored argument,
-    is included because Parmap.array_float_parmapi expect to map a function 
-    that has an extra argument that we ignore.   
-    SEE doc/nonoptimizedcode.ml for a clearer version of this function.  *)
+    of the original matrix.  (We pass [idx_lists] even though it could be
+    calculated on demand from [prev_bound_mat] to avoid repeatedly performing
+    the same sorts.) Used by [hilo_mult].  
+    SEE doc/nonoptimizedcode.ml for an older, perhaps clearer version.  *)
 let calc_bound_val recomb p_mat q_mat prev_bound_mat idx_lists width idx =
   let i, j = flat_idx_to_rowcol width idx in
   let prev_col = M.col prev_bound_mat j in (* col makes a copy *)
   let idxs = A.get idx_lists j in
   let p_row, q_row = M.row p_mat i, M.row q_mat i in (* row doesn't copy; it just provides a view *)
   let bar_row = recomb p_row q_row idxs in
-  M.(get (bar_row *@ prev_col) 0 0)  (* TODO is this really the fastest way to calculate this sum?  Maybe it would be better to do it by hand. *)
+  M.(get (bar_row *@ prev_col) 0 0)
 
 
-(*************************************************************************
-   NOTES on how to make this more matrix-ey (but less suitable for Parmap?):
-
-   Q: Am I doing the same index sort multiple times for no reason?
-
-   A: Yes, every time I idx_sort on the same prev_col=lh.
-      So that is a place for optimization.
-      Maybe I can cache the results or better yet pre-calculate them.
-
-      In recombine, the *only* role for prev_col=lh is to find the
-      indexes.  So I could just pass in the index list rather than
-      prev_col.
-
-
- **************************************************************************)
-
-(** Wrapper for calc_bound_val (which see), adding an additional, ignored argument. *)
+(** Wrapper for calc_bound_val (which see), adding an additional, ignored 
+    argument for Pmap.array_float_parmapi. *)
 let calc_bound_val_for_parmapi recomb p_mat q_mat prev_bound_mat idx_lists width idx _ =
   calc_bound_val recomb p_mat q_mat prev_bound_mat idx_lists width idx
 
@@ -281,7 +268,7 @@ let calc_bound_val_for_parmapi recomb p_mat q_mat prev_bound_mat idx_lists width
 let hilo_mult ?(fork=true) recomb p_mat q_mat prev_bound_mat = 
   let (rows, cols) = M.shape p_mat in
   let len = rows * cols in
-  let idx_lists = M.map_cols idx_sort_colvec prev_bound_mat in
+  let idx_lists = M.map_cols idx_sort_colvec prev_bound_mat in (* sorted list of indexes for each column *)
   let bounds_array =
     if fork 
     then let bounds_array' = A.create_float len in
