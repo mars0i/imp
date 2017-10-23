@@ -189,7 +189,7 @@ let idx_sort_colvec v =
     from p where l is low.  Note that the latter swaps the normal meanings of 
     p and q in Hartfiel, i.e. here the arguments should be (<=), l, q, p
     according to the normal senses of p and q. *)
-let recombine relation p q idxs =
+let recombine relation p q p_sum idxs =
   let pbar = M.clone p in  (* p was created using M.row, so it's a view not a copy. *)
   let rec find_crossover idxs' psum =
     match idxs' with
@@ -203,20 +203,20 @@ let recombine relation p q idxs =
               find_crossover idxs'' sum_rest_plus_qi) 
     | [] -> raise (Failure "bad vectors") (* this should never happen *)
   in 
-  find_crossover idxs (M.sum pbar);
+  find_crossover idxs p_sum;
   pbar
 
 (** Given tight row vecs p and q and sorted indexs, idxs, from a column vec,
     return stochastic vec lo with high values from q where l is low, and low 
     values from p where l is high.*)
-let recombine_lo p q idxs = 
-  recombine (>=) p q idxs
+let recombine_lo p q p_sum idxs = 
+  recombine (>=) p q p_sum idxs
 
 (** Given tight row vecs p and q and sorted indexs, idxs, from a column vec,
     return stochastic vec hi with high values from q where h is high, and low 
     values from p where h is low.*)
-let recombine_hi p q idxs = 
-  recombine (<=) q p idxs (* note swapped args *)
+let recombine_hi p q p_sum idxs = 
+  recombine (<=) q p p_sum idxs (* note swapped args *)
 
 (** Calculate a pair of matrix indexes from an index into a vector and
     a row width for the matrix.  i.e. if we laid out a matrix, one row 
@@ -249,19 +249,20 @@ let flat_idx_to_rowcol width idx =
     calculated on demand from [prev_bound_mat] to avoid repeatedly performing
     the same sorts.) Used by [hilo_mult].  
     SEE doc/nonoptimizedcode.ml for an older, perhaps clearer version.  *)
-let calc_bound_val recomb p_mat q_mat prev_bound_mat idx_lists width idx =
+let calc_bound_val recomb p_mat q_mat prev_bound_mat p_mat_row_sums prev_mat_idx_lists width idx =
   let i, j = flat_idx_to_rowcol width idx in
   let prev_col = M.col prev_bound_mat j in (* col makes a copy *)
-  let idxs = A.get idx_lists j in
+  let p_row_sum = M.get p_mat_row_sums i 0 in
+  let idxs = A.get prev_mat_idx_lists j in
   let p_row, q_row = M.row p_mat i, M.row q_mat i in (* row doesn't copy; it just provides a view *)
-  let bar_row = recomb p_row q_row idxs in
+  let bar_row = recomb p_row q_row p_row_sum idxs in
   M.(get (bar_row *@ prev_col) 0 0)
 
 
 (** Wrapper for calc_bound_val (which see), adding an additional, ignored 
     argument for Pmap.array_float_parmapi. *)
-let calc_bound_val_for_parmapi recomb p_mat q_mat prev_bound_mat idx_lists width idx _ =
-  calc_bound_val recomb p_mat q_mat prev_bound_mat idx_lists width idx
+let calc_bound_val_for_parmapi recomb p_mat q_mat prev_bound_mat p_mat_row_sums prev_mat_idx_lists width idx _ =
+  calc_bound_val recomb p_mat q_mat prev_bound_mat p_mat_row_sums prev_mat_idx_lists width idx
 
 (** Given [recombine_lo] or [recombine_hi], the original tight interval bounds
     P and Q, and either the previous tight component lo or hi bound (as
@@ -278,15 +279,16 @@ let calc_bound_val_for_parmapi recomb p_mat q_mat prev_bound_mat idx_lists width
 let hilo_mult ?(fork=true) recomb p_mat q_mat prev_bound_mat = 
   let (rows, cols) = M.shape p_mat in
   let len = rows * cols in
-  let idx_lists = M.map_cols idx_sort_colvec prev_bound_mat in (* sorted list of indexes for each column *)
+  let p_mat_row_sums = M.sum_cols p_mat in (* sum_cols means add all of the column vectors together, which gives you a col vector containing a sum of each row *)
+  let prev_mat_idx_lists = M.map_cols idx_sort_colvec prev_bound_mat in (* sorted list of indexes for each column *)
   let bounds_array =
     if fork 
     then let bounds_array' = A.create_float len in
          Pmap.array_float_parmapi (* ~ncores:4 *)
            ~result:bounds_array' 
-           (calc_bound_val_for_parmapi recomb p_mat q_mat prev_bound_mat idx_lists cols)
+           (calc_bound_val_for_parmapi recomb p_mat q_mat prev_bound_mat p_mat_row_sums prev_mat_idx_lists cols)
            bounds_array' (* this arg will be ignored *)
-    else A.init len (calc_bound_val recomb p_mat q_mat prev_bound_mat idx_lists cols)  (* TODO why make an array here? Just make a matrix. *)
+    else A.init len (calc_bound_val recomb p_mat q_mat prev_bound_mat p_mat_row_sums prev_mat_idx_lists cols)  (* TODO why make an array here? Just make a matrix. *)
   in M.of_array bounds_array rows cols
 
 
