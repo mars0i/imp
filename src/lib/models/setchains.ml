@@ -228,16 +228,6 @@ let flat_idx_to_rowcol width idx =
   let col = idx mod width in
   row, col
 
-(* FIXME, TODO: I think that as calc_bound_val is run through the i, j indexes
- * by Parmap.array_float_parmapi, it repeatedly calls recomb--i.e., ultimately,
- * recombine--on the same p_row (and q_row).  THIS MEANS that it's repeatedly
- * calling Owl.Mat.sum on the same p_row--i.e. once for each column.  (See the
- * penultimate line in the def of recombine.)  That's a waste.  So I should 
- * pre-sum these and pass in the sum or something like that. Note that I still
- * need the vector in addition to its sum in recombine.  Maybe do
- *    let p_row_sums = Owl.Mat.map_rows Owl.Mat.sum p_mat
- * in hilo_mult.  *)
-
 (** Given a [recomb] function ([recombine_lo] or [recombine_hi]), the original
     P and Q matrices [p_mat] and [q_mat], a previous
     tight bounds matrix [prev_bound_mat], and an array of sorted lists of 
