@@ -245,9 +245,9 @@ let flat_idx_to_rowcol width idx =
     next tight bounds matrix, where i j is calculated from vector index [idx]
     and [width].  i.e. if we laid out a matrix one row after another in
     vector form, idx would be an index into it, and width is the row width
-    of the original matrix.  (We pass [idx_lists] even though it could be
-    calculated on demand from [prev_bound_mat] to avoid repeatedly performing
-    the same sorts.) Used by [hilo_mult].  
+    of the original matrix.  (We pass [p_mat_row_sums] and [idx_lists] even 
+    though they could be calculated on demand from [p_mat], [prev_bound_mat],
+    to avoid repeatedly performing the same computations.) Used by [hilo_mult].  
     SEE doc/nonoptimizedcode.ml for an older, perhaps clearer version.  *)
 let calc_bound_val recomb p_mat q_mat prev_bound_mat p_mat_row_sums prev_mat_idx_lists width idx =
   let i, j = flat_idx_to_rowcol width idx in
