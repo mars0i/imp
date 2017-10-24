@@ -216,7 +216,7 @@ let flat_idx_to_rowcol width idx =
   let col = idx mod width in
   row, col
 
-(** Given a [recomb] function ([recombine_lo] or [recombine_hi]), the original
+(** Given a [recomb] function ([recombine_lo] or [recombine_hi]), the original (* FIXME DOC WRONG *)
     P and Q matrices [p_mat] and [q_mat], a previous
     tight bounds matrix [prev_bound_mat], and an array of sorted lists of 
     indexes [idx_lists], calculate the value at i j for the
