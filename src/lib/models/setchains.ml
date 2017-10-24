@@ -191,7 +191,8 @@ let idx_sort_colvec v =
     according to the normal senses of p and q. *)
 let recombine relation p q p_sum idxs =
   let yopsum, yoqsum = M.sum p, M.sum q in
-  Printf.printf "q:%f p:%f p_sum:%f dif:%.30f %b\n" yoqsum yopsum p_sum (yopsum -. p_sum) (p_sum = yopsum);
+  if abs_float(p_sum -. yopsum) > 0.000001
+  then Printf.printf "q:%f p:%f p_sum:%f dif:%.30f\n" yoqsum yopsum p_sum (yopsum -. p_sum);
   let pbar = M.clone p in  (* p was created using M.row, so it's a view not a copy. *)
   let rec find_crossover idxs' psum =
     match idxs' with
@@ -208,17 +209,19 @@ let recombine relation p q p_sum idxs =
   find_crossover idxs p_sum;
   pbar
 
-(** Given tight row vecs p and q and sorted indexs, idxs, from a column vec,
-    return stochastic vec lo with high values from q where l is low, and low 
-    values from p where l is high.*)
-let recombine_lo p q p_sum idxs = 
-  recombine (>=) p q p_sum idxs
-
-(** Given tight row vecs p and q and sorted indexs, idxs, from a column vec,
-    return stochastic vec hi with high values from q where h is high, and low 
-    values from p where h is low.*)
-let recombine_hi p q p_sum idxs = 
-  recombine (<=) q p p_sum idxs (* note swapped args *)
+(*
+ * (** Given tight row vecs p and q and sorted indexs, idxs, from a column vec,
+ *     return stochastic vec lo with high values from q where l is low, and low 
+ *     values from p where l is high.*)
+ * let recombine_lo p q p_sum idxs = 
+ *   recombine (>=) p q p_sum idxs
+ * 
+ * (** Given tight row vecs p and q and sorted indexs, idxs, from a column vec,
+ *     return stochastic vec hi with high values from q where h is high, and low 
+ *     values from p where h is low.*)
+ * let recombine_hi p q p_sum idxs = 
+ *   recombine (<=) q p p_sum idxs (* note swapped args *)
+ *)
 
 (** Calculate a pair of matrix indexes from an index into a vector and
     a row width for the matrix.  i.e. if we laid out a matrix, one row 
@@ -271,6 +274,7 @@ let calc_bound_val_for_parmapi recomb p_mat q_mat prev_bound_mat p_mat_row_sums 
 let hilo_mult ?(fork=false) recomb p_mat q_mat prev_bound_mat = 
   let (rows, cols) = M.shape p_mat in
   let len = rows * cols in
+  (* FIXME BUG: Next line should sum q_mat if recomb = recomb_hi. Better yet, change where args swapped and/or sum is calc'ed. *)
   let p_mat_row_sums = M.sum_cols p_mat in (* sum_cols means add all of the column vectors together, which gives you a col vector containing a sum of each row *)
   let prev_mat_idx_lists = M.map_cols idx_sort_colvec prev_bound_mat in (* sorted list of indexes for each column *)
   let bounds_array =
@@ -289,7 +293,7 @@ let hilo_mult ?(fork=false) recomb p_mat q_mat prev_bound_mat =
     If [~fork] is present with any value, won't use Parmap to divide the 
     work between processes. *)
 let lo_mult ?(fork=true) p_mat q_mat prev_lo_mat =
-  hilo_mult ~fork recombine_lo p_mat q_mat prev_lo_mat
+  hilo_mult ~fork (recombine (>=)) p_mat q_mat prev_lo_mat
 
 (** Starting from the original P and Q tight interval bounds and the previous
     component tight hi bound, make the netxt hi matrix.
@@ -297,7 +301,7 @@ let lo_mult ?(fork=true) p_mat q_mat prev_lo_mat =
     If [~fork] is present with any value, won't use Parmap to divide the 
     work between processes. *)
 let hi_mult ?(fork=true) p_mat q_mat prev_hi_mat =
-  hilo_mult ~fork recombine_hi p_mat q_mat prev_hi_mat (* note swapped args *)
+  hilo_mult ~fork (recombine (<=)) q_mat p_mat prev_hi_mat (* NOTE SWAPPED ARGS *)
 
 (** Given [recombine_lo] or [recombine_hi], the original tight interval bounds
     P and Q, and either the previous tight component lo or hi bound (as 
@@ -317,14 +321,14 @@ let rec make_kth_bounds_mat_from_prev recomb p_mat q_mat prev_bound_mat k =
 (** Starting from the original P and Q tight interval bounds and the previous
     component tight lo bound, make the kth lo matrix after the previous one. *)
 let make_kth_lo_mat_from_prev p_mat q_mat prev_lo_mat k =
-  make_kth_bounds_mat_from_prev recombine_lo p_mat q_mat prev_lo_mat k
+  make_kth_bounds_mat_from_prev (recombine (>=)) p_mat q_mat prev_lo_mat k
 
 (** TODO revise to use hi_mult *)
 (** Starting from the original P and Q tight interval bounds and the previous
     component tight hi bound, make the kth hi matrix after the previous one.
     NOTE args are in same order as lo_mult. *)
 let make_kth_hi_mat_from_prev p_mat q_mat prev_hi_mat k =
-  make_kth_bounds_mat_from_prev recombine_hi p_mat q_mat prev_hi_mat k (* note swapped args *)
+  make_kth_bounds_mat_from_prev (recombine (<=)) p_mat q_mat prev_hi_mat k (* note swapped args *)
 
 (** Convenience function to make both the kth lo and hi matrices from an 
     earlier pair of bound matrices and the original matrices. 
