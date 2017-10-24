@@ -206,20 +206,6 @@ let recombine relation p q p_sum idxs =
   find_crossover idxs p_sum;
   pbar
 
-(*
- * (** Given tight row vecs p and q and sorted indexs, idxs, from a column vec,
- *     return stochastic vec lo with high values from q where l is low, and low 
- *     values from p where l is high.*)
- * let recombine_lo p q p_sum idxs = 
- *   recombine (>=) p q p_sum idxs
- * 
- * (** Given tight row vecs p and q and sorted indexs, idxs, from a column vec,
- *     return stochastic vec hi with high values from q where h is high, and low 
- *     values from p where h is low.*)
- * let recombine_hi p q p_sum idxs = 
- *   recombine (<=) q p p_sum idxs (* note swapped args *)
- *)
-
 (** Calculate a pair of matrix indexes from an index into a vector and
     a row width for the matrix.  i.e. if we laid out a matrix, one row 
     after another in vector form, idx would be an index into it, and width
