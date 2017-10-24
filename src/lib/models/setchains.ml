@@ -330,6 +330,11 @@ let next_bounds_mats_for_from_loop ?(fork=true) pmat qmat (lo,hi) =
 let lazy_bounds_mats_list ?(fork=true) p_mat q_mat =
   LL.from_loop (p_mat, q_mat) (next_bounds_mats_for_from_loop ~fork p_mat q_mat)
 
+(** Convenience version of lazy_bounds_mats_list that takes
+    (p_mat, q_mat) as argument rather than p_mat and q_mat. *)
+let lazy_bounds_mats_list_from_pair ?(fork=true) (p_mat, q_mat) =
+  lazy_bounds_mats_list ~fork p_mat q_mat =
+
 (** lazy_prob_intervals_from_freq [freq] [bounds_mats_list] expects an initial
     frequency for a single population and a LazyList of bounds matrix pairs,
     and returns a LazyList of probability intervals for each timestep. Like
@@ -342,6 +347,18 @@ let lazy_prob_intervals_from_freq freq bounds_mats_list =
   let size, _ = M.shape (fst (LL.hd bounds_mats_list)) in
   let init_dist = (WF.make_init_dist size freq) in
   LL.cons [init_dist; init_dist] (LL.map (freq_mult freq) bounds_mats_list)
+
+(* USAGE EXAMPLES: 
+ *   let pmat, qmat = W.(S.make_wf_interval 100 [{w11=1.0; w12=0.5; w22=0.3}; {w11=0.2; w12=0.9; w22=1.0}]);;
+ *   let bounds_mats = S.lazy_bounds_mats_list pmat qmat;;
+ *   let distlist = S.lazy_prob_intervals_from_freq 50 bounds_mats;;
+ * or:
+ *   let distlist = S.lazy_prob_intervals_from_freq 50
+ *                    (S.lazy_bounds_mats_list_from_pair
+ *                        W.(S.make_wf_interval 100
+ *                            [{w11=1.0; w12=0.5; w22=0.3};
+ *                             {w11=0.2; w12=0.9; w22=1.0}]));;
+ *)
 
 
 (*****************************************************)
