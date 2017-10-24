@@ -190,9 +190,6 @@ let idx_sort_colvec v =
     p and q in Hartfiel, i.e. here the arguments should be (<=), l, q, p
     according to the normal senses of p and q. *)
 let recombine relation p q p_sum idxs =
-  let yopsum, yoqsum = M.sum p, M.sum q in
-  if abs_float(p_sum -. yopsum) > 0.000001
-  then Printf.printf "q:%f p:%f p_sum:%f dif:%.30f\n" yoqsum yopsum p_sum (yopsum -. p_sum);
   let pbar = M.clone p in  (* p was created using M.row, so it's a view not a copy. *)
   let rec find_crossover idxs' psum =
     match idxs' with
@@ -271,10 +268,9 @@ let calc_bound_val_for_parmapi recomb p_mat q_mat prev_bound_mat p_mat_row_sums 
       If recomb is recombine_hi, the arguments should be (notice!) Q, P,
       and the previous hi matrix. 
     SEE doc/nonoptimizedcode.ml for clearer versions of this function.  *)
-let hilo_mult ?(fork=false) recomb p_mat q_mat prev_bound_mat = 
+let hilo_mult ?(fork=true) recomb p_mat q_mat prev_bound_mat = 
   let (rows, cols) = M.shape p_mat in
   let len = rows * cols in
-  (* FIXME BUG: Next line should sum q_mat if recomb = recomb_hi. Better yet, change where args swapped and/or sum is calc'ed. *)
   let p_mat_row_sums = M.sum_cols p_mat in (* sum_cols means add all of the column vectors together, which gives you a col vector containing a sum of each row *)
   let prev_mat_idx_lists = M.map_cols idx_sort_colvec prev_bound_mat in (* sorted list of indexes for each column *)
   let bounds_array =
