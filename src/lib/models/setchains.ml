@@ -250,7 +250,6 @@ let calc_bound_val recomb p_mat q_mat prev_bound_mat p_mat_row_sums prev_mat_idx
   let bar_row = recomb p_row q_row p_row_sum idxs in
   M.(get (bar_row *@ prev_col) 0 0)
 
-
 (** Wrapper for calc_bound_val (which see), adding an additional, ignored 
     argument for Pmap.array_float_parmapi. *)
 let calc_bound_val_for_parmapi recomb p_mat q_mat prev_bound_mat p_mat_row_sums prev_mat_idx_lists width idx _ =
@@ -283,7 +282,6 @@ let hilo_mult ?(fork=true) recomb p_mat q_mat prev_bound_mat =
     else A.init len (calc_bound_val recomb p_mat q_mat prev_bound_mat p_mat_row_sums prev_mat_idx_lists cols)  (* TODO why make an array here? Just make a matrix. *)
   in M.of_array bounds_array rows cols
 
-
 (** Starting from the original P and Q tight interval bounds and the previous
     component tight lo bound, make the netxt lo matrix.
     If [~fork] is present with any value, won't use Parmap to divide the 
@@ -298,6 +296,85 @@ let lo_mult ?(fork=true) p_mat q_mat prev_lo_mat =
     work between processes. *)
 let hi_mult ?(fork=true) p_mat q_mat prev_hi_mat =
   hilo_mult ~fork (recombine (<=)) q_mat p_mat prev_hi_mat (* NOTE SWAPPED ARGS *)
+
+(** Given a transition matrix interval [(lo_mat, hi_mat)] and a probability 
+   interval that's represented by a single frequency [freq] to which all 
+   probability is assigned for the single distribution in the interval, 
+   lo-multiply hi-multiply the distribution times [lo_mat] and [hi_mat]
+   respectively.  (When the probabilty interval is of this kind, this function
+   should be more efficient than lo_mult and hi_mult, and even more efficient
+   than the normal dot product, which does the same thing when the interval
+   contains only one distribution.) *)
+let freq_mult freq (lo_mat, hi_mat) =
+  [M.row lo_mat freq; M.row hi_mat freq]
+
+(** Tip: The next few functions create a LazyList in which each element is
+    constructed from the preceding one by a method that usually forks 
+    multiple operating system processes.  If you abort the processing
+    before it completes, you may end up with a partially constructed or
+    otherwise somehow corrupted element in the LazyList.  Since a LazyList
+    won't recalculate an element once it's been created the first time,
+    your lazy list may become useless, and you'll have to regenerate it
+    from scratch.  (That's my interpretation of something that happened once.) *)
+
+(** Return pair of pairs: The first pair is the bounds matrices that were
+    passed as the third argument [(lo,hi)], unchanged, and the next bounds
+    matrix pair.  For use with [Batteries.LazyList.from_loop] *)
+let next_bounds_mats_for_from_loop ?(fork=true) pmat qmat (lo,hi) =
+  let lo', hi' = lo_mult ~fork pmat qmat lo, hi_mult ~fork pmat qmat hi in
+  (lo,hi), (lo', hi')
+
+(** lazy_bounds_mats [p_mat] [q_mat] returns a LazyList of bounds matrix pairs
+    starting from the initial transition matrix interval defined [pmat] defined
+    by [qmat] *)
+let lazy_bounds_mats_list ?(fork=true) p_mat q_mat =
+  LL.from_loop (p_mat, q_mat) (next_bounds_mats_for_from_loop ~fork p_mat q_mat)
+
+(** lazy_prob_intervals_from_freq [freq] [bounds_mats_list] expects an initial
+    frequency for a single population and a LazyList of bounds matrix pairs,
+    and returns a LazyList of probability intervals for each timestep. Like
+    [lazy_prob_intervals] and [lazy_singleton_intervals] but more efficient
+    if the probability interval consists of a single distribution that puts
+    all probability on a single frequency.  Note that the first element will
+    be the initial interval: a list containing two copies of a vector with
+    1.0 at index freq and 0.0 everywhere else. *)
+let lazy_prob_intervals_from_freq freq bounds_mats_list =
+  let size, _ = M.shape (fst (LL.hd bounds_mats_list)) in
+  let init_dist = (WF.make_init_dist size freq) in
+  LL.cons [init_dist; init_dist] (LL.map (freq_mult freq) bounds_mats_list)
+
+
+(*****************************************************)
+(** Functions for making matrix intervals *)
+
+(** Make an interval from a popsize and list of fitness structures without
+    verifying tightness. *)
+let make_wf_interval_no_tight_check popsize fitn_list =
+  let tranmats = L.map (WF.make_tranmat popsize) fitn_list in
+  let low = L.reduce M.min2 tranmats in
+  let high = L.reduce M.max2 tranmats in
+  low, high
+
+(** Make an interval from a popsize and list of fitness structures, making
+    sure that it is tight.  Intervals made this way should always be tight, 
+    so this is just sanity check.  For large population sizes it might be 
+    it might be significantly faster to call the version without the
+    tightness test directly. *)
+let make_wf_interval popsize fitn_list =
+  let low, high = make_wf_interval_no_tight_check popsize fitn_list in
+  let tight_low, tight_high = tighten_mat_interval low high in
+  if (low, high) <> (tight_low, tight_high) (* This should not happen; such an interval should already be tight. *)
+  then Printf.eprintf "make_wf_interval: Wright-Fisher-based interval is not tight\n";
+  tight_low, tight_high
+
+(* example :
+let p', q' = WF.(make_wf_interval 100 {w11=1.0; w12=0.3; w22=0.1} {w11=1.0; w12=0.9; w22=0.5});;
+let p, q = tighten_mat_interval p' q';;
+*)
+
+
+(*****************************************************)
+(* Additional utility functions that might be convenient in some contexts *)
 
 (** Given [recombine_lo] or [recombine_hi], the original tight interval bounds
     P and Q, and either the previous tight component lo or hi bound (as 
@@ -368,17 +445,6 @@ let prob_interval_mult p q (lo_mat, hi_mat) =
 let singleton_interval_mult p (lo_mat, hi_mat) =
   M.([p *@ lo_mat; p *@ hi_mat])
 
-(** Given a transition matrix interval [(lo_mat, hi_mat)] and a probability 
-   interval that's represented by a single frequency [freq] to which all 
-   probability is assigned for the single distribution in the interval, 
-   lo-multiply hi-multiply the distribution times [lo_mat] and [hi_mat]
-   respectively.  (When the probabilty interval is of this kind, this function
-   should be more efficient than lo_mult and hi_mult, and even more efficient
-   than the normal dot product, which does the same thing when the interval
-   contains only one distribution.) *)
-let freq_mult freq (lo_mat, hi_mat) =
-  [M.row lo_mat freq; M.row hi_mat freq]
-
 (** Given a transition matrix interval [p_mat], [q_mat], return the kth 
     probability interval, assuming that the initial state was an interval 
     consisting of a single distribution that put all probability on one 
@@ -395,13 +461,6 @@ let freq_mult freq (lo_mat, hi_mat) =
 let make_kth_dist_interval_from_freq init_freq p_mat q_mat k =
   freq_mult init_freq (make_kth_bounds_mats p_mat q_mat k)
 
-(** Return pair of pairs: The first pair is the bounds matrices that were
-    passed as the third argument [(lo,hi)], unchanged, and the next bounds
-    matrix pair.  For use with [Batteries.LazyList.from_loop] *)
-let next_bounds_mats_for_from_loop ?(fork=true) pmat qmat (lo,hi) =
-  let lo', hi' = lo_mult ~fork pmat qmat lo, hi_mult ~fork pmat qmat hi in
-  (lo,hi), (lo', hi')
-
 (** Tip: The next few functions create a LazyList in which each element is
     constructed from the preceding one by a method that usually forks 
     multiple operating system processes.  If you abort the processing
@@ -412,16 +471,6 @@ let next_bounds_mats_for_from_loop ?(fork=true) pmat qmat (lo,hi) =
     from scratch.  (That's my interpretation of something that happened once.) *)
 
 (* TODO needs testing *)
-(** lazy_bounds_mats [p_mat] [q_mat] returns a LazyList of bounds matrix pairs
-    starting from the initial transition matrix interval defined [pmat] defined
-    by [qmat] *)
-let lazy_bounds_mats_list ?(fork=true) p_mat q_mat =
-  LL.from_loop (p_mat, q_mat) (next_bounds_mats_for_from_loop ~fork p_mat q_mat)
-
-(** Note functions in credalsetsPDF.ml expect to see a *list* not
-   a pair for each tick. *)
-
-(* TODO needs testing *)
 (** lazy_prob_intervals [p] [q] [bounds_mats_list] expects two vectors defining
     a probability interval, and a LazyList of bounds matrix pairs, and returns
     a LazyList of probability intervals for each timestep.  Note that the first
@@ -429,6 +478,7 @@ let lazy_bounds_mats_list ?(fork=true) p_mat q_mat =
 let lazy_prob_intervals p q bounds_mats_list =
   LL.cons [p; q] (LL.map (prob_interval_mult p q) bounds_mats_list)
 
+(* TODO needs testing *)
 (** lazy_singleton_intervals [p] [bounds_mats_list] expects a vector 
     representing the sole probability distribution in an intial probability
     interval, and a LazyList of bounds matrix pairs.  It returns a LazyList of
@@ -439,70 +489,3 @@ let lazy_prob_intervals p q bounds_mats_list =
     Note that the first element will be the initial interval [p; p]. *)
 let lazy_singleton_intervals p bounds_mats_list =
   LL.cons [p; p] (LL.map (singleton_interval_mult p) bounds_mats_list)
-
-(* TODO needs testing *)
-(** lazy_prob_intervals_from_freq [freq] [bounds_mats_list] expects an initial
-    frequency for a single population and a LazyList of bounds matrix pairs,
-    and returns a LazyList of probability intervals for each timestep. Like
-    [lazy_prob_intervals] and [lazy_singleton_intervals] but more efficient
-    if the probability interval consists of a single distribution that puts
-    all probability on a single frequency.  Note that the first element will
-    be the initial interval: a list containing two copies of a vector with
-    1.0 at index freq and 0.0 everywhere else. *)
-let lazy_prob_intervals_from_freq freq bounds_mats_list =
-  let size, _ = M.shape (fst (LL.hd bounds_mats_list)) in
-  let init_dist = (WF.make_init_dist size freq) in
-  LL.cons [init_dist; init_dist] (LL.map (freq_mult freq) bounds_mats_list)
-
-
-(***************************************)
-(** Make example intervals *)
-
-(** Make an interval from a popsize and list of fitness structures without
-    verifying tightness. *)
-let make_wf_interval_no_tight_check popsize fitn_list =
-  let tranmats = L.map (WF.make_tranmat popsize) fitn_list in
-  let low = L.reduce M.min2 tranmats in
-  let high = L.reduce M.max2 tranmats in
-  low, high
-
-(** Make an interval from a popsize and list of fitness structures, making
-    sure that it is tight.  Intervals made this way should always be tight, 
-    so this is just sanity check.  For large population sizes it might be 
-    it might be significantly faster to call the version without the
-    tightness test directly. *)
-let make_wf_interval popsize fitn_list =
-  let low, high = make_wf_interval_no_tight_check popsize fitn_list in
-  let tight_low, tight_high = tighten_mat_interval low high in
-  if (low, high) <> (tight_low, tight_high) (* This should not happen; such an interval should already be tight. *)
-  then Printf.eprintf "make_wf_interval: Wright-Fisher-based interval is not tight\n";
-  tight_low, tight_high
-
-(* example :
-let p', q' = WF.(make_wf_interval 100 {w11=1.0; w12=0.3; w22=0.1} {w11=1.0; w12=0.9; w22=0.5});;
-let p, q = tighten_mat_interval p' q';;
-*)
-
-
-(* NOT IN USE:
- * (** Use separate compare functions for row and column vectors to avoid
- *     having a test for row vs. col inside the compare function. *)
- * 
- * (** Compare function for use by idx_sort for row vector *)
- * let row_vec_idx_cmp mat j j' =
- *   if M.get mat 0 j > M.get mat 0 j' then 1 
- *   else if M.get mat 0 j < M.get mat 0 j' then -1 
- *   else 0
- * 
- * (** Given a row or column vector, return a list of indexes in
- *     order of the numerical order of the values at those indexes.
- *     Automatically determines whether the argument is a row or a column 
- *     vector, raising an exception if neither. *)
- * let idx_sort v =
- *   let rows, cols = M.shape v in
- *   let size, idx_cmp = if rows = 1
- *                       then cols, row_vec_idx_cmp 
- *                       else rows, col_vec_idx_cmp in
- *   let idxs = L.range 0 `To (size - 1) in
- *   L.fast_sort (idx_cmp v) idxs
- *) 
