@@ -303,6 +303,10 @@ let freq_mult freq (lo_mat, hi_mat) =
     your lazy list may become useless, and you'll have to regenerate it
     from scratch.  (That's my interpretation of something that happened once.) *)
 
+(** FIXME TODO Next function is called repeatedly with same pmat, qmat, and
+    every time, I'm summing all of those matrices rows.  So instead sum
+    them first and pass them in. *)
+
 (** Return pair of pairs: The first pair is the bounds matrices that were
     passed as the third argument [(lo,hi)], unchanged, and the next bounds
     matrix pair.  For use with [Batteries.LazyList.from_loop] *)
