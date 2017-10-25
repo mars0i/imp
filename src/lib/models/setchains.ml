@@ -355,6 +355,12 @@ let lazy_prob_intervals_from_freq freq bounds_mats_list =
 (*****************************************************)
 (** Functions for making matrix intervals *)
 
+(** The next two functions make a matrix interval that will be big enough
+    (but no bigger) to contain the probability distributions defined by applying a
+    Wright-Fisher model to all of the the specified fitness triples.  Note
+    that there is no reason that intervals must be defined in this way, even
+    if you're thinking in terms of Wright-Fisher processes. *)
+
 (** Make an interval from a popsize and list of fitness structures without
     verifying tightness. *)
 let make_wf_interval_no_tight_check popsize fitn_list =
