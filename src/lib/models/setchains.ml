@@ -275,7 +275,7 @@ let lo_mult ?(fork=true) pmat qmat prev_lo_mat p_row_sums =
   hilo_mult ~fork (recombine (>=)) pmat qmat prev_lo_mat p_row_sums
 
 (** Starting from the original P and Q tight interval bounds and the previous
-    component tight hi bound, make the netxt hi matrix.
+    component tight hi bound, make the next hi matrix.
     NOTE args are in same order as lo_mult.
     If [~fork] is present with any value, won't use Parmap to divide the 
     work between processes. *)
