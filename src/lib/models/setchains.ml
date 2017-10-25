@@ -253,35 +253,34 @@ let calc_bound_val_for_parmapi recomb pmat qmat prev_bound_mat pmat_row_sums pre
       If recomb is recombine_hi, the arguments should be (notice!) Q, P,
       and the previous hi matrix. 
     SEE doc/nonoptimizedcode.ml for clearer versions of this function.  *)
-let hilo_mult ?(fork=true) recomb pmat qmat prev_bound_mat = 
+let hilo_mult ?(fork=true) recomb pmat qmat prev_bound_mat row_sums = 
   let (rows, cols) = M.shape pmat in
   let len = rows * cols in
-  let pmat_row_sums = M.sum_cols pmat in (* sum_cols means add all of the column vectors together, which gives you a col vector containing a sum of each row *)
   let prev_mat_idx_lists = M.map_cols idx_sort_colvec prev_bound_mat in (* sorted list of indexes for each column *)
   let bounds_array =
     if fork 
     then let bounds_array' = A.create_float len in
          Pmap.array_float_parmapi (* ~ncores:4 *)
            ~result:bounds_array' 
-           (calc_bound_val_for_parmapi recomb pmat qmat prev_bound_mat pmat_row_sums prev_mat_idx_lists cols)
+           (calc_bound_val_for_parmapi recomb pmat qmat prev_bound_mat row_sums prev_mat_idx_lists cols)
            bounds_array' (* this arg will be ignored *)
-    else A.init len (calc_bound_val recomb pmat qmat prev_bound_mat pmat_row_sums prev_mat_idx_lists cols)  (* TODO why make an array here? Just make a matrix. *)
+    else A.init len (calc_bound_val recomb pmat qmat prev_bound_mat row_sums prev_mat_idx_lists cols)  (* TODO why make an array here? Just make a matrix. *)
   in M.of_array bounds_array rows cols
 
 (** Starting from the original P and Q tight interval bounds and the previous
     component tight lo bound, make the netxt lo matrix.
     If [~fork] is present with any value, won't use Parmap to divide the 
     work between processes. *)
-let lo_mult ?(fork=true) pmat qmat prev_lo_mat =
-  hilo_mult ~fork (recombine (>=)) pmat qmat prev_lo_mat
+let lo_mult ?(fork=true) pmat qmat prev_lo_mat p_row_sums =
+  hilo_mult ~fork (recombine (>=)) pmat qmat prev_lo_mat p_row_sums
 
 (** Starting from the original P and Q tight interval bounds and the previous
     component tight hi bound, make the netxt hi matrix.
     NOTE args are in same order as lo_mult.
     If [~fork] is present with any value, won't use Parmap to divide the 
     work between processes. *)
-let hi_mult ?(fork=true) pmat qmat prev_hi_mat =
-  hilo_mult ~fork (recombine (<=)) qmat pmat prev_hi_mat (* NOTE SWAPPED ARGS *)
+let hi_mult ?(fork=true) pmat qmat prev_hi_mat q_row_sums =
+  hilo_mult ~fork (recombine (<=)) qmat pmat prev_hi_mat q_row_sums (* NOTE SWAPPED ARGS *)
 
 (** Given a transition matrix interval [(lo_mat, hi_mat)] and a probability 
    interval that's represented by a single frequency [freq] to which all 
@@ -311,7 +310,8 @@ let freq_mult freq (lo_mat, hi_mat) =
     passed as the third argument [(lo,hi)], unchanged, and the next bounds
     matrix pair.  For use with [Batteries.LazyList.from_loop] *)
 let next_bounds_mats ?(fork=true) pmat qmat p_row_sums q_row_sums (lo,hi) =
-  let lo', hi' = lo_mult ~fork pmat qmat lo, hi_mult ~fork pmat qmat hi in
+  let lo' = lo_mult ~fork pmat qmat lo p_row_sums in
+  let hi' = hi_mult ~fork pmat qmat hi q_row_sums in
   (lo,hi), (lo', hi')
 
 (** lazy_bounds_mats [pmat] [qmat] returns a LazyList of bounds matrix pairs
@@ -383,117 +383,120 @@ let p, q = tighten_mat_interval p' q';;
 
 (*****************************************************)
 (* Additional utility functions that might be convenient in some contexts *)
+(* TODO obsolete need row_sums arguments *)
 
-(** Given [recombine_lo] or [recombine_hi], the original tight interval bounds
-    P and Q, and either the previous tight component lo or hi bound (as 
-    appropriate), return the kth lo or hi tight component bound.  Note that
-    Hartfiel treats the initial state as # 1, not 0, but this function is
-    0-based.  i.e. starting from the initial matrices, k=1 will produce the 
-    first calculated bounds matrices after the initial state; Hartfiel calls 
-    this (e.g.) L_2.
-    NOTE args do not need to be swapped even if [reccombine_hi] is used; they
-    will be swapped internall by recomb. *)
-let rec make_kth_bounds_mat_from_prev recomb pmat qmat prev_bound_mat k =
-  if k <= 0 then prev_bound_mat
-  else let bound_mat = hilo_mult recomb pmat qmat prev_bound_mat in
-  make_kth_bounds_mat_from_prev recomb pmat qmat bound_mat (k - 1)
-
-(** TODO revise to use lo_mult *)
-(** Starting from the original P and Q tight interval bounds and the previous
-    component tight lo bound, make the kth lo matrix after the previous one. *)
-let make_kth_lo_mat_from_prev pmat qmat prev_lo_mat k =
-  make_kth_bounds_mat_from_prev (recombine (>=)) pmat qmat prev_lo_mat k
-
-(** TODO revise to use hi_mult *)
-(** Starting from the original P and Q tight interval bounds and the previous
-    component tight hi bound, make the kth hi matrix after the previous one.
-    NOTE args are in same order as lo_mult. *)
-let make_kth_hi_mat_from_prev pmat qmat prev_hi_mat k =
-  make_kth_bounds_mat_from_prev (recombine (<=)) pmat qmat prev_hi_mat k (* note swapped args *)
-
-(** Convenience function to make both the kth lo and hi matrices from an 
-    earlier pair of bound matrices and the original matrices. 
-    [make_kth_bounds_mats_from_prev pmat qmat prev_lo prev_hi 0] returns
-    [prev_lo] and [prev_hi].  
-    [make_kth_bounds_mats_from_prev pmat qmat prev_lo prev_hi 1] returns
-    the next bounds matrices after [prev_lo] and [prev_hi], and for k=30,
-    you'll get the 30th pair after [prev_lo] and [prev_hi]  If [prev_lo]
-    and [prev_hi] are the initial matrices, this will be what Hartfiel
-    calls L_30 and H_30. *)
-let make_kth_bounds_mats_from_prev pmat qmat prev_lo_mat prev_hi_mat k =
-  (make_kth_lo_mat_from_prev pmat qmat prev_lo_mat k),
-  (make_kth_hi_mat_from_prev pmat qmat prev_hi_mat k)
-
-(** Convenience function to make both the kth lo and hi matrices.  
-    [make_kth_bounds_mats pmat qmat 0] returns [pmat] and [qmat].
-    Note that this [make_kth_bounds_mats pmat qmat 1] returns the first bounds
-    matrices after pmat, qmat, which Hartfiel calls L_2, H_2.  Note that this 
-    function can *only* be used to create the kth matrices starting from the 
-    initial matrices.  If you want to make kth matrices from earlier (k-n)th
-    matrices, use [make_kth_bounds_mats_from_prev].*)
-let make_kth_bounds_mats pmat qmat k = 
-  make_kth_bounds_mats_from_prev pmat qmat pmat qmat k
-
-(** TODO needs testing *)
-(** Given a transition matrix interval [(lo_mat, hi_mat)] and a probability 
-   interval containing a single distribution vector, lo-multiply and hi-multiply
-   the distribution times [lo_mat] and [hi_mat] respectively *)
-let prob_interval_mult p q (lo_mat, hi_mat) =
-  [lo_mult p q lo_mat; hi_mult p q hi_mat]
-
-(** TODO needs testing *)
-(** Given a transition matrix interval [(lo_mat, hi_mat)] and a probability 
-   interval, lo-multiply and hi-multiply the distribution times [lo_mat] and
-   [hi_mat] respectively.  (When the probabilty interval is of this kind, this 
-   function should be more efficient than lo_mult and hi_mult since it uses the
-   normal matrix dot product rather than lo_mult and hi_mult, which are 
-   equivalent to dot product when the interval contains only one element.  If
-   in addition the element puts all probability on one value, freq_mult should
-   be even more efficient.) *)
-let singleton_interval_mult p (lo_mat, hi_mat) =
-  M.([p *@ lo_mat; p *@ hi_mat])
-
-(** Given a transition matrix interval [pmat], [qmat], return the kth 
-    probability interval, assuming that the initial state was an interval 
-    consisting of a single distribution that put all probability on one 
-    frequency [init_freq].
-    (To get the kth probability distribution interval from the kth
-    lo and hi mats, you lo_mult the low bound of the distribution
-    interval with the lo mat, and you hi_mult the high bound of the
-    distribuition with the hi mat.  However, if the interval contains
-    a single probability distribution, then you can just use normal
-    dot product multiplication.  *And* if the single distribution
-    puts all probability on one frequency, then the effect of the dot
-    product of the vector with the matrix is simply to extract the matrix
-    that's indexed by that frequency.  That's what this function does.) *)
-let make_kth_dist_interval_from_freq init_freq pmat qmat k =
-  freq_mult init_freq (make_kth_bounds_mats pmat qmat k)
-
-(** Tip: The next few functions create a LazyList in which each element is
-    constructed from the preceding one by a method that usually forks 
-    multiple operating system processes.  If you abort the processing
-    before it completes, you may end up with a partially constructed or
-    otherwise somehow corrupted element in the LazyList.  Since a LazyList
-    won't recalculate an element once it's been created the first time,
-    your lazy list may become useless, and you'll have to regenerate it
-    from scratch.  (That's my interpretation of something that happened once.) *)
-
-(* TODO needs testing *)
-(** lazy_prob_intervals [p] [q] [bounds_mats_list] expects two vectors defining
-    a probability interval, and a LazyList of bounds matrix pairs, and returns
-    a LazyList of probability intervals for each timestep.  Note that the first
-    element will be the initial interval [p; q]. *)
-let lazy_prob_intervals p q bounds_mats_list =
-  LL.cons [p; q] (LL.map (prob_interval_mult p q) bounds_mats_list)
-
-(* TODO needs testing *)
-(** lazy_singleton_intervals [p] [bounds_mats_list] expects a vector 
-    representing the sole probability distribution in an intial probability
-    interval, and a LazyList of bounds matrix pairs.  It returns a LazyList of
-    probability intervals for each timestep. Like [lazy_prob_intervals] but 
-    should be more efficient if the probability interval consists of a single
-    distribution.  If that distribution puts all probability on a single 
-    frequency, then [lazy_prob_intervals_from_freq] should be more efficient. 
-    Note that the first element will be the initial interval [p; p]. *)
-let lazy_singleton_intervals p bounds_mats_list =
-  LL.cons [p; p] (LL.map (singleton_interval_mult p) bounds_mats_list)
+(*
+ * (** Given [recombine_lo] or [recombine_hi], the original tight interval bounds
+ *     P and Q, and either the previous tight component lo or hi bound (as 
+ *     appropriate), return the kth lo or hi tight component bound.  Note that
+ *     Hartfiel treats the initial state as # 1, not 0, but this function is
+ *     0-based.  i.e. starting from the initial matrices, k=1 will produce the 
+ *     first calculated bounds matrices after the initial state; Hartfiel calls 
+ *     this (e.g.) L_2.
+ *     NOTE args do not need to be swapped even if [reccombine_hi] is used; they
+ *     will be swapped internall by recomb. *)
+ * let rec make_kth_bounds_mat_from_prev recomb pmat qmat prev_bound_mat k =
+ *   if k <= 0 then prev_bound_mat
+ *   else let bound_mat = hilo_mult recomb pmat qmat prev_bound_mat in
+ *   make_kth_bounds_mat_from_prev recomb pmat qmat bound_mat (k - 1)
+ * 
+ * (** TODO revise to use lo_mult *)
+ * (** Starting from the original P and Q tight interval bounds and the previous
+ *     component tight lo bound, make the kth lo matrix after the previous one. *)
+ * let make_kth_lo_mat_from_prev pmat qmat prev_lo_mat k =
+ *   make_kth_bounds_mat_from_prev (recombine (>=)) pmat qmat prev_lo_mat k
+ * 
+ * (** TODO revise to use hi_mult *)
+ * (** Starting from the original P and Q tight interval bounds and the previous
+ *     component tight hi bound, make the kth hi matrix after the previous one.
+ *     NOTE args are in same order as lo_mult. *)
+ * let make_kth_hi_mat_from_prev pmat qmat prev_hi_mat k =
+ *   make_kth_bounds_mat_from_prev (recombine (<=)) pmat qmat prev_hi_mat k (* note swapped args *)
+ * 
+ * (** Convenience function to make both the kth lo and hi matrices from an 
+ *     earlier pair of bound matrices and the original matrices. 
+ *     [make_kth_bounds_mats_from_prev pmat qmat prev_lo prev_hi 0] returns
+ *     [prev_lo] and [prev_hi].  
+ *     [make_kth_bounds_mats_from_prev pmat qmat prev_lo prev_hi 1] returns
+ *     the next bounds matrices after [prev_lo] and [prev_hi], and for k=30,
+ *     you'll get the 30th pair after [prev_lo] and [prev_hi]  If [prev_lo]
+ *     and [prev_hi] are the initial matrices, this will be what Hartfiel
+ *     calls L_30 and H_30. *)
+ * let make_kth_bounds_mats_from_prev pmat qmat prev_lo_mat prev_hi_mat k =
+ *   (make_kth_lo_mat_from_prev pmat qmat prev_lo_mat k),
+ *   (make_kth_hi_mat_from_prev pmat qmat prev_hi_mat k)
+ * 
+ * (** Convenience function to make both the kth lo and hi matrices.  
+ *     [make_kth_bounds_mats pmat qmat 0] returns [pmat] and [qmat].
+ *     Note that this [make_kth_bounds_mats pmat qmat 1] returns the first bounds
+ *     matrices after pmat, qmat, which Hartfiel calls L_2, H_2.  Note that this 
+ *     function can *only* be used to create the kth matrices starting from the 
+ *     initial matrices.  If you want to make kth matrices from earlier (k-n)th
+ *     matrices, use [make_kth_bounds_mats_from_prev].*)
+ * let make_kth_bounds_mats pmat qmat k = 
+ *   make_kth_bounds_mats_from_prev pmat qmat pmat qmat k
+ * 
+ * (** TODO needs testing *)
+ * (** Given a transition matrix interval [(lo_mat, hi_mat)] and a probability 
+ *    interval containing a single distribution vector, lo-multiply and hi-multiply
+ *    the distribution times [lo_mat] and [hi_mat] respectively *)
+ * let prob_interval_mult p q (lo_mat, hi_mat) =
+ *   [lo_mult p q lo_mat; hi_mult p q hi_mat]
+ * 
+ * (** TODO needs testing *)
+ * (** Given a transition matrix interval [(lo_mat, hi_mat)] and a probability 
+ *    interval, lo-multiply and hi-multiply the distribution times [lo_mat] and
+ *    [hi_mat] respectively.  (When the probabilty interval is of this kind, this 
+ *    function should be more efficient than lo_mult and hi_mult since it uses the
+ *    normal matrix dot product rather than lo_mult and hi_mult, which are 
+ *    equivalent to dot product when the interval contains only one element.  If
+ *    in addition the element puts all probability on one value, freq_mult should
+ *    be even more efficient.) *)
+ * let singleton_interval_mult p (lo_mat, hi_mat) =
+ *   M.([p *@ lo_mat; p *@ hi_mat])
+ * 
+ * (** Given a transition matrix interval [pmat], [qmat], return the kth 
+ *     probability interval, assuming that the initial state was an interval 
+ *     consisting of a single distribution that put all probability on one 
+ *     frequency [init_freq].
+ *     (To get the kth probability distribution interval from the kth
+ *     lo and hi mats, you lo_mult the low bound of the distribution
+ *     interval with the lo mat, and you hi_mult the high bound of the
+ *     distribuition with the hi mat.  However, if the interval contains
+ *     a single probability distribution, then you can just use normal
+ *     dot product multiplication.  *And* if the single distribution
+ *     puts all probability on one frequency, then the effect of the dot
+ *     product of the vector with the matrix is simply to extract the matrix
+ *     that's indexed by that frequency.  That's what this function does.) *)
+ * let make_kth_dist_interval_from_freq init_freq pmat qmat k =
+ *   freq_mult init_freq (make_kth_bounds_mats pmat qmat k)
+ * 
+ * (** Tip: The next few functions create a LazyList in which each element is
+ *     constructed from the preceding one by a method that usually forks 
+ *     multiple operating system processes.  If you abort the processing
+ *     before it completes, you may end up with a partially constructed or
+ *     otherwise somehow corrupted element in the LazyList.  Since a LazyList
+ *     won't recalculate an element once it's been created the first time,
+ *     your lazy list may become useless, and you'll have to regenerate it
+ *     from scratch.  (That's my interpretation of something that happened once.) *)
+ * 
+ * (* TODO needs testing *)
+ * (** lazy_prob_intervals [p] [q] [bounds_mats_list] expects two vectors defining
+ *     a probability interval, and a LazyList of bounds matrix pairs, and returns
+ *     a LazyList of probability intervals for each timestep.  Note that the first
+ *     element will be the initial interval [p; q]. *)
+ * let lazy_prob_intervals p q bounds_mats_list =
+ *   LL.cons [p; q] (LL.map (prob_interval_mult p q) bounds_mats_list)
+ * 
+ * (* TODO needs testing *)
+ * (** lazy_singleton_intervals [p] [bounds_mats_list] expects a vector 
+ *     representing the sole probability distribution in an intial probability
+ *     interval, and a LazyList of bounds matrix pairs.  It returns a LazyList of
+ *     probability intervals for each timestep. Like [lazy_prob_intervals] but 
+ *     should be more efficient if the probability interval consists of a single
+ *     distribution.  If that distribution puts all probability on a single 
+ *     frequency, then [lazy_prob_intervals_from_freq] should be more efficient. 
+ *     Note that the first element will be the initial interval [p; p]. *)
+ * let lazy_singleton_intervals p bounds_mats_list =
+ *   LL.cons [p; p] (LL.map (singleton_interval_mult p) bounds_mats_list)
+ *)
