@@ -217,29 +217,29 @@ let flat_idx_to_rowcol width idx =
   row, col
 
 (** Given a [recomb] function ([recombine_lo] or [recombine_hi]), the original (* FIXME DOC WRONG *)
-    P and Q matrices [p_mat] and [q_mat], a previous
+    P and Q matrices [pmat] and [qmat], a previous
     tight bounds matrix [prev_bound_mat], and an array of sorted lists of 
     indexes [idx_lists], calculate the value at i j for the
     next tight bounds matrix, where i j is calculated from vector index [idx]
     and [width].  i.e. if we laid out a matrix one row after another in
     vector form, idx would be an index into it, and width is the row width
-    of the original matrix.  (We pass [p_mat_row_sums] and [idx_lists] even 
-    though they could be calculated on demand from [p_mat], [prev_bound_mat],
+    of the original matrix.  (We pass [pmat_row_sums] and [idx_lists] even 
+    though they could be calculated on demand from [pmat], [prev_bound_mat],
     to avoid repeatedly performing the same computations.) Used by [hilo_mult].  
     SEE doc/nonoptimizedcode.ml for an older, perhaps clearer version.  *)
-let calc_bound_val recomb p_mat q_mat prev_bound_mat p_mat_row_sums prev_mat_idx_lists width idx =
+let calc_bound_val recomb pmat qmat prev_bound_mat pmat_row_sums prev_mat_idx_lists width idx =
   let i, j = flat_idx_to_rowcol width idx in
   let prev_col = M.col prev_bound_mat j in (* col makes a copy *)
-  let p_row_sum = M.get p_mat_row_sums i 0 in
+  let p_row_sum = M.get pmat_row_sums i 0 in
   let idxs = A.get prev_mat_idx_lists j in
-  let p_row, q_row = M.row p_mat i, M.row q_mat i in (* row doesn't copy; it just provides a view *)
+  let p_row, q_row = M.row pmat i, M.row qmat i in (* row doesn't copy; it just provides a view *)
   let bar_row = recomb p_row q_row p_row_sum idxs in
   M.(get (bar_row *@ prev_col) 0 0)
 
 (** Wrapper for calc_bound_val (which see), adding an additional, ignored 
     argument for Pmap.array_float_parmapi. *)
-let calc_bound_val_for_parmapi recomb p_mat q_mat prev_bound_mat p_mat_row_sums prev_mat_idx_lists width idx _ =
-  calc_bound_val recomb p_mat q_mat prev_bound_mat p_mat_row_sums prev_mat_idx_lists width idx
+let calc_bound_val_for_parmapi recomb pmat qmat prev_bound_mat pmat_row_sums prev_mat_idx_lists width idx _ =
+  calc_bound_val recomb pmat qmat prev_bound_mat pmat_row_sums prev_mat_idx_lists width idx
 
 (** Given [recombine_lo] or [recombine_hi], the original tight interval bounds
     P and Q, and either the previous tight component lo or hi bound (as
@@ -253,35 +253,35 @@ let calc_bound_val_for_parmapi recomb p_mat q_mat prev_bound_mat p_mat_row_sums 
       If recomb is recombine_hi, the arguments should be (notice!) Q, P,
       and the previous hi matrix. 
     SEE doc/nonoptimizedcode.ml for clearer versions of this function.  *)
-let hilo_mult ?(fork=true) recomb p_mat q_mat prev_bound_mat = 
-  let (rows, cols) = M.shape p_mat in
+let hilo_mult ?(fork=true) recomb pmat qmat prev_bound_mat = 
+  let (rows, cols) = M.shape pmat in
   let len = rows * cols in
-  let p_mat_row_sums = M.sum_cols p_mat in (* sum_cols means add all of the column vectors together, which gives you a col vector containing a sum of each row *)
+  let pmat_row_sums = M.sum_cols pmat in (* sum_cols means add all of the column vectors together, which gives you a col vector containing a sum of each row *)
   let prev_mat_idx_lists = M.map_cols idx_sort_colvec prev_bound_mat in (* sorted list of indexes for each column *)
   let bounds_array =
     if fork 
     then let bounds_array' = A.create_float len in
          Pmap.array_float_parmapi (* ~ncores:4 *)
            ~result:bounds_array' 
-           (calc_bound_val_for_parmapi recomb p_mat q_mat prev_bound_mat p_mat_row_sums prev_mat_idx_lists cols)
+           (calc_bound_val_for_parmapi recomb pmat qmat prev_bound_mat pmat_row_sums prev_mat_idx_lists cols)
            bounds_array' (* this arg will be ignored *)
-    else A.init len (calc_bound_val recomb p_mat q_mat prev_bound_mat p_mat_row_sums prev_mat_idx_lists cols)  (* TODO why make an array here? Just make a matrix. *)
+    else A.init len (calc_bound_val recomb pmat qmat prev_bound_mat pmat_row_sums prev_mat_idx_lists cols)  (* TODO why make an array here? Just make a matrix. *)
   in M.of_array bounds_array rows cols
 
 (** Starting from the original P and Q tight interval bounds and the previous
     component tight lo bound, make the netxt lo matrix.
     If [~fork] is present with any value, won't use Parmap to divide the 
     work between processes. *)
-let lo_mult ?(fork=true) p_mat q_mat prev_lo_mat =
-  hilo_mult ~fork (recombine (>=)) p_mat q_mat prev_lo_mat
+let lo_mult ?(fork=true) pmat qmat prev_lo_mat =
+  hilo_mult ~fork (recombine (>=)) pmat qmat prev_lo_mat
 
 (** Starting from the original P and Q tight interval bounds and the previous
     component tight hi bound, make the netxt hi matrix.
     NOTE args are in same order as lo_mult.
     If [~fork] is present with any value, won't use Parmap to divide the 
     work between processes. *)
-let hi_mult ?(fork=true) p_mat q_mat prev_hi_mat =
-  hilo_mult ~fork (recombine (<=)) q_mat p_mat prev_hi_mat (* NOTE SWAPPED ARGS *)
+let hi_mult ?(fork=true) pmat qmat prev_hi_mat =
+  hilo_mult ~fork (recombine (<=)) qmat pmat prev_hi_mat (* NOTE SWAPPED ARGS *)
 
 (** Given a transition matrix interval [(lo_mat, hi_mat)] and a probability 
    interval that's represented by a single frequency [freq] to which all 
@@ -310,20 +310,21 @@ let freq_mult freq (lo_mat, hi_mat) =
 (** Return pair of pairs: The first pair is the bounds matrices that were
     passed as the third argument [(lo,hi)], unchanged, and the next bounds
     matrix pair.  For use with [Batteries.LazyList.from_loop] *)
-let next_bounds_mats_for_from_loop ?(fork=true) pmat qmat (lo,hi) =
+let next_bounds_mats ?(fork=true) pmat qmat p_row_sums q_row_sums (lo,hi) =
   let lo', hi' = lo_mult ~fork pmat qmat lo, hi_mult ~fork pmat qmat hi in
   (lo,hi), (lo', hi')
 
-(** lazy_bounds_mats [p_mat] [q_mat] returns a LazyList of bounds matrix pairs
+(** lazy_bounds_mats [pmat] [qmat] returns a LazyList of bounds matrix pairs
     starting from the initial transition matrix interval defined [pmat] defined
     by [qmat] *)
-let lazy_bounds_mats_list ?(fork=true) p_mat q_mat =
-  LL.from_loop (p_mat, q_mat) (next_bounds_mats_for_from_loop ~fork p_mat q_mat)
+let lazy_bounds_mats_list ?(fork=true) pmat qmat =
+  let p_row_sums, q_row_sums = M.sum_cols pmat, M.sum_cols qmat in (* sum_cols means add col vecs, = new col vec w/ sum of ea row *)
+  LL.from_loop (pmat, qmat) (next_bounds_mats ~fork pmat qmat p_row_sums q_row_sums)
 
 (** Convenience version of lazy_bounds_mats_list that takes
-    (p_mat, q_mat) as argument rather than p_mat and q_mat. *)
-let lazy_bounds_mats_list_from_pair ?(fork=true) (p_mat, q_mat) =
-  lazy_bounds_mats_list ~fork p_mat q_mat =
+    (pmat, qmat) as argument rather than pmat and qmat. *)
+let lazy_bounds_mats_list_from_pair ?(fork=true) (pmat, qmat) =
+  lazy_bounds_mats_list ~fork pmat qmat
 
 (** lazy_prob_intervals_from_freq [freq] [bounds_mats_list] expects an initial
     frequency for a single population and a LazyList of bounds matrix pairs,
@@ -392,46 +393,46 @@ let p, q = tighten_mat_interval p' q';;
     this (e.g.) L_2.
     NOTE args do not need to be swapped even if [reccombine_hi] is used; they
     will be swapped internall by recomb. *)
-let rec make_kth_bounds_mat_from_prev recomb p_mat q_mat prev_bound_mat k =
+let rec make_kth_bounds_mat_from_prev recomb pmat qmat prev_bound_mat k =
   if k <= 0 then prev_bound_mat
-  else let bound_mat = hilo_mult recomb p_mat q_mat prev_bound_mat in
-  make_kth_bounds_mat_from_prev recomb p_mat q_mat bound_mat (k - 1)
+  else let bound_mat = hilo_mult recomb pmat qmat prev_bound_mat in
+  make_kth_bounds_mat_from_prev recomb pmat qmat bound_mat (k - 1)
 
 (** TODO revise to use lo_mult *)
 (** Starting from the original P and Q tight interval bounds and the previous
     component tight lo bound, make the kth lo matrix after the previous one. *)
-let make_kth_lo_mat_from_prev p_mat q_mat prev_lo_mat k =
-  make_kth_bounds_mat_from_prev (recombine (>=)) p_mat q_mat prev_lo_mat k
+let make_kth_lo_mat_from_prev pmat qmat prev_lo_mat k =
+  make_kth_bounds_mat_from_prev (recombine (>=)) pmat qmat prev_lo_mat k
 
 (** TODO revise to use hi_mult *)
 (** Starting from the original P and Q tight interval bounds and the previous
     component tight hi bound, make the kth hi matrix after the previous one.
     NOTE args are in same order as lo_mult. *)
-let make_kth_hi_mat_from_prev p_mat q_mat prev_hi_mat k =
-  make_kth_bounds_mat_from_prev (recombine (<=)) p_mat q_mat prev_hi_mat k (* note swapped args *)
+let make_kth_hi_mat_from_prev pmat qmat prev_hi_mat k =
+  make_kth_bounds_mat_from_prev (recombine (<=)) pmat qmat prev_hi_mat k (* note swapped args *)
 
 (** Convenience function to make both the kth lo and hi matrices from an 
     earlier pair of bound matrices and the original matrices. 
-    [make_kth_bounds_mats_from_prev p_mat q_mat prev_lo prev_hi 0] returns
+    [make_kth_bounds_mats_from_prev pmat qmat prev_lo prev_hi 0] returns
     [prev_lo] and [prev_hi].  
-    [make_kth_bounds_mats_from_prev p_mat q_mat prev_lo prev_hi 1] returns
+    [make_kth_bounds_mats_from_prev pmat qmat prev_lo prev_hi 1] returns
     the next bounds matrices after [prev_lo] and [prev_hi], and for k=30,
     you'll get the 30th pair after [prev_lo] and [prev_hi]  If [prev_lo]
     and [prev_hi] are the initial matrices, this will be what Hartfiel
     calls L_30 and H_30. *)
-let make_kth_bounds_mats_from_prev p_mat q_mat prev_lo_mat prev_hi_mat k =
-  (make_kth_lo_mat_from_prev p_mat q_mat prev_lo_mat k),
-  (make_kth_hi_mat_from_prev p_mat q_mat prev_hi_mat k)
+let make_kth_bounds_mats_from_prev pmat qmat prev_lo_mat prev_hi_mat k =
+  (make_kth_lo_mat_from_prev pmat qmat prev_lo_mat k),
+  (make_kth_hi_mat_from_prev pmat qmat prev_hi_mat k)
 
 (** Convenience function to make both the kth lo and hi matrices.  
-    [make_kth_bounds_mats p_mat q_mat 0] returns [p_mat] and [qmat].
-    Note that this [make_kth_bounds_mats p_mat q_mat 1] returns the first bounds
-    matrices after p_mat, q_mat, which Hartfiel calls L_2, H_2.  Note that this 
+    [make_kth_bounds_mats pmat qmat 0] returns [pmat] and [qmat].
+    Note that this [make_kth_bounds_mats pmat qmat 1] returns the first bounds
+    matrices after pmat, qmat, which Hartfiel calls L_2, H_2.  Note that this 
     function can *only* be used to create the kth matrices starting from the 
     initial matrices.  If you want to make kth matrices from earlier (k-n)th
     matrices, use [make_kth_bounds_mats_from_prev].*)
-let make_kth_bounds_mats p_mat q_mat k = 
-  make_kth_bounds_mats_from_prev p_mat q_mat p_mat q_mat k
+let make_kth_bounds_mats pmat qmat k = 
+  make_kth_bounds_mats_from_prev pmat qmat pmat qmat k
 
 (** TODO needs testing *)
 (** Given a transition matrix interval [(lo_mat, hi_mat)] and a probability 
@@ -452,7 +453,7 @@ let prob_interval_mult p q (lo_mat, hi_mat) =
 let singleton_interval_mult p (lo_mat, hi_mat) =
   M.([p *@ lo_mat; p *@ hi_mat])
 
-(** Given a transition matrix interval [p_mat], [q_mat], return the kth 
+(** Given a transition matrix interval [pmat], [qmat], return the kth 
     probability interval, assuming that the initial state was an interval 
     consisting of a single distribution that put all probability on one 
     frequency [init_freq].
@@ -465,8 +466,8 @@ let singleton_interval_mult p (lo_mat, hi_mat) =
     puts all probability on one frequency, then the effect of the dot
     product of the vector with the matrix is simply to extract the matrix
     that's indexed by that frequency.  That's what this function does.) *)
-let make_kth_dist_interval_from_freq init_freq p_mat q_mat k =
-  freq_mult init_freq (make_kth_bounds_mats p_mat q_mat k)
+let make_kth_dist_interval_from_freq init_freq pmat qmat k =
+  freq_mult init_freq (make_kth_bounds_mats pmat qmat k)
 
 (** Tip: The next few functions create a LazyList in which each element is
     constructed from the preceding one by a method that usually forks 
