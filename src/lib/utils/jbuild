@@ -5,5 +5,5 @@
   (public_name utils)
   (modules (prob genl))
   (libraries (batteries core owl))
-  ;(ocamlopt_flags (:standard)) -dcmm -O3 ; -dcmm dumps intermediate rep
+  ;(ocamlopt_flags (:standard -O3)) ; -dcmm -O3 ; -dcmm dumps intermediate rep
   ))
