@@ -50,6 +50,7 @@ let plot_max_docstring = "float If present, sets max height for all plots."
 let fontsize_docstring = "float If present, sets font size."
 let every_docstring = sprintf "integer plot only at every nth frequency (default %d)" 1
 let updown_docstring = "If present arrange plots top bottom right; vs left right down."
+let nofork_docstring = "If present, don't split computation across multiple cores/CPUs."
 
 let commandline =
   Command.basic
@@ -61,18 +62,19 @@ let commandline =
                 +> flag "-f" (optional float) ~doc:fontsize_docstring
                 +> flag "-e" (optional_with_default 1 int) ~doc:every_docstring
                 +> flag "-u" no_arg ~doc:updown_docstring
+                +> flag "-1" no_arg ~doc:nofork_docstring
                 +> anon ("basename" %: string)
                 +> anon ("popsize" %: int)
                 +> anon ("initfreq" %: int)
                 +> anon ("startgen" %: int)
                 +> anon ("lastgen" %: int)
                 +> anon (sequence ("fitn" %: float)))
-    (fun rows cols plot_max fontsize every updown basename popsize initfreq startgen lastgen fitn_floats () ->
+    (fun rows cols plot_max fontsize every updown nofork basename popsize initfreq startgen lastgen fitn_floats () ->
       let fitn_recs = WF.group_fitns fitn_floats in
       Printf.printf "making matrix interval ... %!";
       let pmat, qmat = SC.make_wf_interval popsize fitn_recs in
       Printf.printf "making lazy bounds mats list ... %!";
-      let bounds_mats =  SC.lazy_bounds_mats_list pmat qmat in
+      let bounds_mats =  SC.lazy_bounds_mats_list ~fork:(not nofork) pmat qmat in
       Printf.printf "making lazy prob intervals list ... %!";
       let distlists = SC.lazy_prob_intervals_from_freq initfreq bounds_mats in
       Printf.printf "making pdfs ... \n%!";
