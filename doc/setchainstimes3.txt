@@ -1,0 +1,30 @@
+============================
+OCaml 4.05 vs 405+flambda at commit b30e8a0
+
+Running tests on MBP with wifi off and me doing nothing else on the
+computer.
+
+First time is with flambda, second is without:
+
+~/docs/src/ml/impev(master)*$ for f in _build/default/src/bin/setchainPDFs.exe ~/tmp/setchainPDFs405default.exe ; do time $f yo -r 3 -c 4 1000 500 1 48  1.0 0.95 0.8  0.8 0.95 1.0; done
+making matrix interval ... making lazy bounds mats list ... making lazy prob intervals list ... making pdfs ...
+yo01to12.pdf
+yo13to24.pdf
+yo25to36.pdf
+yo37to48.pdf
+
+real	13m32.576s
+user	79m49.685s
+sys	0m52.503s
+making matrix interval ... making lazy bounds mats list ... making lazy prob intervals list ... making pdfs ...
+yo01to12.pdf
+yo13to24.pdf
+yo25to36.pdf
+yo37to48.pdf
+
+real	15m50.689s
+user	92m34.716s
+sys	0m53.484s
+
+
+So flambda makes a small but noticeable improvement---about 15%.
