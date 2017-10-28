@@ -1,8 +1,14 @@
+Tests on MBP
+Note that Parmap is using 7 logical cores.
+
 ============================
 OCaml 4.05 vs 405+flambda at commit b30e8a0
 
 Running tests on MBP with wifi off and me doing nothing else on the
 computer.
+
+--------------------------------
+N=1000
 
 First time is with flambda -O3, second is without flambda, i.e. regular 4.05:
 
@@ -31,6 +37,7 @@ sys	0m53.484s
 So flambda makes a small but noticeable improvement---about 15%.
 
 --------------------------------
+N=1000
 
 Here's flambda 4.05 with -O2 (also with wifi off, etc.):
 
@@ -47,3 +54,30 @@ sys	0m54.553s
 
 It's actually slightly faster than -O3, but that might just be chance,
 and not enough to matter in any event.
+
+====================================
+N=2000
+
+4.05 flambda with -O3, no wifi, me doing nothing else on the computer.
+
+~/docs/src/ml/impev(master)*$ time _build/default/src/bin/setchainPDFs.exe yo2000_ -r 3 -c 4 2000 1000 1 48  1.0 0.95 0.8  0.8 0.95 1.0
+making matrix interval ... making lazy bounds mats list ... making lazy prob intervals list ... making pdfs ...
+yo2000_01to12.pdf
+yo2000_13to24.pdf
+yo2000_25to36.pdf
+yo2000_37to48.pdf
+
+real	112m56.702s
+user	694m10.694s
+sys	10m47.451s
+
+
+So N=2000 required an hour and 53 minutes, vs a bit more than 13 minutes
+for N=1000.  In this case, doubling N, i.e. going from N=1000 to N=2000,
+is 8.5 times slower.
+
+(Some earlier tests *also* suggested a hypothesis that the slowdown from
+N to N' is (N'/N)^3, fwiw.  I don't know if that's really the right
+formula.)
+
+If I can get more cores, it would go a lot faster ....
