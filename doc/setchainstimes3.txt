@@ -4,7 +4,7 @@ OCaml 4.05 vs 405+flambda at commit b30e8a0
 Running tests on MBP with wifi off and me doing nothing else on the
 computer.
 
-First time is with flambda, second is without:
+First time is with flambda -O3, second is without flambda, i.e. regular 4.05:
 
 ~/docs/src/ml/impev(master)*$ for f in _build/default/src/bin/setchainPDFs.exe ~/tmp/setchainPDFs405default.exe ; do time $f yo -r 3 -c 4 1000 500 1 48  1.0 0.95 0.8  0.8 0.95 1.0; done
 making matrix interval ... making lazy bounds mats list ... making lazy prob intervals list ... making pdfs ...
@@ -16,6 +16,7 @@ yo37to48.pdf
 real	13m32.576s
 user	79m49.685s
 sys	0m52.503s
+
 making matrix interval ... making lazy bounds mats list ... making lazy prob intervals list ... making pdfs ...
 yo01to12.pdf
 yo13to24.pdf
@@ -28,3 +29,21 @@ sys	0m53.484s
 
 
 So flambda makes a small but noticeable improvement---about 15%.
+
+--------------------------------
+
+Here's flambda 4.05 with -O2 (also with wifi off, etc.):
+
+~/docs/src/ml/impev(master)*$ time _build/default/src/bin/setchainPDFs.exe yo -r 3 -c 4 1000 500 1 48  1.0 0.95 0.8  0.8 0.95 1.0
+making matrix interval ... making lazy bounds mats list ... making lazy prob intervals list ... making pdfs ...
+yo01to12.pdf
+yo13to24.pdf
+yo25to36.pdf
+yo37to48.pdf
+
+real	13m18.552s
+user	78m48.786s
+sys	0m54.553s
+
+It's actually slightly faster than -O3, but that might just be chance,
+and not enough to matter in any event.
