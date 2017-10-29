@@ -8,7 +8,7 @@ module Command = Core.Command
 module Spec = Core.Command.Spec
 module SC = Models.Setchains
 module WF = Models.Wrightfisher
-module PDF = Models.CredalsetPDF
+module IO = Models.CredalsetIO
 module Pl = Owl.Plot
 
 (* TODO: 
@@ -78,7 +78,7 @@ let commandline =
       Printf.printf "making lazy prob intervals list ... %!";
       let distlists = SC.lazy_prob_intervals_from_freq initfreq bounds_mats in
       Printf.printf "making pdfs ... \n%!";
-      PDF.make_pdfs ~pdfdim:TwoD ~addl_2D_fn:PDF.fill_bounds ~colors:bottom_top_colors
+      IO.make_pdfs ~pdfdim:TwoD ~addl_2D_fn:IO.fill_bounds ~colors:bottom_top_colors
                     ~rows ~cols ~every ?plot_max ?fontsize ~leftright:(not updown)
                     basename startgen lastgen distlists)
 
