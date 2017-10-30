@@ -9,6 +9,8 @@ module LL = Batteries.LazyList
 
 let ( *@ ) = Mat.( *@ )  (* = dot: matrix multiplication *)
 
+type dists_at_t = {t : int; dists : Mat.mat list}
+
 (** Return pair of old distribution vector (i.e. the second argument [dist]
     of this function) and a distribution vector (i.e. the product of the two 
     arguments).  For use with [Batteries.LazyList.from_loop] *)
@@ -27,9 +29,11 @@ let make_dists tranmat init_dist =
     probability distributions, dists, returns a new list of
     probability distributions produced by multiplying all
     distributions by all matrices. *)
-let next_dists tranmats dists =
-  (dists, L.concat (L.map (fun dist -> L.map (Mat.dot dist) tranmats)
-                          dists))
+let next_dists tranmats t_dists =
+  let {t; dists} = t_dists in
+  (dists, {t     = t + 1;
+           dists = L.concat (L.map (fun dist -> L.map (Mat.dot dist) tranmats)
+                                   dists)})
 
 (** Given a list of transition matrices and a list of initial distributions
     (often one distribution with all weight on one frequency),
