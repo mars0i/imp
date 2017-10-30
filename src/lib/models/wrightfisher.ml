@@ -53,9 +53,14 @@ let make_tranmat allele_popsize fitns =
     arg 3, fitn_list is a list of fitness structures. Note that the first
     element will simply be init_freqs. *)
 let make_distlists size init_freqs fitn_list =
-  let init_dists = T.{t = 0; dists = L.map (make_init_dist size) init_freqs} in
+  let init_dists = L.map (make_init_dist size) init_freqs in
   let tranmats = L.map (make_tranmat size) fitn_list in
   T.make_distlists_from_mats tranmats init_dists
+
+let new_make_distlists size init_freqs fitn_list =
+  let init_dists = T.{t = 0; dists = L.map (make_init_dist size) init_freqs} in
+  let tranmats = L.map (make_tranmat size) fitn_list in
+  T.new_make_distlists_from_mats tranmats init_dists
 
 (** Given a list of float fitness values, which should be in the order
        w11, w12, w22, w11, w12, w22, ...
