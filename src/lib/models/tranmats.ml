@@ -7,6 +7,11 @@ module Mat = Owl.Mat
 module L = Batteries.List
 module LL = Batteries.LazyList
 
+(** The general goal here is to create a "distlist", which is a 
+    LazyList of Lists Owl row vector matrices representing probability
+    distributions over possible frequencies of alleles (or other organism
+    types0 in a population. *)
+
 let ( *@ ) = Mat.( *@ )  (* = dot: matrix multiplication *)
 
 let always_true _ = true

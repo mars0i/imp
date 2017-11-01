@@ -1,4 +1,4 @@
-(** Functions for creating PDFs of plots for distributions of credal sets. *)
+(** Functions for creating files from sequences of distributions of credal sets. *)
 
 module Mat = Owl.Mat
 module Pl = Owl.Plot
@@ -7,6 +7,8 @@ module A = Batteries.Array
 module LL = Batteries.LazyList
 module WF = Wrightfisher
 module G = Utils.Genl
+
+(* TODO add data file creation functions *)
 
 let default_fontsize = 3.25
 let default_plot_color = Pl.RGB (160, 160, 160)
@@ -17,8 +19,8 @@ let interval_fill_color = default_plot_color
 (* let interval_fill_color = Pl.RGB (180, 180, 180) *)
 (* let interval_shrink_increment = 0.05 (* amount to shrink interval fill vertically so boundary lines will be visible *) *)
 
-(* Given a list of probability distribution vectors, tries to sort them
-   so that similar lists are close in the order. *) 
+(** Given a list of probability distribution vectors, tries to sort them
+    so that similar lists are close in the order. *) 
 let l2_sort_dists dists = L.sort G.l2_compare dists
 let simple_sort_dists dists = L.sort G.difference_compare dists
 let abs_sort_dists dists = L.sort G.absdiff_compare dists

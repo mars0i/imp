@@ -10,6 +10,12 @@ module Pmap = Parmap
 module U = Utils.Genl
 module WF = Wrightfisher
 
+(** One goal here is to create a "distlist", which is a LazyList of Lists 
+    Owl row vector matrices representing probability distributions over 
+    possible frequencies of alleles (or other organism types0 in a population. 
+    The basic distlist creation functions are in tranmats.ml, but this module
+    uses higher-level functions in Wrightfisher to create distlists. *)
+
 (************************************************************)
 (** Utility helper functions *)
 
@@ -378,7 +384,7 @@ let make_wf_interval popsize fitn_list =
   let low, high = make_wf_interval_no_tight_check popsize fitn_list in
   let tight_low, tight_high = tighten_mat_interval low high in
   if (low, high) <> (tight_low, tight_high) (* This should not happen; such an interval should already be tight. *)
-  then Printf.eprintf "make_wf_interval: Wright-Fisher-based interval is not tight\n";
+  then Printf.eprintf "[make_wf_interval] Note: had to tighten original Wright-Fisher-based.\n";
   tight_low, tight_high
 
 (* example :

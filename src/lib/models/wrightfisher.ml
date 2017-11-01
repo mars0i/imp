@@ -11,6 +11,11 @@ module Prob = Owl.Stats.Pdf
 module L = Batteries.List
 module T = Tranmats
 
+(** One goal here is to create a "distlist", which is a LazyList of Lists 
+    Owl row vector matrices representing probability distributions over 
+    possible frequencies of alleles (or other organism types0 in a population. 
+    The basic distlist creation functions are in tranmats.ml. *)
+
 let make_init_dist allele_popsize a1count =
   let m = Mat.zeros 1 (allele_popsize + 1) in
   Mat.set m 0 a1count 1.0;
