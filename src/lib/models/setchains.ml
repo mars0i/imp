@@ -9,6 +9,7 @@ module Pmap = Parmap
 
 module U = Utils.Genl
 module WF = Wrightfisher
+module T = Tranmats
 
 (************************************************************)
 (** Utility helper functions *)
@@ -337,7 +338,7 @@ let lazy_bounds_mats_list_from_pair ?(fork=true) (pmat, qmat) =
 let lazy_prob_intervals_from_freq freq bounds_mats_list =
   let size, _ = M.shape (fst (LL.hd bounds_mats_list)) in
   let init_dist = (WF.make_init_dist size freq) in
-  LL.cons [init_dist; init_dist] (LL.map (freq_mult freq) bounds_mats_list)
+  LL.cons T.{t=0; dists=[init_dist; init_dist]} (LL.map (freq_mult freq) bounds_mats_list)
 
 (* USAGE EXAMPLES: 
  *   let pmat, qmat = W.(S.make_wf_interval 100 [{w11=1.0; w12=0.5; w22=0.3}; {w11=0.2; w12=0.9; w22=1.0}]);;

@@ -13,6 +13,8 @@ let always_true x = true
 
 type dists_at_t = {t : int; dists : Mat.mat list}
 
+let make_dists_at_t t dists = {t; dists}
+
 (** Return pair of old distribution vector (i.e. the second argument [dist]
     of this function) and a distribution vector (i.e. the product of the two 
     arguments).  For use with [Batteries.LazyList.from_loop] *)

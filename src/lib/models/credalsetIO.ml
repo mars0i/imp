@@ -7,6 +7,7 @@ module A = Batteries.Array
 module LL = Batteries.LazyList
 module WF = Wrightfisher
 module G = Utils.Genl
+module T = Tranmats
 
 let default_fontsize = 3.25
 let default_plot_color = Pl.RGB (160, 160, 160)
@@ -179,7 +180,7 @@ let make_pdfs ?(leftright=true) ?(pdfdim=ThreeD) ?(rows=1) ?(cols=1)
         let idx = (i * (max_j + 1)) + j in 
         if idx < group_len then  (* don't index past end of a short group *)
           (Pl.set_foreground_color h 0 0 0; (* grid and plot title color *)
-           let xs, ys, zs = make_coords ~every (simple_sort_dists page_group.(idx)) in
+           let xs, ys, zs = make_coords ~every T.(simple_sort_dists page_group.(idx).dists) in
            (* gen: calculate generation, which I'm not providing elsewhere.
             * pre_title: either a newline (for 3D) plots or an empty string, so that
             * titles on 3D plots will be pushed down a bit.*)
