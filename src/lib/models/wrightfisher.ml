@@ -57,11 +57,6 @@ let make_distlists size init_freqs fitn_list =
   let tranmats = L.map (make_tranmat size) fitn_list in
   T.make_distlists_from_mats tranmats init_dists
 
-let new_make_distlists size init_freqs fitn_list =
-  let init_dists = T.{t = 0; dists = L.map (make_init_dist size) init_freqs} in
-  let tranmats = L.map (make_tranmat size) fitn_list in
-  T.new_make_distlists_from_mats tranmats init_dists
-
 (** Given a list of float fitness values, which should be in the order
        w11, w12, w22, w11, w12, w22, ...
     eat them in groups of three, using each three to create a
