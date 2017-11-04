@@ -5,7 +5,6 @@ module Pl = Owl.Plot
 module L = Batteries.List
 module A = Batteries.Array
 module LL = Batteries.LazyList
-module WF = Wrightfisher
 module G = Utils.Genl
 
 (* TODO add data file creation functions *)
