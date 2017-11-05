@@ -384,7 +384,7 @@ let make_wf_interval popsize fitn_list =
   let low, high = make_wf_interval_no_tight_check popsize fitn_list in
   let tight_low, tight_high = tighten_mat_interval low high in
   if (low, high) <> (tight_low, tight_high) (* This should not happen; such an interval should already be tight. *)
-  then Printf.eprintf "[make_wf_interval] Note: had to tighten original Wright-Fisher-based.\n";
+  then Printf.eprintf "\n[make_wf_interval] Note: had to tighten original Wright-Fisher-based.\n";
   tight_low, tight_high
 
 (* example :
