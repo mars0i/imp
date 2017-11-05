@@ -16,20 +16,6 @@ let ( *@ ) = Mat.( *@ )  (* = dot: matrix multiplication *)
 
 let always_true _ = true
 
-(** Return pair of old distribution vector (i.e. the second argument [dist]
-    of this function) and a distribution vector (i.e. the product of the two 
-    arguments).  For use with [Batteries.LazyList.from_loop] *)
-let deprecated_next_dist tranmat dist = 
-  (dist, dist *@ tranmat)
-
-(** Returns a LazyList of probability distributions that are the result of 
-    a stationary Markov chain with initial distribution (usually with 1 at 
-    one entry and zero elsewhere, representing that the population has that 
-    initial frequency) and a transition matrix. The initial distribution is 
-    included in the list.*)
-let deprecated_make_dists tranmat init_dist =
-  LL.from_loop init_dist (deprecated_next_dist tranmat)
-
 (** Given a list of transition matrices, mats, and a list of
     probability distributions, dists, returns a new list of
     probability distributions produced by multiplying all
@@ -50,3 +36,35 @@ let next_dists tranmats dists =
     number of dists at n is (length init_dists) * (length tranmats)**n . *)
 let make_distlists_from_mats tranmats init_dists =
   LL.seq init_dists (next_dists tranmats) always_true
+
+
+(*
+type t_dists = {t : int ; dists : Mat.mat list}
+
+let return_at_t t dists = {t ; dists}
+
+let td_bind td f =
+  let {t ; dists} = td in
+  return_at_t t (f dists)
+
+
+let next_t_dists tranmats tdists =
+*)
+
+
+
+(*
+(** Return pair of old distribution vector (i.e. the second argument [dist]
+    of this function) and a distribution vector (i.e. the product of the two 
+    arguments).  For use with [Batteries.LazyList.from_loop] *)
+let deprecated_next_dist tranmat dist = 
+  (dist, dist *@ tranmat)
+
+(** Returns a LazyList of probability distributions that are the result of 
+    a stationary Markov chain with initial distribution (usually with 1 at 
+    one entry and zero elsewhere, representing that the population has that 
+    initial frequency) and a transition matrix. The initial distribution is 
+    included in the list.*)
+let deprecated_make_dists tranmat init_dist =
+  LL.from_loop init_dist (deprecated_next_dist tranmat)
+*)
