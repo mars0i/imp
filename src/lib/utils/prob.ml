@@ -159,8 +159,8 @@ let pri_f_field_intervals lowers uppers =
 (** Given a matrix such as a row or column vector, return a version 
     normalized so that elements sum to 1.0. *)
 let normalize_vec m =
-  let tot = M.sum m in
-  m /$ tot;;
+  let tot = M.sum' m in
+  M.div_scalar m tot;;
 
 (* The next definitions produce stochastic row vectors and stochastic
    matrices with rows that each sum to 1.  We multiply with vectors

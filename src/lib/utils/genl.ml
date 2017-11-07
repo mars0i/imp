@@ -178,7 +178,7 @@ let make_compare diff m1 m2 =
 (** Subtract mat2 from mat1 and sum the result.  A sort of poor person's
     non-normalized integral of the difference between the matrices
     (which might be vectors). *)
-let sumdiff mat1 mat2 = M.(sum (mat1 - mat2))
+let sumdiff mat1 mat2 = M.(sum' (mat1 - mat2))
 
 (** A compare function for matrices that determines whether the summed
     differences between corresponding matrix elements is negative, zero, 
@@ -188,12 +188,12 @@ let sumdiff mat1 mat2 = M.(sum (mat1 - mat2))
     values. *)
 let difference_compare = make_compare sumdiff
 
-let absdiff mat1 mat2 = M.(sum (abs (mat1 - mat2)))
+let absdiff mat1 mat2 = M.(sum' (abs (mat1 - mat2)))
 let absdiff_compare = make_compare absdiff
 
 (** L2 distance between mat1 and mat2: Subtract corresponding elements,
     square the results, sum those, and take the square root of the sum. *)
-let l2diff mat1 mat2 = M.(l2norm (mat1 - mat2))
+let l2diff mat1 mat2 = M.(l2norm' (mat1 - mat2))
 
 (** A compare function for matrices based on the L2 distance. *)
 let l2_compare = make_compare l2diff

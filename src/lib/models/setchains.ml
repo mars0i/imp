@@ -42,8 +42,8 @@ let rec sequences p q =
 let sanity_check_vec_interval p q =
   let p_shape = M.shape p in
   if p_shape <> (M.shape q) then raise (Failure "Vectors aren't same size");
-  if (M.sum p) > 1. then raise (Failure "Low vector sums to > 1");
-  if (M.sum q) < 1. then raise (Failure "High vector sums to < 1");
+  if (M.sum' p) > 1. then raise (Failure "Low vector sums to > 1");
+  if (M.sum' q) < 1. then raise (Failure "High vector sums to < 1");
   if M.exists U.float_is_negative M.(q - p) then raise (Failure "High vector is not >= p vector everywhere");
   () (* redundant clarification *)
 
@@ -54,7 +54,7 @@ let sanity_check_vec_interval p q =
     given other_vec.  *)
 let tighten_one_coord relation idx this_vec other_vec =
   let this_elt = M.get this_vec 0 idx in
-  let other_sum = (M.sum other_vec) -. (M.get other_vec 0 idx) in
+  let other_sum = (M.sum' other_vec) -. (M.get other_vec 0 idx) in
   if relation (other_sum +. this_elt) 1. then this_elt
   else 1. -. other_sum
 
@@ -196,7 +196,7 @@ let idx_sort_colvec v =
     p and q in Hartfiel, i.e. here the arguments should be (<=), l, q, p
     according to the normal senses of p and q. *)
 let recombine relation p q p_sum idxs =
-  let pbar = M.clone p in  (* p was created using M.row, so it's a view not a copy. *)
+  let pbar = M.copy p in  (* p was created using M.row, so it's a view not a copy. *)
   let rec find_crossover idxs' psum =
     match idxs' with
     | i::idxs'' -> 
@@ -384,7 +384,7 @@ let make_wf_interval popsize fitn_list =
   let low, high = make_wf_interval_no_tight_check popsize fitn_list in
   let tight_low, tight_high = tighten_mat_interval low high in
   if (low, high) <> (tight_low, tight_high) (* This should not happen; such an interval should already be tight. *)
-  then Printf.eprintf "\n[make_wf_interval] Note: had to tighten original Wright-Fisher-based.\n";
+  then Printf.eprintf "\n[make_wf_interval] Note: had to tighten original Wright-Fisher-based interval.\n";
   tight_low, tight_high
 
 (* example :
