@@ -38,7 +38,7 @@ let make_distlists_from_mats tranmats init_dists =
   LL.seq init_dists (next_dists tranmats) always_true
 
 
-(*
+
 type t_dists = {t : int ; dists : Mat.mat list}
 
 let return_at_t t dists = {t ; dists}
@@ -48,8 +48,8 @@ let td_bind td f =
   return_at_t t (f dists)
 
 
-let next_t_dists tranmats tdists =
-*)
+(* let next_t_dists tranmats tdists = *)
+
 
 
 
