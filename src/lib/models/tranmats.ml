@@ -43,6 +43,8 @@ type t_dists = {t : int ; dists : Mat.mat list}
 
 let return_at_t t dists = {t ; dists}
 
+let return_next_t t dists = {t + 1 ; dists}
+
 let td_bind td f =
   let {t ; dists} = td in
   return_at_t t (f dists)
