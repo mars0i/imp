@@ -345,17 +345,17 @@ let lazy_prob_intervals_from_freq freq bounds_mats_list =
   let init_dist = (WF.make_init_dist size freq) in
   LL.cons [init_dist; init_dist] (LL.map (freq_mult freq) bounds_mats_list)
 
-(* USAGE EXAMPLES: 
- *   let pmat, qmat = W.(S.make_wf_interval 100 [{w11=1.0; w12=0.5; w22=0.3}; {w11=0.2; w12=0.9; w22=1.0}]);;
- *   let bounds_mats = S.lazy_bounds_mats_list pmat qmat;;
- *   let distlist = S.lazy_prob_intervals_from_freq 50 bounds_mats;;
- * or:
- *   let distlist = S.lazy_prob_intervals_from_freq 50
- *                    (S.lazy_bounds_mats_list_from_pair
- *                        W.(S.make_wf_interval 100
- *                            [{w11=1.0; w12=0.5; w22=0.3};
- *                             {w11=0.2; w12=0.9; w22=1.0}]));;
- *)
+(** USAGE EXAMPLES: 
+     let pmat, qmat = W.(S.make_wf_interval 100 [{w11=1.0; w12=0.5; w22=0.3}; {w11=0.2; w12=0.9; w22=1.0}]);;
+     let bounds_mats = S.lazy_bounds_mats_list pmat qmat;;
+     let distlist = S.lazy_prob_intervals_from_freq 50 bounds_mats;;
+   or:
+     let distlist = S.lazy_prob_intervals_from_freq 50
+                      (S.lazy_bounds_mats_list_from_pair
+                          W.(S.make_wf_interval 100
+                              [{w11=1.0; w12=0.5; w22=0.3};
+                               {w11=0.2; w12=0.9; w22=1.0}]));;
+*)
 
 
 (*****************************************************)
