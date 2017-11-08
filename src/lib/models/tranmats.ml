@@ -41,9 +41,11 @@ let make_distlists_from_mats tranmats init_dists =
 
 type t_dists = {t : int ; dists : Mat.mat list}
 
-let return_at_t t dists = {t ; dists}
+let return_tdists t dists = {t ; dists}
 
-let return_next_t t dists = {t + 1 ; dists}
+let return_initial_tdists dists = return_tdists 0 dists
+
+let return_next_tdists t dists = {t + 1 ; dists}
 
 let td_bind td f =
   let {t ; dists} = td in
