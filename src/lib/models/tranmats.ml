@@ -43,14 +43,20 @@ type t_dists = {t : int ; dists : Mat.mat list}
 
 let return_tdists t dists = {t ; dists}
 
-let return_initial_tdists dists = return_tdists 0 dists
+(* this is also a kind of return function maybe *)
+let initial_tdists dists = return_tdists 0 dists
 
-let return_next_tdists t dists = {t + 1 ; dists}
+(* this is also a kind of return function maybe *)
+(* let next_tdists t dists = {t + 1 ; dists} *)
 
+(*
 let td_bind td f =
   let {t ; dists} = td in
   return_at_t t (f dists)
 
+let next_tdists td =
+  T.td_bind td (fun {t; dists} -> {t = t + 1; dists})
+*)
 
 (* let next_t_dists tranmats tdists = *)
 
