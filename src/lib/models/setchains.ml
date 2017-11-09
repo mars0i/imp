@@ -350,6 +350,17 @@ let lazy_prob_intervals_from_freq freq bounds_mats_list =
 let lazy_tdists_from_freq ?(first_tick=0) freq bounds_mats_list =
   LL.lazy_fold_right (fun t lazy_tdists -> T.{t = t + 1; 
 lazy_prob_intervals_from_freq freq bounds_mats_list
+
+regular list illustration:
+
+type x = {a:int; b:int};;
+
+fold_right (fun x ys -> let {a; b} = hd ys in {a=(a+1); b=x}::ys) z [{a=0;b=0}];;
+- : x list =
+[{a = 12; b = 0}; {a = 11; b = 1}; {a = 10; b = 2}; {a = 9; b = 3}; {a = 8; b = 4};
+ {a = 7; b = 5}; {a = 6; b = 6}; {a = 5; b = 7}; {a = 4; b = 8}; {a = 3; b = 9};
+ {a = 2; b = 10}; {a = 1; b = 11}; {a = 0; b = 0}]
+
 *)
 
 
