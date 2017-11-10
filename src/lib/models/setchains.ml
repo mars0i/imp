@@ -309,9 +309,7 @@ let freq_mult freq (lo_mat, hi_mat) =
     your lazy list may become useless, and you'll have to regenerate it
     from scratch.  (That's my interpretation of something that happened once.) *)
 
-(** FIXME TODO Next function is called repeatedly with same pmat, qmat, and
-    every time, I'm summing all of those matrices rows.  So instead sum
-    them first and pass them in. *)
+(** FIXME TODO Rewrite next two functions using simpler LL.seq instead of from_loop. *)
 
 (** Return pair of pairs: The first pair is the bounds matrices that were
     passed as the third argument [(lo,hi)], unchanged, and the next bounds
@@ -346,11 +344,20 @@ let lazy_prob_intervals_from_freq freq bounds_mats_list =
   let init_dist = (WF.make_init_dist size freq) in
   LL.cons [init_dist; init_dist] (LL.map (freq_mult freq) bounds_mats_list)
 
-(* 
-let lazy_tdists_from_freq ?(first_tick=0) freq bounds_mats_list =
-  LL.lazy_fold_right (fun t lazy_tdists -> T.{t = t + 1; 
-lazy_prob_intervals_from_freq freq bounds_mats_list
 
+(*
+let lazy_tdists_from_freq ?(first_tick=0) freq bounds_mats_list =
+  let f dists tdists_list = 
+    let prev_t = T.((LL.hd tdists_list).t) in
+    T.{t = prev_t + 1; dists}
+  in
+  let lazy_intervals = lazy_prob_intervals_from_freq freq bounds_mats_list in
+  let first_interval = LL.hd lazy_intervals in
+  let rest_intervals = LL.tl lazy_intervals in
+  LL.lazy_fold_right f rest_intervals {t = 0; dists = first_interval}
+*)
+
+(*
 regular list illustration:
 
 type x = {a:int; b:int};;
