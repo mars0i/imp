@@ -37,14 +37,22 @@ let next_dists tranmats dists =
 let make_distlists_from_mats tranmats init_dists =
   LL.seq init_dists (next_dists tranmats) always_true
 
+type tdists = {t : int ; dists : Mat.mat list}
+
+let make_tdists t dists = {t ; dists}
+
+let nonneg_ints = LL.seq 0 ((+) 1) always_true
+
+let add_ts dists_llist =
+  LL.map2 make_tdists nonneg_ints dists_llist
 
 
-type t_dists = {t : int ; dists : Mat.mat list}
-
+(*
 let return_tdists t dists = {t ; dists}
 
 (* this is also a kind of return function maybe *)
 let initial_tdists dists = return_tdists 0 dists
+*)
 
 (* this is also a kind of return function maybe *)
 (* let next_tdists t dists = {t + 1 ; dists} *)
