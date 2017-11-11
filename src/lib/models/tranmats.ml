@@ -38,13 +38,18 @@ let make_distlists_from_mats tranmats init_dists =
   LL.seq init_dists (next_dists tranmats) always_true
 
 type tdists = {t : int ; dists : Mat.mat list}
-
+(** accessor, constructor functions: *)
+let t tds = tds.t
+let dists tds = tds.dists
 let make_tdists t dists = {t ; dists}
 
-let nonneg_ints = LL.seq 0 ((+) 1) always_true
+(* Transform lazy lists of dists to/from lazy lists of tdists: *)
+let ints_from n = LL.seq n ((+) 1) always_true
 
-let add_ts dists_llist =
-  LL.map2 make_tdists nonneg_ints dists_llist
+let add_ts ?(first_tick=0) dists_llist =
+  LL.map2 make_tdists (ints_from first_tick) dists_llist
+
+let remove_ts tdists_llist = LL.map dists tdists_llist
 
 
 (*
