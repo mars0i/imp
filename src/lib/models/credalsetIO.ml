@@ -2,12 +2,26 @@
 
 module Mat = Owl.Mat
 module Pl = Owl.Plot
+module OU = Owl.Utils
 module L = Batteries.List
 module A = Batteries.Array
 module LL = Batteries.LazyList
 module G = Utils.Genl
+module T = Tranmats
 
-(* TODO add data file creation functions *)
+(** Data file creation functions *)
+
+let datafile_extension = "td"
+
+let write_tdist basename td =
+  let T.{t; dists} = td in
+  let filename = basename ^ (string_of_int t) ^ datafile_extension in
+  OU.marshal_to_file td filename
+
+let write_tdists basename finite_tdists_llist =
+  LL.iter (write_tdist basename) finite_tdists_llist
+
+(** PDF plot-writing functions *)
 
 let default_fontsize = 3.25
 let default_plot_color = Pl.RGB (160, 160, 160)
