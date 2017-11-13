@@ -1,7 +1,8 @@
 #require "parmap";;
 #load "utils.cma";;
 #load "models.cma";;
-module W = Models.Wrightfisher;;
 module S = Models.Setchains;;
+module T = Models.Tranmats;;
+module W = Models.Wrightfisher;;
 module LL = Batteries.LazyList;;
 
