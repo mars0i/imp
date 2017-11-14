@@ -2,5 +2,10 @@
 all:
 	jbuilder build @install
 
+doc:
+	jbuilder build @doc
+
 clean:
-	/bin/rm -Rf _build *.install
+	jbuilder clean
+
+#	/bin/rm -Rf _build *.install
