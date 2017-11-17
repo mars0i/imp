@@ -17,7 +17,7 @@ let datafile_extension = ".mldata"
 (** [write_dists basename td] writes a data file containing the marshal'ed
     representation of the tdists, using [basename], the timestep id in the 
     tdist, and mldata_extension to construct the filename. *)
-let write_tdists basename td =
+let write_one_tdists basename td =
   let T.{t; dists} = td in
   let filename = basename ^ (string_of_int t) ^ datafile_extension in
   OU.marshal_to_file td filename
@@ -27,7 +27,7 @@ let write_tdists basename td =
     in [finite_tdists_list], using [basename], the timestep id in the 
     tdist, and mldata_extension to construct filenames. *)
 let write_all_tdists basename finite_tdists_list =
-  LL.iter (write_tdists basename) finite_tdists_list
+  LL.iter (write_one_tdists basename) finite_tdists_list
 
 (** [write_tdists basename start_gen last_gen tdists_list] writes one data
     file containing the marshal'ed representation of each generation's tdist
