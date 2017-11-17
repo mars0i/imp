@@ -11,8 +11,21 @@ module T = Tranmats
 
 (** Data file creation functions *)
 
+let tdists_marshal_ext = ".mltdists"
 let datafile_extension = ".mldata"
 (* let datafile_extension = ".mld" *)
+
+let write_tdists_list basename finite_tdists_list =
+  let T.{t=first_t; _} = LL.first finite_tdists_list in
+  let T.{t=last_t; _} = LL.last finite_tdists_list in
+  let filename = Printf.sprintf "%s%02dto%02d.%s" 
+                                 basename first_t last_t tdists_marshal_ext in
+  OU.marshal_to_file finite_tdists_list filename
+
+let write_tdists_sublist basename start_gen last_gen tdists_list =
+  write_tdists_list basename (G.sub_lazy_list start_gen last_gen tdists_list)
+
+(** Obsolete data-writing functions?: *)
 
 (** [write_dists basename td] writes a data file containing the marshal'ed
     representation of the tdists, using [basename], the timestep id in the 
