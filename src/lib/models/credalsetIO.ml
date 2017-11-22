@@ -11,22 +11,26 @@ module T = Tranmats
 
 (** Data file creation functions *)
 
-let tdists_marshal_ext = ".mltdists"
-let datafile_extension = ".mldata"
+let tdists_marshal_ext = "mltds"
 (* let datafile_extension = ".mld" *)
 
-let write_tdists_list basename finite_tdists_list =
+(** Lazy list must be finite! *)
+let write_tdists_finite_list basename finite_tdists_list =
   let T.{t=first_t; _} = LL.first finite_tdists_list in
   let T.{t=last_t; _} = LL.last finite_tdists_list in
   let filename = Printf.sprintf "%s%02dto%02d.%s" 
                                  basename first_t last_t tdists_marshal_ext in
   OU.marshal_to_file finite_tdists_list filename
 
+(** Lazy list must be finite! *)
 let write_tdists_sublist basename start_gen last_gen tdists_list =
-  write_tdists_list basename (G.sub_lazy_list start_gen last_gen tdists_list)
+  write_tdists_finite_list basename (G.sub_lazy_list start_gen last_gen tdists_list)
+
+let read_marshalled_tdists_list filename =
+  ((OU.marshal_from_file filename) : T.tdists LL.t)
 
 (** Obsolete data-writing functions?: *)
-
+(*
 (** [write_dists basename td] writes a data file containing the marshal'ed
     representation of the tdists, using [basename], the timestep id in the 
     tdist, and mldata_extension to construct the filename. *)
@@ -49,7 +53,7 @@ let write_all_tdists basename finite_tdists_list =
     construct filenames. *)
 let write_tdists basename start_gen last_gen tdists_list =
   write_all_tdists basename (G.sub_lazy_list start_gen last_gen tdists_list)
-
+*)
 
 (** PDF plot-writing functions *)
 
