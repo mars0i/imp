@@ -1,6 +1,0 @@
-
-let m1 = M.uniform 2 3;;
-let m2 = M.uniform 2 3;;
-Owl.Utils.marshal_to_file [m1; m2] "yo.owl";;
-let (yo : Owl.Mat.mat list) = Owl.Utils.marshal_from_file "yo.owl";;
-yo = [m1; m2];;
