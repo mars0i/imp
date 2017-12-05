@@ -1,0 +1,38 @@
+Options for saving data to files for later retrieval
+
+csv
+	works with non-ocaml
+	Too verbose, and 2D is awkward.
+	Only for real interchange when needed.
+
+OCaml marshal
+	very compact, very easy to use.
+	might not work across OCaml versions or even new libs.
+	works only with ocaml
+
+yojson (in opam) (based on atdgen)
+	works with non-ocaml
+	better than csv in that it's not 2D, but still it's verbose text
+There are also some other json tools in opam.
+
+biniou (in opam) (based on atdgen)
+	binary, faster than json
+	won't work with non-ocaml
+
+msgpck (in opam)
+	binary
+	not very nicely documented (see opam for any description at all)
+	probably won't work with non-ocaml at this point
+
+hdf5 using hdf5-ocaml (in opam)
+	binary
+	a scientific large-data standard
+	slightly non-trivial to implement for embedded strus?
+	clojure has libs for it
+		but clj-hdf5 hasn't been touched in five years
+		and thinktopic/think.hdf5 is documentation-free
+		no mention of hdf5 in core.matrix
+	R has libs for it
+
+
+
