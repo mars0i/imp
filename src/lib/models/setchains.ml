@@ -223,24 +223,24 @@ let flat_idx_to_rowcol width idx =
   let col = idx mod width in
   row, col
 
-(** Given a [recomb] function ([recombine_lo] or [recombine_hi]), the original (* FIXME DOC WRONG *)
-    P and Q matrices [pmat] and [qmat], a previous
-    tight bounds matrix [prev_bound_mat], and an array of sorted lists of 
-    indexes [idx_lists], calculate the value at i j for the
-    next tight bounds matrix, where i j is calculated from vector index [idx]
-    and [width].  i.e. if we laid out a matrix one row after another in
-    vector form, idx would be an index into it, and width is the row width
+(** Given a [recomb] function, the original P and Q matrices [pmat] and [qmat],
+    a previous tight bounds matrix [prev_bound_mat], pre-calculated row sums
+    [pmat_row_sums] from [pmat] (more efficient to calculate once), and an 
+    array of sorted lists of indexes [prev_mat_idx_lists], calculate the value
+    at i j for the next tight bounds matrix, where i j is calculated from vector
+    index [idx] and [width].  i.e. if we laid out a matrix one row after another
+    in vector form, idx would be an index into it, and width is the row width
     of the original matrix.  (We pass [pmat_row_sums] and [idx_lists] even 
     though they could be calculated on demand from [pmat], [prev_bound_mat],
     to avoid repeatedly performing the same computations.) Used by [hilo_mult].  
     SEE doc/nonoptimizedcode.ml for an older, perhaps clearer version.  *)
 let calc_bound_val recomb pmat qmat prev_bound_mat pmat_row_sums prev_mat_idx_lists width idx =
   let i, j = flat_idx_to_rowcol width idx in
-  let prev_col = M.col prev_bound_mat j in (* col makes a copy *)
   let p_row_sum = M.get pmat_row_sums i 0 in
   let idxs = A.get prev_mat_idx_lists j in
   let p_row, q_row = M.row pmat i, M.row qmat i in (* row doesn't copy; it just provides a view *)
   let bar_row = recomb p_row q_row p_row_sum idxs in
+  let prev_col = M.col prev_bound_mat j in (* col makes a copy *)
   M.(get (bar_row *@ prev_col) 0 0)
 
 (** Wrapper for calc_bound_val (which see), adding an additional, ignored 
@@ -264,15 +264,15 @@ let hilo_mult ?(fork=true) recomb pmat qmat prev_bound_mat row_sums =
   let (rows, cols) = M.shape pmat in
   let len = rows * cols in
   let prev_mat_idx_lists = M.map_cols idx_sort_colvec prev_bound_mat in (* sorted list of indexes for each column *)
-  let bounds_array =
     if fork 
     then let bounds_array' = A.create_float len in
-         Pmap.array_float_parmapi (* ~ncores:4 *)
-           ~result:bounds_array' 
-           (calc_bound_val_for_parmapi recomb pmat qmat prev_bound_mat row_sums prev_mat_idx_lists cols)
-           bounds_array' (* this arg will be ignored *)
-    else A.init len (calc_bound_val recomb pmat qmat prev_bound_mat row_sums prev_mat_idx_lists cols)  (* TODO why make an array here? Just make a matrix. *)
-  in M.of_array bounds_array rows cols
+      M.of_array
+        (Pmap.array_float_parmapi (* ~ncores:4 *)
+          ~result:bounds_array' 
+          (calc_bound_val_for_parmapi recomb pmat qmat prev_bound_mat row_sums prev_mat_idx_lists cols)
+          bounds_array') (* this arg will be ignored *)
+        rows cols
+    else M.init rows cols (calc_bound_val recomb pmat qmat prev_bound_mat row_sums prev_mat_idx_lists cols)
 
 (** Starting from the original P and Q tight interval bounds and the previous
     component tight lo bound, make the netxt lo matrix.
