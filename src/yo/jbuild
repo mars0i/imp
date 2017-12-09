@@ -1,0 +1,8 @@
+(jbuild_version 1)
+
+(executables
+ ((names (create_example test))
+	(public_names (create_example test))
+  (package yo)
+  (libraries (bigarray hdf5_raw hdf5_caml))
+ ))
