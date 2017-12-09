@@ -164,7 +164,19 @@ let mat_vertices ?digits ?uniq p q =
 
 
 (************************************************************)
-(** Hi-Lo Method.  See Hartfiel section 2.4, pp.  46-54 *)
+(** Hi-Lo Method.  See Hartfiel section 2.4, pp.  46-54
+
+    This is an analog of matrix multiplication for intervals of
+    stochastic matrices.  The method calculates tight bounds
+    for products of all possible multiplications of matrices
+    in two intervals, the original interval, and one that's
+    the result of a previous application of the hi-lo method.
+    The core idea of this process is that the elements of new 
+    pair of lower and upper matrices must be individually
+    calculated so that each element estimates the minimum or
+    maximum value for that element from all of the possible
+    products.
+*)
 
 (** Compare function for use by idx_sort for col vector *)
 let col_vec_idx_cmp mat i i' =
@@ -250,18 +262,18 @@ let calc_bound_val recomb pmat qmat prev_bound_mat pmat_row_sums prev_mat_idx_li
 let calc_bound_val_for_parmapi recomb pmat qmat prev_bound_mat pmat_row_sums prev_mat_idx_lists width idx _ =
   calc_bound_val recomb pmat qmat prev_bound_mat pmat_row_sums prev_mat_idx_lists width idx
 
-(** Given [recombine_lo] or [recombine_hi], the original tight interval bounds
-    P and Q, and either the previous tight component lo or hi bound (as
-    appropriate), return the next lo or hi tight component bound.
-    This function normally uses [Parmap] to split the work between additional
-    cores.  If [~fork] is present with any value, won't use Parmap to
-    divide the work between processes.
+(** Given a [recomb] function, the original tight interval bounds pmat and
+    qmat, and either the previous tight component lo or hi bound 
+    [prev_bound_mat](as appropriate), and a vector [row_sums] of summed rows
+    (so we don't have to do it again), return the next lo or hi tight component 
+    bound.  This function normally uses [Parmap] to split the work between 
+    additional cores.  If [~fork] is false with any value, it won't divide 
+    the work between processes.
     NOTE:
-      If recomb is recombine_lo, the arguments should be P, Q, and the 
-      previous lo matrix.  
-      If recomb is recombine_hi, the arguments should be (notice!) Q, P,
-      and the previous hi matrix. 
-    SEE doc/nonoptimizedcode.ml for clearer versions of this function.  *)
+      If recomb is [recombine (>=)], the arguments should be [pmat], [qmat], 
+      and the previous lo matrix, along with the row sums.  
+      If recomb is [recombine (<=)], the arguments should be (notice!) [qmat],
+      [pmat], and the previous hi matrix, along with the row sums. *)
 let hilo_mult ?(fork=true) recomb pmat qmat prev_bound_mat row_sums = 
   let (rows, cols) = M.shape pmat in
   let len = rows * cols in
@@ -276,15 +288,17 @@ let hilo_mult ?(fork=true) recomb pmat qmat prev_bound_mat row_sums =
         rows cols
     else M.init rows cols (calc_bound_val recomb pmat qmat prev_bound_mat row_sums prev_mat_idx_lists cols)
 
-(** Starting from the original P and Q tight interval bounds and the previous
-    component tight lo bound, make the netxt lo matrix.
+(** Starting from the original [pmat] and [qmat] tight interval bounds, the 
+    previous component tight lo bound, and a vector of p row sums [p_row_sums],
+    make the next lo matrix.
     If [~fork] is present with any value, won't use Parmap to divide the 
     work between processes. *)
 let lo_mult ?(fork=true) pmat qmat prev_lo_mat p_row_sums =
   hilo_mult ~fork (recombine (>=)) pmat qmat prev_lo_mat p_row_sums
 
-(** Starting from the original P and Q tight interval bounds and the previous
-    component tight hi bound, make the next hi matrix.
+(** Starting from the original [pmat] and [qmat] tight interval bounds, the 
+    previous component tight hi bound, and a vector of q row sums [q_row_sums],
+    make the next hi matrix.
     NOTE args are in same order as lo_mult.
     If [~fork] is present with any value, won't use Parmap to divide the 
     work between processes. *)
