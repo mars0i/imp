@@ -20,6 +20,8 @@ module T = Tranmats
 (************************************************************)
 (** Utility helper functions *)
 
+let always _ = true
+
 (** Given two lists of length n, return a list containing the 2^n lists
     containing each combination of elements from p and q at the same indices.
     e.g.
@@ -309,22 +311,20 @@ let freq_mult freq (lo_mat, hi_mat) =
     your lazy list may become useless, and you'll have to regenerate it
     from scratch.  (That's my interpretation of something that happened once.) *)
 
-(** FIXME TODO Rewrite next two functions using simpler LL.seq instead of from_loop. *)
-
 (** Return pair of pairs: The first pair is the bounds matrices that were
     passed as the third argument [(lo,hi)], unchanged, and the next bounds
     matrix pair.  For use with [Batteries.LazyList.from_loop] *)
 let next_bounds_mats ?(fork=true) pmat qmat p_row_sums q_row_sums (lo,hi) =
   let lo' = lo_mult ~fork pmat qmat lo p_row_sums in
   let hi' = hi_mult ~fork pmat qmat hi q_row_sums in
-  (lo,hi), (lo', hi')
+  (lo', hi')
 
 (** lazy_bounds_mats [pmat] [qmat] returns a LazyList of bounds matrix pairs
     starting from the initial transition matrix interval defined [pmat] defined
     by [qmat] *)
 let lazy_bounds_mats_list ?(fork=true) pmat qmat =
   let p_row_sums, q_row_sums = M.sum_cols pmat, M.sum_cols qmat in (* sum_cols means add col vecs, = new col vec w/ sum of ea row *)
-  LL.from_loop (pmat, qmat) (next_bounds_mats ~fork pmat qmat p_row_sums q_row_sums)
+  LL.seq (pmat, qmat) (next_bounds_mats ~fork pmat qmat p_row_sums q_row_sums) always
 
 (** Convenience version of lazy_bounds_mats_list that takes
     (pmat, qmat) as argument rather than pmat and qmat. *)
