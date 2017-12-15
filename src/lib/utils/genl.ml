@@ -31,6 +31,17 @@ let time3 f x y z =
 let is_odd n = n mod 2 <> 0
 let is_even n = n mod 2 = 0
 
+(* test for square matrix? well it will normally fail in the multiplication *)
+let rec dot_pow x n = 
+  let rec aux x n acc =
+    if n = 1 then acc 
+    else aux x (n - 1) (M.dot x acc)
+  in
+  if n > 0 then aux x n x
+  else if n = 0 then M.eye (M.row_num x)
+  else raise (Failure "exponent is negative")
+
+
 (** Returns a memoizing version of function f of one argument.
     By Andrej Bauer: https://stackoverflow.com/a/14503530/1455243
     Caveats: 
