@@ -1,9 +1,9 @@
 (jbuild_version 1)
 
-(executables
- ((names (test)) ; create_example 
-	(public_names (test)) ; create_example 
-  (package yo)
-  (libraries (bigarray hdf5_caml)) ; hdf5_raw 
-  (modes (native))
- ))
+;(executables
+; ((names (test)) ; create_example 
+;	(public_names (test)) ; create_example 
+;  (package yo)
+;  (libraries (bigarray hdf5_caml)) ; hdf5_raw 
+;  (modes (native))
+; ))
