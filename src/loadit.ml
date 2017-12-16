@@ -5,5 +5,6 @@ module I = Models.CredalsetIO;;
 module S = Models.Setchains;;
 module T = Models.Tranmats;;
 module W = Models.Wrightfisher;;
+module G = Utils.Genl;;
 module LL = Batteries.LazyList;;
 
