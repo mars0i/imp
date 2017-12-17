@@ -31,12 +31,13 @@ let time3 f x y z =
 let is_odd n = n mod 2 <> 0
 let is_even n = n mod 2 = 0
 
+(*
 let _int_mpow x k =
   let m, n = M.shape x in
   assert (m = n);
   let rec either_pow k' acc =
      if k' = 1 then acc
-     else if is_odd k' 
+     else if _is_odd k' 
 	  then odd_pow k' acc
           else even_pow k' acc
   and odd_pow k' acc = M.dot x (even_pow (k' - 1) acc)
@@ -61,7 +62,7 @@ let rec dot_pow x n =
   if n > 0 then aux x n x
   else if n = 0 then M.eye (M.row_num x)
   else raise (Failure "exponent is negative")
-
+*)
 
 (** Returns a memoizing version of function f of one argument.
     By Andrej Bauer: https://stackoverflow.com/a/14503530/1455243
