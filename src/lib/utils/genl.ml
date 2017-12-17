@@ -31,7 +31,28 @@ let time3 f x y z =
 let is_odd n = n mod 2 <> 0
 let is_even n = n mod 2 = 0
 
-(* test for square matrix? well it will normally fail in the multiplication *)
+let _int_mpow x k =
+  let m, n = M.shape x in
+  assert (m = n);
+  let rec either_pow k' acc =
+     if k' = 1 then acc
+     else if is_odd k' 
+	  then odd_pow k' acc
+          else even_pow k' acc
+  and odd_pow k' acc = M.dot x (even_pow (k' - 1) acc)
+  and even_pow k' acc =
+    let k'' = k' / 2 in
+    let half_acc = either_pow k'' acc in
+    M.dot half_acc half_acc
+  in either_pow k x
+
+let mpow x r =
+  if k <= 0. then failwith "mpow: exponent is non-positive";
+  let (frac_part, whole_part) = modf r in
+  if frac_part <> 0. then failwith "mpow: fractional powers not implemented"
+  else _int_mpow x (int_of_float whole_part)
+
+(* Test for square matrix first? well it will normally fail in the multiplication *)
 let rec dot_pow x n = 
   let rec aux x n acc =
     if n = 1 then acc 
