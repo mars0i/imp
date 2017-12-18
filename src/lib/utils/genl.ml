@@ -47,6 +47,21 @@ let int_mpow x k =
     M.dot x (even_pow (k' - 1) acc)
   in either_pow k x
 
+let float_mpow x k =
+  let m, n = M.shape x in
+  assert (m = n);
+  let rec either_pow k' acc =
+     if k' = 1. then acc
+     else if mod_float k' 2. = 0.
+     then even_pow k' acc
+     else odd_pow k' acc
+  and even_pow k' acc =
+    let acc2 = either_pow (k' /. 2.) acc in
+    M.dot acc2 acc2
+  and odd_pow k' acc =
+    M.dot x (even_pow (k' -. 1.) acc)
+  in either_pow k x
+
 (*
 let mpow x r =
   if k <= 0. then failwith "mpow: exponent is non-positive";
