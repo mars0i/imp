@@ -31,22 +31,23 @@ let time3 f x y z =
 let is_odd n = n mod 2 <> 0
 let is_even n = n mod 2 = 0
 
-(*
-let _int_mpow x k =
+let int_mpow x k =
   let m, n = M.shape x in
   assert (m = n);
   let rec either_pow k' acc =
      if k' = 1 then acc
-     else if _is_odd k' 
-	  then odd_pow k' acc
-          else even_pow k' acc
-  and odd_pow k' acc = M.dot x (even_pow (k' - 1) acc)
+     else if k' mod 2 = 0
+          then even_pow k' acc
+          else odd_pow k' acc
   and even_pow k' acc =
-    let k'' = k' / 2 in
-    let half_acc = either_pow k'' acc in
+    let k2 = k' / 2 in
+    let half_acc = either_pow k2 acc in
     M.dot half_acc half_acc
+  and odd_pow k' acc =
+    M.dot x (even_pow (k' - 1) acc)
   in either_pow k x
 
+(*
 let mpow x r =
   if k <= 0. then failwith "mpow: exponent is non-positive";
   let (frac_part, whole_part) = modf r in
@@ -240,7 +241,7 @@ let subsample_in_rows every old_mat =
        let new_mat = M.empty height new_width in
        for i = 0 to height - 1 do
          for j = 0 to new_width - 1 do
-	   M.set new_mat i j (M.get old_mat i (j*every))
+           M.set new_mat i j (M.get old_mat i (j*every))
          done
        done;
        new_mat
