@@ -68,8 +68,8 @@ let mpow x r =
   let (frac_part, whole_part) = modf r in
   if frac_part <> 0. then failwith "mpow: fractional powers not implemented"
   else _int_mpow x (int_of_float whole_part)
+*)
 
-(* Test for square matrix first? well it will normally fail in the multiplication *)
 let rec dot_pow x n = 
   let rec aux x n acc =
     if n = 1 then acc 
@@ -78,7 +78,6 @@ let rec dot_pow x n =
   if n > 0 then aux x n x
   else if n = 0 then M.eye (M.row_num x)
   else raise (Failure "exponent is negative")
-*)
 
 (** Returns a memoizing version of function f of one argument.
     By Andrej Bauer: https://stackoverflow.com/a/14503530/1455243
