@@ -1,10 +1,10 @@
 (jbuild_version 1)
 
 (executables
- ((names (wrightfisherPDFs setchainPDFs)) ; setchaintest
-	(public_names (wrightfisherPDFs setchainPDFs)) ; setchaintest
+ ((names (wrightfisherPDFs setchainPDFs)) ; mpowtest setchaintest
+	(public_names (wrightfisherPDFs setchainPDFs)) ; mpowtest setchaintest
   (package models)
-  (libraries (core models utils))
+  (libraries (core models utils)) ; owl
   (modes (native)) ; replace native with byte to make bytecode executable
   (ocamlopt_flags (:standard -O3)) ; -dcmm -O3 ; -dcmm dumps intermediate rep
  ))
