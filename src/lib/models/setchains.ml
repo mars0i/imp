@@ -246,7 +246,7 @@ let flat_idx_to_rowcol width idx =
     in vector form, idx would be an index into it, and width is the row width
     of the original matrix.  (We pass [pmat_row_sums] and [idx_lists] even 
     though they could be calculated on demand from [pmat], [prev_bound_mat],
-    to avoid repeatedly performing the same computations.) Used by [hilo_mult].  
+    to avoid repeatedly performing the same computations.) Used by [_hilo_mult].  
     SEE doc/nonoptimizedcode.ml for an older, perhaps clearer version.  *)
 let calc_bound_val recomb pmat qmat prev_bound_mat pmat_row_sums prev_mat_idx_lists width idx =
   let i, j = flat_idx_to_rowcol width idx in
@@ -274,7 +274,7 @@ let calc_bound_val_for_parmapi recomb pmat qmat prev_bound_mat pmat_row_sums pre
       and the previous lo matrix, along with the row sums.  
       If recomb is [recombine (<=)], the arguments should be (notice!) [qmat],
       [pmat], and the previous hi matrix, along with the row sums. *)
-let hilo_mult ?(fork=true) recomb pmat qmat prev_bound_mat row_sums = 
+let _hilo_mult ?(fork=true) recomb pmat qmat prev_bound_mat row_sums = 
   let (rows, cols) = M.shape pmat in
   let len = rows * cols in
   let prev_mat_idx_lists = M.map_cols idx_sort_colvec prev_bound_mat in (* sorted list of indexes for each column *)
@@ -293,8 +293,8 @@ let hilo_mult ?(fork=true) recomb pmat qmat prev_bound_mat row_sums =
     make the next lo matrix.
     If [~fork] is present with any value, won't use Parmap to divide the 
     work between processes. *)
-let lo_mult ?(fork=true) pmat qmat prev_lo_mat p_row_sums =
-  hilo_mult ~fork (recombine (>=)) pmat qmat prev_lo_mat p_row_sums
+let _lo_mult ?(fork=true) pmat qmat prev_lo_mat p_row_sums =
+  _hilo_mult ~fork (recombine (>=)) pmat qmat prev_lo_mat p_row_sums
 
 (** Starting from the original [pmat] and [qmat] tight interval bounds, the 
     previous component tight hi bound, and a vector of q row sums [q_row_sums],
@@ -302,19 +302,8 @@ let lo_mult ?(fork=true) pmat qmat prev_lo_mat p_row_sums =
     NOTE args are in same order as lo_mult.
     If [~fork] is present with any value, won't use Parmap to divide the 
     work between processes. *)
-let hi_mult ?(fork=true) pmat qmat prev_hi_mat q_row_sums =
-  hilo_mult ~fork (recombine (<=)) qmat pmat prev_hi_mat q_row_sums (* NOTE SWAPPED ARGS *)
-
-(** Given a transition matrix interval [(lo_mat, hi_mat)] and a probability 
-   interval that's represented by a single frequency [freq] to which all 
-   probability is assigned for the single distribution in the interval, 
-   lo-multiply hi-multiply the distribution times [lo_mat] and [hi_mat]
-   respectively.  (When the probabilty interval is of this kind, this function
-   should be more efficient than lo_mult and hi_mult, and even more efficient
-   than the normal dot product, which does the same thing when the interval
-   contains only one distribution.) *)
-let freq_mult freq (lo_mat, hi_mat) =
-  [M.row lo_mat freq; M.row hi_mat freq]
+let _hi_mult ?(fork=true) pmat qmat prev_hi_mat q_row_sums =
+  _hilo_mult ~fork (recombine (<=)) qmat pmat prev_hi_mat q_row_sums (* NOTE SWAPPED ARGS *)
 
 (** Tip: The next few functions create a LazyList in which each element is
     constructed from the preceding one by a method that usually forks 
@@ -329,8 +318,8 @@ let freq_mult freq (lo_mat, hi_mat) =
     passed as the third argument [(lo,hi)], unchanged, and the next bounds
     matrix pair.  For use with [Batteries.LazyList.from_loop] *)
 let next_bounds_mats ?(fork=true) pmat qmat p_row_sums q_row_sums (lo,hi) =
-  let lo' = lo_mult ~fork pmat qmat lo p_row_sums in
-  let hi' = hi_mult ~fork pmat qmat hi q_row_sums in
+  let lo' = _lo_mult ~fork pmat qmat lo p_row_sums in
+  let hi' = _hi_mult ~fork pmat qmat hi q_row_sums in
   (lo', hi')
 
 (** lazy_bounds_mats [pmat] [qmat] returns a LazyList of bounds matrix pairs
@@ -344,6 +333,17 @@ let lazy_bounds_mats_list ?(fork=true) pmat qmat =
     (pmat, qmat) as argument rather than pmat and qmat. *)
 let lazy_bounds_mats_list_from_pair ?(fork=true) (pmat, qmat) =
   lazy_bounds_mats_list ~fork pmat qmat
+
+(** Given a transition matrix interval [(lo_mat, hi_mat)] and a probability 
+   interval that's represented by a single frequency [freq] to which all 
+   probability is assigned for the single distribution in the interval, 
+   lo-multiply hi-multiply the distribution times [lo_mat] and [hi_mat]
+   respectively.  (When the probabilty interval is of this kind, this function
+   should be more efficient than lo_mult and hi_mult, and even more efficient
+   than the normal dot product, which does the same thing when the interval
+   contains only one distribution.) *)
+let freq_mult freq (lo_mat, hi_mat) =
+  [M.row lo_mat freq; M.row hi_mat freq]
 
 (** lazy_prob_intervals_from_freq [freq] [bounds_mats_list] expects an initial
     frequency for a single population and a LazyList of bounds matrix pairs,
