@@ -74,6 +74,10 @@ let abs_sort_dists dists = L.sort G.absdiff_compare dists
 
 type pdfdims = TwoD | ThreeD | BothDs
 
+(* TODO FOR TDISTS: Should this use tdists, or can it remain as is?
+ * No, I think it needs to operate on tdists, because its output
+ * is passed into make_pdf within make_pdfs, and I cant the timestamps 
+ * to be available there. *)
 let make_page_groups pdfdim plots_per_page finite_lazy_distlists =
   let distlists = LL.to_list finite_lazy_distlists in
   let distlists' = 
@@ -195,6 +199,13 @@ let make_pdfs ?(leftright=true) ?(pdfdim=ThreeD) ?(rows=1) ?(cols=1)
               ?(altitude=20.) ?(azimuth=300.) ?(every=1)
               ?plot_max ?fontsize ?colors ?addl_2D_fn ?addl_3D_fn
               basename start_gen last_gen distlists =
+  (* TODO FOR TDISTS: Should this next line use tdist timestamps?  What if I am only passing every n?
+   * But that's controlled by ?every. Or should it be? 
+   * Note that I currently believe that, for the hi-lo method, it's impossible to precalc 
+   * multi-generation steps, as you can do with regular dot multiplication (since every
+   * k steps is made by multiplying the same power of T).  However, I should want to be
+   * able to use this function make_pdfs with a sequence that is calculated in this
+   * more efficient manner.  So it should not assume that it has every generation.  *)
   let finite_lazy_distlists = G.sub_lazy_list start_gen last_gen distlists in     (* lazy list of only those gens we want *)
   let plots_per_page = rows * cols in
   let max_row, max_col = rows - 1, cols - 1 in
