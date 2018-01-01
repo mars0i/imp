@@ -77,7 +77,7 @@ type pdfdims = TwoD | ThreeD | BothDs
 (* TODO FOR TDISTS: Should this use tdists, or can it remain as is?
  * No, I think it needs to operate on tdists, because its output
  * is passed into make_pdf within make_pdfs, and I cant the timestamps 
- * to be available there. *)
+ * to be available there. HOWEVER I think it can be used unchanged. *)
 let make_page_groups pdfdim plots_per_page finite_lazy_distlists =
   let distlists = LL.to_list finite_lazy_distlists in
   let distlists' = 
@@ -98,16 +98,17 @@ let make_page_groups pdfdim plots_per_page finite_lazy_distlists =
     For Wright-Fisher pdfs, I use y as frequency; x indexes probability
     distributions.
     *)
+(* TODO for tdist version: Get tid of ?every and its effects? Uh oh--what is
+ * it doing in the meshgrid arguments? OK, if I require that elements in the
+ * tdistlist be regularly spaced, you can get that `every` parameter from the
+ * tdistlist by subtracting the timestamp of the first element from that of the
+ * second.  So I can use `every` (or rather `everyf`) internally in this function,
+ * but I don't need to pass it in. *)
 let make_coords ?(every=1) dist_list =
   let dist_list' = L.map (G.subsample_in_rows every) dist_list in (* identical if every=1 *)
   let (_, width) = Mat.shape (L.hd dist_list') in
   let height = L.length dist_list' in
   let widthf, heightf, everyf = float width, float height, float every in
-  (* old version:
-  let xs = Mat.repeat ~axis:0 (Mat.sequential 1 height) width in
-  let ys = Mat.repeat ~axis:1 (Mat.sequential ~step:everyf width 1) height in (* step so freqs match z vals if every>1 *)
-  *)
-  (* new version: *)
   let xs, ys = Mat.meshgrid 0. (heightf -. 1.)  0. ((widthf *. everyf) -. everyf)  height width in
   let zs = Mat.transpose (L.reduce Mat.concat_vertical dist_list') in
   (xs, ys, zs)
@@ -198,14 +199,15 @@ let fill_bounds ?(spec=[interval_fill_color; FillPattern 0]) h ys zs =  (* args 
 let make_pdfs ?(leftright=true) ?(pdfdim=ThreeD) ?(rows=1) ?(cols=1) 
               ?(altitude=20.) ?(azimuth=300.) ?(every=1)
               ?plot_max ?fontsize ?colors ?addl_2D_fn ?addl_3D_fn
-              basename start_gen last_gen distlists =
+              basename start_gen last_gen distlists = (* TODO FOR TDISTS: start_gen and last_gen can be removed if this is just in the passed in seq. *)
   (* TODO FOR TDISTS: Should this next line use tdist timestamps?  What if I am only passing every n?
    * But that's controlled by ?every. Or should it be? 
-   * Note that I currently believe that, for the hi-lo method, it's impossible to precalc 
+   * Note that I currently believe that, for the hi-lo method, it's impossible to pre-calculate
    * multi-generation steps, as you can do with regular dot multiplication (since every
-   * k steps is made by multiplying the same power of T).  However, I should want to be
+   * k steps there is made by multiplying the same power of T).  However, I should want to be
    * able to use this function make_pdfs with a sequence that is calculated in this
-   * more efficient manner.  So it should not assume that it has every generation.  *)
+   * more efficient manner.  So it should not assume that it has every generation in the list. 
+   * SO maybe take ?every out.  Do that in the input. *)
   let finite_lazy_distlists = G.sub_lazy_list start_gen last_gen distlists in     (* lazy list of only those gens we want *)
   let plots_per_page = rows * cols in
   let max_row, max_col = rows - 1, cols - 1 in
@@ -223,9 +225,9 @@ let make_pdfs ?(leftright=true) ?(pdfdim=ThreeD) ?(rows=1) ?(cols=1)
   let make_pdf group_idx page_group = 
     (* Construct filename from basename and generation numbers: *)
     let group_len = A.length page_group in  (* differs if last group is short *)
-    let group_start = start_gen + group_idx * gens_per_page in
-    let group_last  = group_start + gens_per_page - 1 in
-    let filename = (Printf.sprintf "%s%02dto%02d.pdf" basename group_start group_last)
+    let group_start = start_gen + group_idx * gens_per_page in  (* TODO FOR TDISTS: I don't think this will be needed. *)
+    let group_last  = group_start + gens_per_page - 1 in        (* TODO FOR TDISTS: I don't think this will be needed. *)
+    let filename = (Printf.sprintf "%s%02dto%02d.pdf" basename group_start group_last) (* TODO FOR TDISTS: OH maybe group_{start,last} are needed here??  OR maybe just list gen #s in filename?? *)
     in
     let first_of_two = ref true in (* allows staying with one generation for BothDs *)
     let h = Pl.create ~m:rows ~n:cols filename in
@@ -239,6 +241,7 @@ let make_pdfs ?(leftright=true) ?(pdfdim=ThreeD) ?(rows=1) ?(cols=1)
         let idx = (i * (max_j + 1)) + j in 
         if idx < group_len then  (* don't index past end of a short group *)
           (Pl.set_foreground_color h 0 0 0; (* grid and plot title color *)
+           (* TODO FOR TDISTS: Don't pass ~every here: *)
            let xs, ys, zs = make_coords ~every (simple_sort_dists page_group.(idx)) in
            (* gen: calculate generation, which I'm not providing elsewhere.
             * pre_title: either a newline (for 3D) plots or an empty string, so that
@@ -246,15 +249,15 @@ let make_pdfs ?(leftright=true) ?(pdfdim=ThreeD) ?(rows=1) ?(cols=1)
            let gen, pre_title = match pdfdim, !first_of_two with
                                | BothDs, true  -> add_2D_plot ?plot_max ?fontsize ?colors ?addl_2D_fn h ys zs;
                                                   first_of_two := false;
-                                                  group_start + (idx / 2), ""
+                                                  group_start + (idx / 2), ""  (* TODO FOR TDISTS: get this from the timestamp in the tdist *)
                                | BothDs, false -> add_3D_plot ?plot_max ?fontsize ?colors ?addl_3D_fn h altitude azimuth xs ys zs;
                                                   first_of_two := true;
-                                                  group_start + (idx / 2), "\n"
+                                                  group_start + (idx / 2), "\n"  (* TODO FOR TDISTS: get this from the timestamp in the tdist *)
                                | TwoD, _       -> add_2D_plot ?plot_max ?fontsize ?colors ?addl_2D_fn h ys zs;
-                                                  group_start + idx, ""
+                                                  group_start + idx, ""  (* TODO FOR TDISTS: get this from the timestamp in the tdist *)
                                | ThreeD, _     -> add_3D_plot ?plot_max ?fontsize ?colors ?addl_3D_fn h altitude azimuth xs ys zs;
-                                                  group_start + idx, "\n"
-           in Pl.set_title h (pre_title ^ (Printf.sprintf "Generation %d" gen))
+                                                  group_start + idx, "\n"  (* TODO FOR TDISTS: get this from the timestamp in the tdist *)
+           in Pl.set_title h (pre_title ^ (Printf.sprintf "Generation %d" gen))  (* TODO FOR TDISTS: get this from the timestamp in the tdist *)
           )
         else (* short group *)
           (* Dummy plot to prevent plplot from leaving a spurious border: *)
