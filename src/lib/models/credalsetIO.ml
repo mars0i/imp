@@ -9,6 +9,8 @@ module LL = Batteries.LazyList
 module G = Utils.Genl
 module T = Tranmats
 
+let (%) f g = (fun x -> f (g x))
+
 (** Data file creation functions *)
 
 let tdists_marshal_ext = "mltds"
@@ -52,15 +54,15 @@ type pdfdims = TwoD | ThreeD | BothDs
  * No, I think it needs to operate on tdists, because its output
  * is passed into make_pdf within make_pdfs, and I cant the timestamps 
  * to be available there. HOWEVER I think it can be used unchanged. *)
-let make_page_groups pdfdim plots_per_page finite_lazy_distlists =
-  let distlists = LL.to_list finite_lazy_distlists in
-  let distlists' = 
+let make_page_groups pdfdim plots_per_page tdistlists =
+  let nonlazytdistlists = LL.to_list tdistlists in
+  let nonlazytdistlists' = 
     match pdfdim with (* if BothDs, we'll make 2 plots for each generation, so duplicate 'em *)
     | BothDs -> L.concat (L.fold_right (fun e acc -> [e;e]::acc) 
-                                       distlists [])
-    | _ -> distlists
+                                       nonlazytdistlists [])
+    | _ -> nonlazytdistlists
   in
-  let page_group_lists = L.ntake plots_per_page distlists'
+  let page_group_lists = L.ntake plots_per_page nonlazytdistlists'
   in L.map A.of_list page_group_lists  (* make sublists into arrays for easy indexing *)
 
 (** Return a triple containing x-coord, y-coord, and z-coord matrices.
@@ -72,19 +74,12 @@ let make_page_groups pdfdim plots_per_page finite_lazy_distlists =
     For Wright-Fisher pdfs, I use y as frequency; x indexes probability
     distributions.
     *)
-(* TODO for tdist version: Get tid of ?every and its effects? Uh oh--what is
- * it doing in the meshgrid arguments? OK, if I require that elements in the
- * tdistlist be regularly spaced, you can get that `every` parameter from the
- * tdistlist by subtracting the timestamp of the first element from that of the
- * second.  So I can use `every` (or rather `everyf`) internally in this function,
- * but I don't need to pass it in. *)
-let make_coords ?(every=1) dist_list =
-  let dist_list' = L.map (G.subsample_in_rows every) dist_list in (* identical if every=1 *)
-  let (_, width) = Mat.shape (L.hd dist_list') in
-  let height = L.length dist_list' in
+let make_coords dist_list =
+  let (_, width) = Mat.shape (L.hd dist_list) in
+  let height = L.length dist_list in
   let widthf, heightf, everyf = float width, float height, float every in
   let xs, ys = Mat.meshgrid 0. (heightf -. 1.)  0. ((widthf *. everyf) -. everyf)  height width in
-  let zs = Mat.transpose (L.reduce Mat.concat_vertical dist_list') in
+  let zs = Mat.transpose (L.reduce Mat.concat_vertical dist_list) in
   (xs, ys, zs)
 (* QUESTION: does using meshgrid obviate the need for set_ydigits below?
    Are there other advantages/disadvantages of meshgrid?  (It's harder to understand.) *)
@@ -173,7 +168,7 @@ let fill_bounds ?(spec=[interval_fill_color; FillPattern 0]) h ys zs =  (* args 
 let make_pdfs ?(leftright=true) ?(pdfdim=ThreeD) ?(rows=1) ?(cols=1) 
               ?(altitude=20.) ?(azimuth=300.) ?(every=1)
               ?plot_max ?fontsize ?colors ?addl_2D_fn ?addl_3D_fn
-              basename start_gen last_gen distlists = (* TODO FOR TDISTS: start_gen and last_gen can be removed if this is just in the passed in seq. *)
+              basename tdistlists = 
   (* TODO FOR TDISTS: Should this next line use tdist timestamps?  What if I am only passing every n?
    * But that's controlled by ?every. Or should it be? 
    * Note that I currently believe that, for the hi-lo method, it's impossible to pre-calculate
@@ -182,7 +177,6 @@ let make_pdfs ?(leftright=true) ?(pdfdim=ThreeD) ?(rows=1) ?(cols=1)
    * able to use this function make_pdfs with a sequence that is calculated in this
    * more efficient manner.  So it should not assume that it has every generation in the list. 
    * SO maybe take ?every out.  Do that in the input. *)
-  let finite_lazy_distlists = G.sub_lazy_list start_gen last_gen distlists in     (* lazy list of only those gens we want *)
   let plots_per_page = rows * cols in
   let max_row, max_col = rows - 1, cols - 1 in
   let gens_per_page = match pdfdim with  (* BothDs means two different plots per generation *)
@@ -194,15 +188,15 @@ let make_pdfs ?(leftright=true) ?(pdfdim=ThreeD) ?(rows=1) ?(cols=1)
   (* Next convert distlists--an infinite lazylist of lists of vectors--into a 
    * list of arrays of lists of vectors, where the elements of each rows*cols
    * length array are lists of vectors for a plot on rowsXcols sized page of plots. *)
-  let page_groups = make_page_groups pdfdim plots_per_page finite_lazy_distlists in
+  let page_groups = make_page_groups pdfdim plots_per_page tdistlists in
   (* fn to be applied to each array of lists of vectors to create a page: *)
   let make_pdf group_idx page_group = 
     (* Construct filename from basename and generation numbers: *)
     let group_len = A.length page_group in  (* differs if last group is short *)
-    let group_start = start_gen + group_idx * gens_per_page in  (* TODO FOR TDISTS: I don't think this will be needed. *)
-    let group_last  = group_start + gens_per_page - 1 in        (* TODO FOR TDISTS: I don't think this will be needed. *)
-    let filename = (Printf.sprintf "%s%02dto%02d.pdf" basename group_start group_last) (* TODO FOR TDISTS: OH maybe group_{start,last} are needed here??  OR maybe just list gen #s in filename?? *)
-    in
+    (* let group_start = start_gen + group_idx * gens_per_page in *) (* TODO FOR TDISTS: I don't think this will be needed. *)
+    (* let group_last  = group_start + gens_per_page - 1 in *)       (* TODO FOR TDISTS: I don't think this will be needed. *)
+    let generations_string = String.concat "_" (L.map (string_of_int % T.t) page_group) in
+    let filename = Printf.sprintf "%s%s.pdf" basename generations_string in
     let first_of_two = ref true in (* allows staying with one generation for BothDs *)
     let h = Pl.create ~m:rows ~n:cols filename in
     Pl.set_background_color h 255 255 255; (* applies to all subplots *)
