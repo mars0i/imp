@@ -166,7 +166,7 @@ let fill_bounds ?(spec=[interval_fill_color; FillPattern 0]) h ys zs =  (* args 
     Note will throw an error if you try to make 3D plots with only one set of 
     input fitnesses. *)
 let make_pdfs ?(leftright=true) ?(pdfdim=ThreeD) ?(rows=1) ?(cols=1) 
-              ?(altitude=20.) ?(azimuth=300.) ?(every=1)
+              ?(altitude=20.) ?(azimuth=300.)
               ?plot_max ?fontsize ?colors ?addl_2D_fn ?addl_3D_fn
               basename tdistlists = 
   (* TODO FOR TDISTS: Should this next line use tdist timestamps?  What if I am only passing every n?
@@ -209,8 +209,7 @@ let make_pdfs ?(leftright=true) ?(pdfdim=ThreeD) ?(rows=1) ?(cols=1)
         let idx = (i * (max_j + 1)) + j in 
         if idx < group_len then  (* don't index past end of a short group *)
           (Pl.set_foreground_color h 0 0 0; (* grid and plot title color *)
-           (* TODO FOR TDISTS: Don't pass ~every here: *)
-           let xs, ys, zs = make_coords ~every (simple_sort_dists page_group.(idx)) in
+           let xs, ys, zs = make_coords (simple_sort_dists page_group.(idx)) in
            (* gen: calculate generation, which I'm not providing elsewhere.
             * pre_title: either a newline (for 3D) plots or an empty string, so that
             * titles on 3D plots will be pushed down a bit.*)
