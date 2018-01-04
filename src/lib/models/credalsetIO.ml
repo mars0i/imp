@@ -74,7 +74,7 @@ let make_page_groups pdfdim plots_per_page tdistlists =
     For Wright-Fisher pdfs, I use y as frequency; x indexes probability
     distributions.
     *)
-let make_coords dist_list =
+let make_coords every dist_list =
   let (_, width) = Mat.shape (L.hd dist_list) in
   let height = L.length dist_list in
   let widthf, heightf, everyf = float width, float height, float every in
@@ -195,12 +195,13 @@ let make_pdfs ?(leftright=true) ?(pdfdim=ThreeD) ?(rows=1) ?(cols=1)
     let group_len = A.length page_group in  (* differs if last group is short *)
     (* let group_start = start_gen + group_idx * gens_per_page in *) (* TODO FOR TDISTS: I don't think this will be needed. *)
     (* let group_last  = group_start + gens_per_page - 1 in *)       (* TODO FOR TDISTS: I don't think this will be needed. *)
-    let generations_string = String.concat "_" (L.map (string_of_int % T.t) page_group) in
+    let generations_string = String.concat "_" (L.map (string_of_int % T.t) (A.to_list page_group)) in  (* TODO? this started as a list in make_page groups *)
     let filename = Printf.sprintf "%s%s.pdf" basename generations_string in
     let first_of_two = ref true in (* allows staying with one generation for BothDs *)
     let h = Pl.create ~m:rows ~n:cols filename in
     Pl.set_background_color h 255 255 255; (* applies to all subplots *)
     let max_i, max_j = if leftright then max_row, max_col else max_col, max_row in (* order left right vs up down *)
+    let every = (LL.at tdistlists 1).t - (LL.hd tdistlists).t in (* assume that interval between first two elements is repeated *)
     (* main loop through plots *)
     for i = 0 to max_i do
       for j = 0 to max_j do
@@ -209,22 +210,23 @@ let make_pdfs ?(leftright=true) ?(pdfdim=ThreeD) ?(rows=1) ?(cols=1)
         let idx = (i * (max_j + 1)) + j in 
         if idx < group_len then  (* don't index past end of a short group *)
           (Pl.set_foreground_color h 0 0 0; (* grid and plot title color *)
-           let xs, ys, zs = make_coords (simple_sort_dists page_group.(idx)) in
+           let {t; dists}  = page_group.(idx) in
+           let xs, ys, zs = make_coords every (simple_sort_dists dists) in
            (* gen: calculate generation, which I'm not providing elsewhere.
             * pre_title: either a newline (for 3D) plots or an empty string, so that
             * titles on 3D plots will be pushed down a bit.*)
-           let gen, pre_title = match pdfdim, !first_of_two with
-                               | BothDs, true  -> add_2D_plot ?plot_max ?fontsize ?colors ?addl_2D_fn h ys zs;
-                                                  first_of_two := false;
-                                                  group_start + (idx / 2), ""  (* TODO FOR TDISTS: get this from the timestamp in the tdist *)
-                               | BothDs, false -> add_3D_plot ?plot_max ?fontsize ?colors ?addl_3D_fn h altitude azimuth xs ys zs;
-                                                  first_of_two := true;
-                                                  group_start + (idx / 2), "\n"  (* TODO FOR TDISTS: get this from the timestamp in the tdist *)
-                               | TwoD, _       -> add_2D_plot ?plot_max ?fontsize ?colors ?addl_2D_fn h ys zs;
-                                                  group_start + idx, ""  (* TODO FOR TDISTS: get this from the timestamp in the tdist *)
-                               | ThreeD, _     -> add_3D_plot ?plot_max ?fontsize ?colors ?addl_3D_fn h altitude azimuth xs ys zs;
-                                                  group_start + idx, "\n"  (* TODO FOR TDISTS: get this from the timestamp in the tdist *)
-           in Pl.set_title h (pre_title ^ (Printf.sprintf "Generation %d" gen))  (* TODO FOR TDISTS: get this from the timestamp in the tdist *)
+           let pre_title = match pdfdim, !first_of_two with
+                           | BothDs, true  -> add_2D_plot ?plot_max ?fontsize ?colors ?addl_2D_fn h ys zs;
+                                              first_of_two := false;
+                                              ""
+                           | BothDs, false -> add_3D_plot ?plot_max ?fontsize ?colors ?addl_3D_fn h altitude azimuth xs ys zs;
+                                              first_of_two := true;
+                                              "\n"
+                           | TwoD, _       -> add_2D_plot ?plot_max ?fontsize ?colors ?addl_2D_fn h ys zs;
+                                               ""
+                           | ThreeD, _     -> add_3D_plot ?plot_max ?fontsize ?colors ?addl_3D_fn h altitude azimuth xs ys zs;
+                                              "\n"
+           in Pl.set_title h (pre_title ^ (Printf.sprintf "Generation %d" t))
           )
         else (* short group *)
           (* Dummy plot to prevent plplot from leaving a spurious border: *)
