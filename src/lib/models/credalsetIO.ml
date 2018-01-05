@@ -179,12 +179,15 @@ let make_pdfs ?(leftright=true) ?(pdfdim=ThreeD) ?(rows=1) ?(cols=1)
    * SO maybe take ?every out.  Do that in the input. *)
   let plots_per_page = rows * cols in
   let max_row, max_col = rows - 1, cols - 1 in
+  (*
   let gens_per_page = match pdfdim with  (* BothDs means two different plots per generation *)
                       | BothDs -> if G.is_odd plots_per_page 
                                   then raise (Invalid_argument "Two plots per generation (pdfdim=BothDs) with odd plots per page.")
                                   else plots_per_page / 2        (* Rarely makes sense and I don't want to handle the case: *)
                       | _ -> plots_per_page
+
   in
+  *)
   (* Next convert distlists--an infinite lazylist of lists of vectors--into a 
    * list of arrays of lists of vectors, where the elements of each rows*cols
    * length array are lists of vectors for a plot on rowsXcols sized page of plots. *)
