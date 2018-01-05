@@ -9,6 +9,7 @@ module Spec = Core.Command.Spec
 module SC = Models.Setchains
 module WF = Models.Wrightfisher
 module IO = Models.CredalsetIO
+module T = Models.Tranmats
 module Pl = Owl.Plot
 
 (* TODO: 
@@ -76,10 +77,10 @@ let commandline =
       Printf.printf "making lazy bounds mats list ... %!";
       let bounds_mats =  SC.lazy_bounds_mats_list ~fork:(not nofork) pmat qmat in
       Printf.printf "making lazy prob intervals list ... %!";
-      let distlists = SC.lazy_prob_intervals_from_freq initfreq bounds_mats in
+      let distlists = T.add_ts (SC.lazy_prob_intervals_from_freq initfreq bounds_mats) in (* FIXME *)
       Printf.printf "making pdfs ... \n%!";
       IO.make_pdfs ~pdfdim:TwoD ~addl_2D_fn:IO.fill_bounds ~colors:bottom_top_colors
-                    ~rows ~cols ~every ?plot_max ?fontsize ~leftright:(not updown)
-                    basename startgen lastgen distlists)
+                    ~rows ~cols ?plot_max ?fontsize ~leftright:(not updown) (* ~every FIXME *)
+                    basename distlists) (* startgen lastgen FIXME *)
 
 let () = Command.run ~version:"1.0" ~build_info:"setchainPDFS, (c) 2017 Marshall Abrams" commandline

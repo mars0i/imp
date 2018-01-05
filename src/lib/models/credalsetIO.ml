@@ -201,7 +201,7 @@ let make_pdfs ?(leftright=true) ?(pdfdim=ThreeD) ?(rows=1) ?(cols=1)
     let h = Pl.create ~m:rows ~n:cols filename in
     Pl.set_background_color h 255 255 255; (* applies to all subplots *)
     let max_i, max_j = if leftright then max_row, max_col else max_col, max_row in (* order left right vs up down *)
-    let every = (LL.at tdistlists 1).t - (LL.hd tdistlists).t in (* assume that interval between first two elements is repeated *)
+    let every = T.((LL.at tdistlists 1).t - (LL.hd tdistlists).t) in (* assume that interval between first two elements is repeated *)
     (* main loop through plots *)
     for i = 0 to max_i do
       for j = 0 to max_j do
@@ -210,7 +210,7 @@ let make_pdfs ?(leftright=true) ?(pdfdim=ThreeD) ?(rows=1) ?(cols=1)
         let idx = (i * (max_j + 1)) + j in 
         if idx < group_len then  (* don't index past end of a short group *)
           (Pl.set_foreground_color h 0 0 0; (* grid and plot title color *)
-           let {t; dists}  = page_group.(idx) in
+           let T.{t; dists}  = page_group.(idx) in
            let xs, ys, zs = make_coords every (simple_sort_dists dists) in
            (* gen: calculate generation, which I'm not providing elsewhere.
             * pre_title: either a newline (for 3D) plots or an empty string, so that
@@ -249,8 +249,8 @@ let make_setchain_bounds_pdfs ?(addl_2D_fn=fill_bounds)
                               ?plot_max ?fontsize 
                               basename start_gen last_gen distlists =
   make_pdfs ~pdfdim:TwoD ~addl_2D_fn ~colors
-            ~leftright ~rows ~cols ~every ?plot_max ?fontsize
-            basename start_gen last_gen distlists
+            ~leftright ~rows ~cols ?plot_max ?fontsize
+            basename distlists
 
 
 (*
