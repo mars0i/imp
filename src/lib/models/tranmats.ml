@@ -50,3 +50,16 @@ let add_ts ?(first_tick=0) dists_llist =
   LL.map2 make_tdists (ints_from first_tick) dists_llist
 
 let remove_ts tdists_llist = LL.map dists tdists_llist
+
+(** [tdists_sublist start_t finish_t tdists_llist] returns a lazy list that's
+    a sublist of [tdists_llist], from the element with [t]=[start_t] to the 
+    element with [t]=[finish_t], inclusive.  Note that if the list is infinite
+    and there is no element with [t]=[start_t] or with [t]=[finish_t], the 
+    function will run forever, or until the system is overloaded. *)
+let tdists_sublist start_t finish_t tdists_llist =
+  LL.take_while (fun tds -> tds.t < finish_t)
+                (LL.drop_while (fun tds -> tds.t < start_t)
+		               tdists_llist)
+
+(* Alias for [tdists_sublist *)
+let subtdsl = tdists_sublist 
