@@ -77,10 +77,10 @@ let commandline =
       Printf.printf "making lazy bounds mats list ... %!";
       let bounds_mats =  SC.lazy_bounds_mats_list ~fork:(not nofork) pmat qmat in
       Printf.printf "making lazy prob intervals list ... %!";
-      let distlists = T.add_ts (SC.lazy_prob_intervals_from_freq initfreq bounds_mats) in (* FIXME *)
+      let tdistlists = T.add_ts (SC.lazy_prob_intervals_from_freq initfreq bounds_mats) in (* FIXME *)
       Printf.printf "making pdfs ... \n%!";
-      IO.make_pdfs ~pdfdim:TwoD ~addl_2D_fn:IO.fill_bounds ~colors:bottom_top_colors
+      IO.make_setchain_bounds_pdfs ~colors:bottom_top_colors
                     ~rows ~cols ?plot_max ?fontsize ~leftright:(not updown) (* ~every FIXME *)
-                    basename distlists) (* startgen lastgen FIXME *)
+                    basename (T.tdists_sublist startgen lastgen tdistlists)) (* startgen lastgen FIXME *)
 
 let () = Command.run ~version:"1.0" ~build_info:"setchainPDFS, (c) 2017 Marshall Abrams" commandline
