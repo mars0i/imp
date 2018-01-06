@@ -400,6 +400,14 @@ fold_right (fun x ys -> let {a; b} = hd ys in {a=(a+1); b=x}::ys) z [{a=0;b=0}];
                        W.(S.make_wf_interval 100 [{w11=1.0; w12=0.5; w22=0.3};
                                                   {w11=0.2; w12=0.9; w22=1.0}])));;
      (* however at present you need the one without ts, too *)
+
+   Then to pass a sublist e.g. to make_setchain_bounds_pdfs use
+     T.tdists_sublist 1 4 tdistlists
+   or
+     T.subtdsl 1 4 tdistlists
+   e.g. like this:
+     I.make_setchain_bounds_pdfs ~rows:2 ~cols:2 "yo" (T.subtdsl 1 4 tdistlists);;
+
 *)
 
 
