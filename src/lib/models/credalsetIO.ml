@@ -250,10 +250,10 @@ let make_setchain_bounds_pdfs ?(addl_2D_fn=fill_bounds)
                               ?(colors=Pl.[RGB (0,0,200); RGB (200,0,0)])
                               ?(leftright=true) ?(rows=1) ?(cols=1)
                               ?plot_max ?fontsize 
-                              basename distlists =
+                              basename tdistlists =
   make_pdfs ~pdfdim:TwoD ~addl_2D_fn ~colors
             ~leftright ~rows ~cols ?plot_max ?fontsize
-            basename distlists
+            basename tdistlists
 
 
 (*
