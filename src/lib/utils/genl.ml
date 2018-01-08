@@ -117,16 +117,15 @@ let lazy_take_at_idxs ns ll =
   let _, _, result = LL.fold_left f (0, ns, LL.nil) ll in
   LL.rev result
 
-(** Heavily hacked version of function in Batteries' batLazyList.ml *)
-let range ?(step=1) a b = 
+let range ?(step=1) start stop = 
   let open LL in
-  if a = b then make 1 a
-  else let increment_by, ineq =
-    if b > a then (+), (>) else (-), (<)
-  in let rec aux start stop =
-     if ineq start stop then nil
-     else lazy (Cons (start, aux (increment_by step start) stop))
-  in aux a b
+  if start = stop then make 1 start
+  else let adjust_by, ineq =
+    if stop > start then (+), (>) else (-), (<)
+  in let rec aux curr stop' =
+     if ineq curr stop' then nil
+     else lazy (Cons (curr, aux (adjust_by curr step) stop'))
+  in aux start stop
 
 
 (** Return true iff pred is true for all corresponding elements of
