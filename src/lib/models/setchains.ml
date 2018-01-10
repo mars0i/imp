@@ -9,7 +9,6 @@ module Pmap = Parmap
 
 module U = Utils.Genl
 module WF = Wrightfisher
-module T = Tranmats
 
 (** One goal here is to create a "distlist", which is a LazyList of Lists 
     Owl row vector matrices representing probability distributions over 
@@ -360,10 +359,12 @@ let lazy_prob_intervals_from_freq freq bounds_mats_list =
 
 
 (*
+module T = Tdists
+
 let lazy_tdists_from_freq ?(first_tick=0) freq bounds_mats_list =
   let f dists tdists_list = 
-    let prev_t = T.((LL.hd tdists_list).t) in
-    T.{t = prev_t + 1; dists}
+    let prev_gen = T.((LL.hd tdists_list).gen) in
+    T.{gen = prev_gen + 1; dists}
   in
   let lazy_intervals = lazy_prob_intervals_from_freq freq bounds_mats_list in
   let first_interval = LL.hd lazy_intervals in
@@ -392,21 +393,21 @@ fold_right (fun x ys -> let {a; b} = hd ys in {a=(a+1); b=x}::ys) z [{a=0;b=0}];
      let pmat, qmat = W.(S.make_wf_interval 100 [{w11=1.0; w12=0.5; w22=0.3}; {w11=0.2; w12=0.9; w22=1.0}]);;
      let bounds_mats = S.lazy_bounds_mats_list pmat qmat;;
      let distslist = S.lazy_prob_intervals_from_freq 50 bounds_mats;;
-     let tdistslist = T.add_ts distslist;;
+     let tdistslist = T.add_gens distslist;;
    or:
      let tdistslist = 
-       T.add_ts (S.lazy_prob_intervals_from_freq 50
+       T.add_gens (S.lazy_prob_intervals_from_freq 50
                    (S.lazy_bounds_mats_list_from_pair
                        W.(S.make_wf_interval 100 [{w11=1.0; w12=0.5; w22=0.3};
                                                   {w11=0.2; w12=0.9; w22=1.0}])));;
      (* however at present you need the one without ts, too *)
 
    Then to pass a sublist e.g. to make_setchain_bounds_pdfs use
-     T.tdists_sublist 1 4 tdistlists
+     T.sublist 1 4 tdistlists
    or
-     T.subtdsl 1 4 tdistlists
+     T.sublist 1 4 tdistlists
    e.g. like this:
-     I.make_setchain_bounds_pdfs ~rows:2 ~cols:2 "yo" (T.subtdsl 1 4 tdistlists);;
+     I.make_setchain_bounds_pdfs ~rows:2 ~cols:2 "yo" (T.sublist 1 4 tdistlists);;
 
 *)
 

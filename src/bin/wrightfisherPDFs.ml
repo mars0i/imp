@@ -9,7 +9,7 @@ module Command = Core.Command
 module Spec = Core.Command.Spec
 module WF = Models.Wrightfisher
 module IO = Models.CredalsetIO
-module T = Models.Tranmats
+module T = Models.Tdists
 
 let sprintf = Printf.sprintf
 
@@ -73,7 +73,7 @@ let commandline =
       let altitude = float alt_int in
       let azimuth = float az_int in
       let fitn_recs = WF.group_fitns fitn_floats in
-      let distlists = T.add_ts (WF.make_distlists popsize [initfreq] fitn_recs) in
+      let distlists = T.add_gens (WF.make_distlists popsize [initfreq] fitn_recs) in
       let pdfdim = match twoD, threeD with
                    | true, true   -> IO.BothDs
                    | true, false  -> IO.TwoD

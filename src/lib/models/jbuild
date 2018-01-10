@@ -3,7 +3,7 @@
 (library 
  ((name        models)
   (public_name models)
-  (modules (wrightfisher setchains tranmats credalsetIO))
+  (modules (wrightfisher setchains tdists tranmats credalsetIO))
   (libraries (batteries core owl parmap utils))
   (ocamlopt_flags (:standard -O3)) ; -dcmm -O3 ; -dcmm dumps intermediate rep
   ))

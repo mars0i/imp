@@ -9,7 +9,7 @@
 module Mat = Owl.Mat
 module Prob = Owl.Stats.Pdf
 module L = Batteries.List
-module T = Tranmats
+module TM = Tranmats
 
 (** One goal here is to create a "distlist", which is a LazyList of Lists 
     Owl row vector matrices representing probability distributions over 
@@ -60,7 +60,7 @@ let make_tranmat allele_popsize fitns =
 let make_distlists size init_freqs fitn_list =
   let init_dists = L.map (make_init_dist size) init_freqs in
   let tranmats = L.map (make_tranmat size) fitn_list in
-  T.make_distlists_from_mats tranmats init_dists
+  TM.make_distlists_from_mats tranmats init_dists
 
 (** Given a list of float fitness values, which should be in the order
        w11, w12, w22, w11, w12, w22, ...

@@ -7,7 +7,7 @@ module L = Batteries.List
 module A = Batteries.Array
 module LL = Batteries.LazyList
 module G = Utils.Genl
-module T = Tranmats
+module T = Tdists
 
 let (%) f g = (fun x -> f (g x))
 
@@ -18,10 +18,11 @@ let tdists_marshal_ext = "mltds"
 
 (** Lazy list must be finite! *)
 let write_tdists_finite_list basename finite_tdists_list =
-  let T.{t=first_t; _} = LL.first finite_tdists_list in
-  let T.{t=last_t; _} = LL.last finite_tdists_list in
+let open T in
+  let first_gen = (LL.first finite_tdists_list).gen in
+  let last_gen = (LL.last finite_tdists_list).gen in
   let filename = Printf.sprintf "%s%02dto%02d.%s" 
-                                 basename first_t last_t tdists_marshal_ext in
+                                 basename first_gen last_gen tdists_marshal_ext in
   OU.marshal_to_file finite_tdists_list filename
 
 (** Lazy list must be finite! *)
@@ -29,7 +30,7 @@ let write_tdists_sublist basename start_gen last_gen tdists_list =
   write_tdists_finite_list basename (G.sub_lazy_list start_gen last_gen tdists_list)
 
 let read_marshalled_tdists_list filename =
-  ((OU.marshal_from_file filename) : T.tdists LL.t)
+  ((OU.marshal_from_file filename) : T.t LL.t)
 
 (** PDF plot-writing functions *)
 
@@ -198,13 +199,13 @@ let make_pdfs ?(leftright=true) ?(pdfdim=ThreeD) ?(rows=1) ?(cols=1)
     let group_len = A.length page_group in  (* differs if last group is short *)
     (* let group_start = start_gen + group_idx * gens_per_page in *) (* TODO FOR TDISTS: I don't think this will be needed. *)
     (* let group_last  = group_start + gens_per_page - 1 in *)       (* TODO FOR TDISTS: I don't think this will be needed. *)
-    let generations_string = String.concat "_" (L.map (string_of_int % T.t) (A.to_list page_group)) in  (* TODO? this started as a list in make_page groups *)
+    let generations_string = String.concat "_" (L.map (string_of_int % T.gen) (A.to_list page_group)) in  (* TODO? this started as a list in make_page groups *)
     let filename = Printf.sprintf "%s%s.pdf" basename generations_string in
     let first_of_two = ref true in (* allows staying with one generation for BothDs *)
     let h = Pl.create ~m:rows ~n:cols filename in
     Pl.set_background_color h 255 255 255; (* applies to all subplots *)
     let max_i, max_j = if leftright then max_row, max_col else max_col, max_row in (* order left right vs up down *)
-    let every = T.((LL.at tdistlists 1).t - (LL.hd tdistlists).t) in (* assume that interval between first two elements is repeated *)
+    let every = T.((LL.at tdistlists 1).gen - (LL.hd tdistlists).gen) in (* assume that interval between first two elements is repeated *)
     (* main loop through plots *)
     for i = 0 to max_i do
       for j = 0 to max_j do
@@ -213,7 +214,7 @@ let make_pdfs ?(leftright=true) ?(pdfdim=ThreeD) ?(rows=1) ?(cols=1)
         let idx = (i * (max_j + 1)) + j in 
         if idx < group_len then  (* don't index past end of a short group *)
           (Pl.set_foreground_color h 0 0 0; (* grid and plot title color *)
-           let T.{t; dists}  = page_group.(idx) in
+           let T.{gen; dists}  = page_group.(idx) in
            let xs, ys, zs = make_coords every (simple_sort_dists dists) in
            (* gen: calculate generation, which I'm not providing elsewhere.
             * pre_title: either a newline (for 3D) plots or an empty string, so that
@@ -229,7 +230,7 @@ let make_pdfs ?(leftright=true) ?(pdfdim=ThreeD) ?(rows=1) ?(cols=1)
                                                ""
                            | ThreeD, _     -> add_3D_plot ?plot_max ?fontsize ?colors ?addl_3D_fn h altitude azimuth xs ys zs;
                                               "\n"
-           in Pl.set_title h (pre_title ^ (Printf.sprintf "Generation %d" t))
+           in Pl.set_title h (pre_title ^ (Printf.sprintf "Generation %d" gen))
           )
         else (* short group *)
           (* Dummy plot to prevent plplot from leaving a spurious border: *)
