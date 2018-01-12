@@ -6,6 +6,8 @@ module L = Batteries.List
 module LL = Batteries.LazyList
 module F = Core.Float
 
+let always_true _ = true
+
 (** Measure execution time of function of one argument.  Note that if used 
     with partial application on a function that expects multiple arguments,
     you might just get the time needed to return the first function, which
@@ -99,6 +101,8 @@ let memo f =
 let sub_lazy_list start finish ll =
   LL.take (finish - start + 1) (LL.drop start ll)
 
+let lazy_every_n init_n every_n =
+  LL.seq init_n (fun n -> n + every_n) always_true
 
 (** Convenience function: Takes elements from start to finish, inclusive, 
     from a LazyList, and convert the result to a List. *)
