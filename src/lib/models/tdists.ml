@@ -1,4 +1,5 @@
 module Mat = Owl.Mat
+module L = Batteries.List
 module LL = Batteries.LazyList
 
 let always_true _ = true
@@ -30,7 +31,7 @@ let sublist start_gen finish_gen tdists_llist =
 let selection generations tdists_llist =
   let add_if_selected td gens_plus_tds =
 	let gens, tds = gens_plus_tds in
-	if td.t = (L.hd generations)
+	if td.gen = (L.hd generations)
         then (L.tl generations), (LL.cons td tds)
 	else generations, tds
   in
@@ -39,3 +40,13 @@ let selection generations tdists_llist =
   new_tdists_llist
 
     
+let select_gens generations tdists_llist =
+  let open LL in
+  let rec select gens tds =
+    Printf.printf "%d %d\n" (hd gens) (hd tds);
+    if is_empty tds then tds
+    else let g, td = hd gens, hd tds in
+         if g = td.gen
+         then cons td (select (tl gens) (tl tds))
+         else (select (tl gens) (tl tds))
+  in select generations tdists_llist
