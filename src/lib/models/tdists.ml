@@ -40,6 +40,7 @@ let select_gens generations tdists_llist =
     else 
     let g, td = hd gs, hd tds in
     let tdg = td.gen in
+    Printf.printf "%d %d\n" g tdg;
     if g = tdg then cons td (select (tl gs) (tl tds))
     else if g > tdg then select gs (tl tds) (* let tds catch up *)
     else select (tl gs) tds                 (* let gs catch up *)

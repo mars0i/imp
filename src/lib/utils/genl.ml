@@ -88,7 +88,7 @@ let list_range ?(step=1) start stop =
      else curr::(aux (adjust_by curr step) stop')
   in aux start stop
 
-let lazy_range ?(step=1) start stop = 
+let finite_lazy_range ?(step=1) stop start = 
   let open LL in
   if start = stop then make 1 start
   else let adjust_by, ineq =
@@ -97,6 +97,25 @@ let lazy_range ?(step=1) start stop =
      if ineq curr stop' then nil
      else lazy (Cons (curr, aux (adjust_by curr step) stop'))
   in aux start stop
+
+type direction = Up | Down
+
+(** Note reverse order of stop and start to fit [lazy_range] below. *)
+let infinite_lazy_range ?(direction=Up) ?(step=1) start =
+  let open LL in
+  let adjust_by = match direction with
+                  | Up -> (+)
+		  | Down -> (-)
+  in let rec aux curr =
+    lazy (Cons (curr, aux (adjust_by curr step)))
+  in aux start
+
+(** Note that [stop] has to come before [start] because [stop] is
+    optional.  If [stop] is given, [direction] is ignored. *)
+let lazy_range ?(direction=Up) ?(step=1) ?stop start = 
+   match stop with
+   | None -> infinite_lazy_range ~direction ~step start
+   | Some n -> finite_lazy_range ~step n start
 
 (********************************************)
 (** Iteration functions *)
