@@ -8,6 +8,9 @@ module F = Core.Float
 
 let always_true _ = true
 
+(********************************************)
+(** Timing functions *)
+
 (** Measure execution time of function of one argument.  Note that if used 
     with partial application on a function that expects multiple arguments,
     you might just get the time needed to return the first function, which
@@ -30,56 +33,8 @@ let time3 f x y z =
     Printf.printf "cpu: %fs, wall: %fs\n%!" (Sys.time() -. cpu_time) (Unix.gettimeofday() -. wall_time);
     result
 
-let is_odd n = n mod 2 <> 0
-let is_even n = n mod 2 = 0
-
-let int_mpow x k =
-  let m, n = M.shape x in
-  assert (m = n);
-  let rec either_pow k' acc =
-     if k' = 1 then acc
-     else if k' mod 2 = 0
-          then even_pow k' acc
-          else odd_pow k' acc
-  and even_pow k' acc =
-    let k2 = k' / 2 in
-    let half_acc = either_pow k2 acc in
-    M.dot half_acc half_acc
-  and odd_pow k' acc =
-    M.dot x (even_pow (k' - 1) acc)
-  in either_pow k x
-
-let float_mpow x k =
-  let m, n = M.shape x in
-  assert (m = n);
-  let rec either_pow k' acc =
-     if k' = 1. then acc
-     else if mod_float k' 2. = 0.
-     then even_pow k' acc
-     else odd_pow k' acc
-  and even_pow k' acc =
-    let acc2 = either_pow (k' /. 2.) acc in
-    M.dot acc2 acc2
-  and odd_pow k' acc =
-    M.dot x (even_pow (k' -. 1.) acc)
-  in either_pow k x
-
-(*
-let mpow x r =
-  if k <= 0. then failwith "mpow: exponent is non-positive";
-  let (frac_part, whole_part) = modf r in
-  if frac_part <> 0. then failwith "mpow: fractional powers not implemented"
-  else _int_mpow x (int_of_float whole_part)
-*)
-
-let rec dot_pow x n = 
-  let rec aux x n acc =
-    if n = 1 then acc 
-    else aux x (n - 1) (M.dot x acc)
-  in
-  if n > 0 then aux x n x
-  else if n = 0 then M.eye (M.row_num x)
-  else raise (Failure "exponent is negative")
+(********************************************)
+(** Memo functions *)
 
 (** Returns a memoizing version of function f of one argument.
     By Andrej Bauer: https://stackoverflow.com/a/14503530/1455243
@@ -95,6 +50,9 @@ let memo f =
               Not_found -> let y = f x in
               m := (x, y) :: !m ;
               y
+
+(********************************************)
+(** Sequence manipulators, type converters, etc. *)
 
 (** Return a lazy list that's a sublist of the argument, from element start 
     (zero-based) to element finish, inclusive. *)
@@ -139,6 +97,9 @@ let lazy_range ?(step=1) start stop =
      if ineq curr stop' then nil
      else lazy (Cons (curr, aux (adjust_by curr step) stop'))
   in aux start stop
+
+(********************************************)
+(** Iteration functions *)
 
 (** Return true iff pred is true for all corresponding elements of
     matrices m1 and m2. Short-circuits on the first false. *)
@@ -199,12 +160,14 @@ let short_circuit_fold2 stop_val f init m1 m2 =
          else acc
   in loop init 0 0
 
-(* NOTE The compare function below is complicated by the fact that it returns 0 for 
- * equivalent matrices.  However, if it's only used interval-creation,
- * a pair of equal matrices create an Empty interval, at least in
- * Jane Street-style Interval modules.  So you might as well return 1
- * for those.  -1 is the only return value that matters. *)
+(********************************************)
+(** Matrix comparison functions *)
 
+(* NOTE The compare function below is complicated by the fact that it returns
+ * 0 for equivalent matrices.  However, if it's only used for 
+ * interval-creation, a pair of equal matrices create an Empty interval, at 
+ * least in Jane Street-style Interval modules.  So you might as well return 1
+ * for those.  -1 is the only return value that matters. *)
 
 (** A compare function for matrices that returns zero if all elements of
     both matrices are equal, and if not returns -1 only if all elements 
@@ -269,7 +232,11 @@ let l2diff mat1 mat2 = M.(l2norm' (mat1 - mat2))
 (** A compare function for matrices based on the L2 distance. *)
 let l2_compare = make_compare l2diff
 
-(** Given a matrix return a narrower matrix in which each every_nth element
+
+(********************************************)
+(** Matrix manipulation functions *)
+
+(** Given a matrix, return a narrower matrix in which each every_nth element
     in each row is present.  The intervening elements are ignored.  *)
 let subsample_in_rows every old_mat =
   if every <= 1 then old_mat
@@ -298,7 +265,8 @@ let insert_before n new_elt l =
 
 let mapmap f outer = L.map (fun inner -> L.map f inner) outer
 
-(*********** Ways to process matrices **********)
+(********************************************)
+(** Ways to process multiple matrices *)
 
 (** Apply f to all combinations of elements, i.e. to the Cartesian product of
     all elements in xs and ys using fold_right.  Preserves order. *)
@@ -328,7 +296,7 @@ let mult_mat_arrays = cross_apply_arrays M.dot
 
 
 (********************************************)
-(** Data structure conversions *)
+(** Functions to generate matrices from lists *)
 
 (** Converts a 1xN matrix, i.e. row vector, into a list. *)
 let vec_to_list = Batteries.(A.to_list % M.to_array)
