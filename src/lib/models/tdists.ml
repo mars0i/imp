@@ -19,11 +19,10 @@ let add_gens ?(first_tick=0) dists_llist =
 let remove_gens tdists_llist = LL.map dists tdists_llist
 
 (** [sublist start_t finish_t tdists_llist] returns a lazy list that's
-    a finite sublist of [tdists_llist], from the element with [gen]=[start_gen]
-    to the element with [gen]=[finish_gen], inclusive.  Note that if the list
-    is infinite and there is no element with [gen]=[start_gen] or with 
-    [gen]=[finish_gen], the function will run forever, or until the system 
-    is overloaded. *)
+    a finite sublist of [tdists_llist], from the first element with 
+    [gen] >= [start_gen] to the last element with [gen] <= [finish_gen].  
+    Note that if the list is infinite and there are no elements satisfying
+    both of these conditions, the function will try to run forever. *)
 let sublist start_gen finish_gen tdists_llist =
   LL.take_while (fun tds -> tds.gen <= finish_gen)
                 (LL.drop_while (fun tds -> tds.gen < start_gen)
