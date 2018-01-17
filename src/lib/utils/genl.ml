@@ -59,9 +59,6 @@ let memo f =
 let sub_lazy_list start finish ll =
   LL.take (finish - start + 1) (LL.drop start ll)
 
-let lazy_every_n init_n every_n =
-  LL.seq init_n (fun n -> n + every_n) always_true
-
 (** Convenience function: Takes elements from start to finish, inclusive, 
     from a LazyList, and convert the result to a List. *)
 let take_to_list start finish ll = 
@@ -88,7 +85,7 @@ let list_range ?(step=1) start stop =
      else curr::(aux (adjust_by curr step) stop')
   in aux start stop
 
-let lazy_range ?(step=1) stop start = 
+let lazy_range ?(step=1) start stop = 
   let open LL in
   if start = stop then make 1 start
   else let adjust_by, ineq =
@@ -98,17 +95,12 @@ let lazy_range ?(step=1) stop start =
      else lazy (Cons (curr, aux (adjust_by curr step) stop'))
   in aux start stop
 
-type direction = Up | Down
-
-(** Note reverse order of stop and start to fit [lazy_range] below. *)
-let infinite_range ?(direction=Up) ?(step=1) start =
-  let open LL in
-  let adjust_by = match direction with
-                  | Up -> (+)
-		  | Down -> (-)
-  in let rec aux curr =
-    lazy (Cons (curr, aux (adjust_by curr step)))
-  in aux start
+(** [lazy_ints ~every_n:n init_n] returns an infinite sequence of
+    integers [~every_n] apart, starting from init_n.  [every_n]
+    defaults to 1.  Giving it a negative value will produce a
+    descending sequence. *)
+let lazy_ints ?(every_n=1) init_n =
+  LL.seq init_n (fun n -> n + every_n) always_true
 
 (********************************************)
 (** Iteration functions *)
