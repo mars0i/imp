@@ -96,7 +96,7 @@ let lazy_range ?(step=1) start stop =
   in aux start stop
 
 (** [lazy_ints ~every_n:n init_n] returns an infinite sequence of
-    integers [~every_n] apart, starting from init_n.  [every_n]
+    integers [~every_n] apart starting from [init_n].  [every_n]
     defaults to 1.  Giving it a negative value will produce a
     descending sequence. *)
 let lazy_ints ?(every_n=1) init_n =
