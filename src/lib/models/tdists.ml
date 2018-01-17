@@ -28,11 +28,11 @@ let sublist start_gen finish_gen tdists_llist =
                 (LL.drop_while (fun tds -> tds.gen < start_gen)
 		               tdists_llist)
 
-(** In [select_gens generations tdists_llist], [generations] is a lazy
+(** In [select_by_gens generations tdists_llist], [generations] is a lazy
     list of integers in increasing order, and [tdists_llist] is a lazy
     list of tdists.  The function returns a lazy list contanining those 
     tdists whose generation numbers match the integers in [generations]. *)
-let select_gens generations tdists_llist =
+let select_by_gens generations tdists_llist =
   let open LL in
   let rec select gs tds =
     if is_empty tds || is_empty gs then nil
