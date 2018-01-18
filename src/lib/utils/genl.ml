@@ -105,6 +105,19 @@ let lazy_ints ?(every_n=1) init_n =
 (********************************************)
 (** Iteration functions *)
 
+(* FIXME generates a weird error *)
+(* Based on Batteries.LazyList.lazy_fold_right *)
+let lazy_fold_right2 f l1 l2 init =
+  let open LL in
+  let rec aux rest1 rest2 =
+    lazy begin
+      match next rest1, next rest2 with
+      | Cons (x1, t1), Cons (x2, t2) -> f x1 x2 (aux t1 t2)
+      | Nil, Nil | Nil, _ | _, Nil -> Lazy.force init
+    end
+  in
+aux l1 l2
+
 (** Return true iff pred is true for all corresponding elements of
     matrices m1 and m2. Short-circuits on the first false. *)
 let forall2 pred m1 m2 =
