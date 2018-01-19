@@ -95,12 +95,12 @@ let lazy_range ?(step=1) start stop =
      else lazy (Cons (curr, aux (adjust_by curr step) stop'))
   in aux start stop
 
-(** [lazy_ints ~every_n:n init_n] returns an infinite sequence of
-    integers [~every_n] apart starting from [init_n].  [every_n]
+(** [lazy_ints ~every:n init_n] returns an infinite sequence of
+    integers [~every] apart starting from [init_n].  [every]
     defaults to 1.  Giving it a negative value will produce a
     descending sequence. *)
-let lazy_ints ?(every_n=1) init_n =
-  LL.seq init_n (fun n -> n + every_n) always_true
+let lazy_ints ?(every=1) init_n =
+  LL.seq init_n (fun n -> n + every) always_true
 
 (********************************************)
 (** Iteration functions *)
@@ -252,7 +252,7 @@ let l2_compare = make_compare l2diff
 (********************************************)
 (** Matrix manipulation functions *)
 
-(** Given a matrix, return a narrower matrix in which each every_nth element
+(** Given a matrix, return a narrower matrix in which each [every] nth element
     in each row is present.  The intervening elements are ignored.  *)
 let subsample_in_rows every old_mat =
   if every <= 1 then old_mat
