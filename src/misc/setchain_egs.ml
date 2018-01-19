@@ -48,7 +48,7 @@ let qmat = M.of_array [|0.0;  0.75; 0.75;
 (** Modifies a matrix to introduce Hartfiel's typo, for easier 
     comparison with the text.  See doc/HartfielMarkovSetChainsErrata.txt *)
 let swap12 m = 
-  let m' = M.clone m in
+  let m' = M.copy m in
   M.swap_rows m' 1 2;
   m';;
 
