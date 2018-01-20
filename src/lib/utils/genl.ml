@@ -106,6 +106,17 @@ let lazy_ints ?(every=1) init_n =
 (** Iteration functions *)
 
 (* Based on Batteries.LazyList.lazy_fold_right *)
+(** [lazy_fold_right2 f l1 l2 init_val] folds function [f] over two lazy 
+    lists [l1] and [l2], with initial value [init_val].  Note that for
+    constructing lazy lists, one must use [Cons] and [nil] rather than
+    [cons] and [nil], as with the [LazyList] eager fold functions:
+    {[
+      let natnos = LL.seq 0 ((+) 1) (fun _ -> true);;
+      let posints = LL.seq 1 ((+) 1) (fun _ -> true);;
+      let prods = G.lazy_fold_right2 (fun x y acc -> LL.Cons(x*y, acc)) natnos posints LL.nil;;
+      LL.(to_list (take 10 prods));;
+      - : int list = [0; 2; 6; 12; 20; 30; 42; 56; 72; 90]
+    ]} *)
 let lazy_fold_right2 f l1 l2 init_val =
   let open LL in
   let rec aux rest1 rest2 =
