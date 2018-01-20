@@ -78,7 +78,7 @@ let commandline =
       Printf.printf "making lazy bounds mats list ... %!";
       let bounds_mats =  SC.lazy_bounds_mats_list ~fork:(not nofork) pmat qmat in
       Printf.printf "making lazy prob intervals list ... %!";
-      let selected_gens = G.lazy_ints ~every_n:every 1 in
+      let selected_gens = G.lazy_ints ~every:every 1 in
       let tdistlists = T.add_gens (SC.lazy_prob_intervals_from_freq initfreq bounds_mats) in
       let selected_distlists = T.sublist startgen lastgen (T.select_by_gens selected_gens tdistlists) in
       Printf.printf "making pdfs ... \n%!";
