@@ -109,15 +109,15 @@ let lazy_ints ?(every=1) init_n =
     both be monotonically increasing numbers (usually [int]s) of the 
     same type. *)
 let lazy_select accessor keys data =
-  let rec sel ks vs =
-    if LL.is_empty vs || LL.is_empty ks then LL.Nil
-    else let k, v = LL.hd ks, LL.hd vs in
-         let v_key = accessor v in
-         if k = v_key then LL.Cons(v, (lzsel (LL.tl ks) (LL.tl vs)))
-         else if k > v_key
-	 then sel ks (LL.tl vs)  (* let vs catch up *)
-         else sel (LL.tl ks) vs  (* let ks catch up *)
-  and lzsel ks vs = lazy (sel ks vs)
+  let rec sel ks ds =
+    if LL.is_empty ds || LL.is_empty ks then LL.Nil
+    else let k, d = LL.hd ks, LL.hd ds in
+         let d_key = accessor d in
+         if k = d_key then LL.Cons(d, (lzsel (LL.tl ks) (LL.tl ds)))
+         else if k > d_key
+	 then sel ks (LL.tl ds)  (* let ds catch up *)
+         else sel (LL.tl ks) ds  (* let ks catch up *)
+  and lzsel ks ds = lazy (sel ks ds)
   in lzsel keys data
 
 (********************************************)
