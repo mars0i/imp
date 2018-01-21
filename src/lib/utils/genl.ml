@@ -102,6 +102,23 @@ let lazy_range ?(step=1) start stop =
 let lazy_ints ?(every=1) init_n =
   LL.seq init_n (fun n -> n + every) always_true
 
+(** In [lazy_select accessor keys data], [keys] and [data] are lazy
+    lists.  The function returns a lazy list of elements from [data]
+    such that [accessor val] is equal to some element [keys].  Keys
+    and the values by which elements of [data] are selected must be
+    both be monotonically increasing numbers (usually [int]s) of the 
+    same type. *)
+let lazy_select accessor keys data =
+  let rec sel ks vs =
+    if LL.is_empty vs || LL.is_empty ks then LL.Nil
+    else let k, v = LL.hd ks, LL.hd vs in
+         let v_key = accessor v in
+         if k = v_key then LL.Cons(v, (lzsel (LL.tl ks) (LL.tl vs)))
+         else if k > v_key then sel ks (LL.tl vs) (* let vs catch up *)
+         else sel (LL.tl ks) vs                   (* let ks catch up *)
+  and lzsel ks vs = lazy (sel ks vs)
+  in lzsel keys data
+
 (********************************************)
 (** Iteration functions *)
 

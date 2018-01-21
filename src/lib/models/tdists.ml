@@ -1,6 +1,7 @@
 module Mat = Owl.Mat
 module L = Batteries.List
 module LL = Batteries.LazyList
+module G = Utils.Genl
 
 let always_true _ = true
 
@@ -32,39 +33,5 @@ let sublist start_gen finish_gen tdists_llist =
     list of integers in increasing order, and [tdists_llist] is a lazy
     list of tdists.  The function returns a lazy list contanining those 
     tdists whose generation numbers match the integers in [generations]. *)
-let eager_select_by_gens generations tdists_llist =
-  let open LL in
-  let rec select gs tds =
-    if is_empty tds || is_empty gs then nil
-    else 
-    let g, td = hd gs, hd tds in
-    let tdg = td.gen in
-    Printf.printf "%d %d\n" g tdg;
-    if g = tdg then cons td (select (tl gs) (tl tds))
-    else if g > tdg then select gs (tl tds) (* let tds catch up *)
-    else select (tl gs) tds                 (* let gs catch up *)
-  in select generations tdists_llist
-
-(* THIS METHOD SEEMS TO WORK! *)
-let lazy_select ?(accessor=(fun x -> x)) keys vals =
-  let rec sel ks vs =
-    if LL.is_empty vs || LL.is_empty ks then LL.Nil
-    else let k, v = LL.hd ks, LL.hd vs in
-         let v_key = accessor v in
-         if k = v_key then LL.Cons(v, (lzsel (LL.tl ks) (LL.tl vs)))
-         else if k > v_key then sel ks (LL.tl vs) (* let vs catch up *)
-         else sel (LL.tl ks) vs                   (* let ks catch up *)
-  and lzsel ks vs = lazy (sel ks vs)
-  in lzsel keys vals
-
-let identity x = x
-(** not useful to me.  just an example for illustration. *)
-let list_select ?(accessor=identity) keys vals =
-  let rec sel ks vs =
-    if ks = [] || vs = [] then []
-    else let k, v = L.hd ks, L.hd vs in
-         let v_key = accessor v in
-         if k = v_key then v::(sel (L.tl ks) (L.tl vs))
-         else if k > v_key then sel ks (L.tl vs) (* let vs catch up *)
-         else sel (L.tl ks) vs                   (* let ks catch up *)
-  in sel keys vals
+let select_by_gens generations tdists_llist =
+  G.lazy_select gen generations tdists_llist
