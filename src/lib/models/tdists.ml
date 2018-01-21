@@ -57,7 +57,14 @@ let lazy_select ?(accessor=(fun x -> x)) keys vals =
   and lzsel ks vs = lazy (sel ks vs)
   in lzsel keys vals
 
-(* This doesn't work:
-let select_by_gens generations tdists_llist =
-  lazy_select ~accessor:gen generations tdists_llist
-*)
+let identity x = x
+(** not useful to me.  just an example for illustration. *)
+let list_select ?(accessor=identity) keys vals =
+  let rec sel ks vs =
+    if ks = [] || vs = [] then []
+    else let k, v = L.hd ks, L.hd vs in
+         let v_key = accessor v in
+         if k = v_key then v::(sel (L.tl ks) (L.tl vs))
+         else if k > v_key then sel ks (L.tl vs) (* let vs catch up *)
+         else sel (L.tl ks) vs                   (* let ks catch up *)
+  in sel keys vals
