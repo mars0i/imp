@@ -114,8 +114,9 @@ let lazy_select accessor keys data =
     else let k, v = LL.hd ks, LL.hd vs in
          let v_key = accessor v in
          if k = v_key then LL.Cons(v, (lzsel (LL.tl ks) (LL.tl vs)))
-         else if k > v_key then sel ks (LL.tl vs) (* let vs catch up *)
-         else sel (LL.tl ks) vs                   (* let ks catch up *)
+         else if k > v_key
+	 then sel ks (LL.tl vs)  (* let vs catch up *)
+         else sel (LL.tl ks) vs  (* let ks catch up *)
   and lzsel ks vs = lazy (sel ks vs)
   in lzsel keys data
 
