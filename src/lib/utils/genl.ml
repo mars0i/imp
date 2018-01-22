@@ -56,7 +56,8 @@ let memo f =
 (********************************************)
 (** Sequence manipulators, type converters, etc. *)
 
-let take_to_list 
+(** Convenience abbreviation for [LazyList.(to_list (take n lazy_list))] *)
+let take2list n lazy_list = LL.(to_list (take n lazy_list))
 
 (** Return a lazy list that's a sublist of the argument, from element start 
     (zero-based) to element finish, inclusive. *)
@@ -110,7 +111,10 @@ let lazy_ints ?(every=1) init_n =
     lists.  The function returns a lazy list of elements from [data]
     such that [accessor val] is equal to some element [keys].  Both 
     keys and the values by which elements of [data] are selected should
-    be monotonically increasing numbers of the same kind, usually [int]s. *)
+    be monotonically increasing numbers of the same kind, usually [int]s.
+    For example, if [keys] and [data] are increasing sequences of integers,
+    and [accessor] is the identity function, [lazy_select] returns the
+    intersection of [keys] and [data]. *)
 let lazy_select accessor keys data =
   let rec sel ks ds =
     if LL.is_empty ds || LL.is_empty ks then LL.Nil
