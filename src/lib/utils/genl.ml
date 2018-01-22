@@ -8,6 +8,8 @@ module F = Core.Float
 
 let always_true _ = true
 
+let (%) f g = (fun x -> f (g x))
+
 (********************************************)
 (** Timing functions *)
 
@@ -53,6 +55,8 @@ let memo f =
 
 (********************************************)
 (** Sequence manipulators, type converters, etc. *)
+
+let take_to_list 
 
 (** Return a lazy list that's a sublist of the argument, from element start 
     (zero-based) to element finish, inclusive. *)
@@ -104,10 +108,9 @@ let lazy_ints ?(every=1) init_n =
 
 (** In [lazy_select accessor keys data], [keys] and [data] are lazy
     lists.  The function returns a lazy list of elements from [data]
-    such that [accessor val] is equal to some element [keys].  Keys
-    and the values by which elements of [data] are selected must be
-    both be monotonically increasing numbers (usually [int]s) of the 
-    same type. *)
+    such that [accessor val] is equal to some element [keys].  Both 
+    keys and the values by which elements of [data] are selected should
+    be monotonically increasing numbers of the same kind, usually [int]s. *)
 let lazy_select accessor keys data =
   let rec sel ks ds =
     if LL.is_empty ds || LL.is_empty ks then LL.Nil
