@@ -75,6 +75,8 @@ let make_page_groups pdfdim plots_per_page tdistlists =
     For Wright-Fisher pdfs, I use y as frequency; x indexes probability
     distributions.
     *)
+(** FIXME BUG HERE I think that's causing every, which is calc'ed from T.gen's in make_pdfs,
+    to shrink the data so includes only popsize/every, when it should be popsize wide. *)
 let make_coords every dist_list =
   let (_, width) = Mat.shape (L.hd dist_list) in
   let height = L.length dist_list in
@@ -170,25 +172,8 @@ let make_pdfs ?(leftright=true) ?(pdfdim=ThreeD) ?(rows=1) ?(cols=1)
               ?(altitude=20.) ?(azimuth=300.)
               ?plot_max ?fontsize ?colors ?addl_2D_fn ?addl_3D_fn
               basename tdistlists = 
-  (* TODO FOR TDISTS: Should this next line use tdist timestamps?  What if I am only passing every n?
-   * But that's controlled by ?every. Or should it be? 
-   * Note that I currently believe that, for the hi-lo method, it's impossible to pre-calculate
-   * multi-generation steps, as you can do with regular dot multiplication (since every
-   * k steps there is made by multiplying the same power of T).  However, I should want to be
-   * able to use this function make_pdfs with a sequence that is calculated in this
-   * more efficient manner.  So it should not assume that it has every generation in the list. 
-   * SO maybe take ?every out.  Do that in the input. *)
   let plots_per_page = rows * cols in
   let max_row, max_col = rows - 1, cols - 1 in
-  (*
-  let gens_per_page = match pdfdim with  (* BothDs means two different plots per generation *)
-                      | BothDs -> if G.is_odd plots_per_page 
-                                  then raise (Invalid_argument "Two plots per generation (pdfdim=BothDs) with odd plots per page.")
-                                  else plots_per_page / 2        (* Rarely makes sense and I don't want to handle the case: *)
-                      | _ -> plots_per_page
-
-  in
-  *)
   (* Next convert distlists--an infinite lazylist of lists of vectors--into a 
    * list of arrays of lists of vectors, where the elements of each rows*cols
    * length array are lists of vectors for a plot on rowsXcols sized page of plots. *)
@@ -216,9 +201,8 @@ let make_pdfs ?(leftright=true) ?(pdfdim=ThreeD) ?(rows=1) ?(cols=1)
           (Pl.set_foreground_color h 0 0 0; (* grid and plot title color *)
            let T.{gen; dists}  = page_group.(idx) in
            let xs, ys, zs = make_coords every (simple_sort_dists dists) in
-           (* gen: calculate generation, which I'm not providing elsewhere.
-            * pre_title: either a newline (for 3D) plots or an empty string, so that
-            * titles on 3D plots will be pushed down a bit.*)
+           (* pre_title: either a newline (for 3D) plots or an empty string, so that
+            *  titles on 3D plots will be pushed down a bit.*)
            let pre_title = match pdfdim, !first_of_two with
                            | BothDs, true  -> add_2D_plot ?plot_max ?fontsize ?colors ?addl_2D_fn h ys zs;
                                               first_of_two := false;
