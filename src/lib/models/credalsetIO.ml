@@ -51,10 +51,6 @@ let abs_sort_dists dists = L.sort G.absdiff_compare dists
 
 type pdfdims = TwoD | ThreeD | BothDs
 
-(* TODO FOR TDISTS: Should this use tdists, or can it remain as is?
- * No, I think it needs to operate on tdists, because its output
- * is passed into make_pdf within make_pdfs, and I cant the timestamps 
- * to be available there. HOWEVER I think it can be used unchanged. *)
 let make_page_groups pdfdim plots_per_page tdistlists =
   let nonlazytdistlists = LL.to_list tdistlists in
   let nonlazytdistlists' = 
@@ -73,13 +69,11 @@ let make_page_groups pdfdim plots_per_page tdistlists =
     in different directions.  This shape will be transposed/rotated wrt the
     z coord matrix that results. That's what Owl.Plot.{mesh,surf} need.
     *)
-(** FIXME BUG HERE I think that's causing every, which is calc'ed from T.gen's in make_pdfs,
-    to shrink the data so includes only popsize/every, when it should be popsize wide. *)
-let make_coords every dist_list =
+let make_coords sample_interval dist_list =
   let (_, width) = Mat.shape (L.hd dist_list) in
   let height = L.length dist_list in
-  let widthf, heightf, everyf = float width, float height, float every in
-  let xs, ys = Mat.meshgrid 0. (heightf -. 1.)  0. ((widthf *. everyf) -. everyf)  height width in
+  let widthf, heightf, sample_intervalf = float width, float height, float sample_interval in
+  let xs, ys = Mat.meshgrid 0. (heightf -. 1.)  0. ((widthf *. sample_intervalf) -. sample_intervalf)  height width in
   let zs = Mat.transpose (L.reduce Mat.concat_vertical dist_list) in
   (xs, ys, zs)
 (* QUESTION: does using meshgrid obviate the need for set_ydigits below?
@@ -157,7 +151,7 @@ let fill_bounds ?(spec=[interval_fill_color; FillPattern 0]) h ys zs =  (* args 
     cols=1         Number of columns of plots in PDF
     altitude=20.   Viewing position: altitude parameter to mesh, plmesh
     azimuth=300.   Viewing position: azimuth parameter to mesh, plmesh
-    every=1        Sample data every k frequencies rather than all frequencies 
+    sample_interval=1  Sample data every k frequencies rather than all frequencies 
     plot_max       Maximum height displayed (default: let Owl.Plot decide).
     fontsize       Font size.  Of course
     colors         2D: list of Plot.RGB's to cycle through (vs default_plot_color)
@@ -167,7 +161,7 @@ let fill_bounds ?(spec=[interval_fill_color; FillPattern 0]) h ys zs =  (* args 
     Note will throw an error if you try to make 3D plots with only one set of 
     input fitnesses. *)
 let make_pdfs ?(leftright=true) ?(pdfdim=ThreeD) ?(rows=1) ?(cols=1) 
-              ?(altitude=20.) ?(azimuth=300.)
+              ?(altitude=20.) ?(azimuth=300.) ?(sample_interval=1)
               ?plot_max ?fontsize ?colors ?addl_2D_fn ?addl_3D_fn
               basename tdistlists = 
   let plots_per_page = rows * cols in
@@ -180,15 +174,12 @@ let make_pdfs ?(leftright=true) ?(pdfdim=ThreeD) ?(rows=1) ?(cols=1)
   let make_pdf group_idx page_group = 
     (* Construct filename from basename and generation numbers: *)
     let group_len = A.length page_group in  (* differs if last group is short *)
-    (* let group_start = start_gen + group_idx * gens_per_page in *) (* TODO FOR TDISTS: I don't think this will be needed. *)
-    (* let group_last  = group_start + gens_per_page - 1 in *)       (* TODO FOR TDISTS: I don't think this will be needed. *)
-    let generations_string = String.concat "_" (L.map (string_of_int % T.gen) (A.to_list page_group)) in  (* TODO? this started as a list in make_page groups *)
+    let generations_string = String.concat "_" (L.map (string_of_int % T.gen) (A.to_list page_group)) in
     let filename = Printf.sprintf "%s%s.pdf" basename generations_string in
     let first_of_two = ref true in (* allows staying with one generation for BothDs *)
     let h = Pl.create ~m:rows ~n:cols filename in
     Pl.set_background_color h 255 255 255; (* applies to all subplots *)
     let max_i, max_j = if leftright then max_row, max_col else max_col, max_row in (* order left right vs up down *)
-    let every = T.((LL.at tdistlists 1).gen - (LL.hd tdistlists).gen) in (* assume that interval between first two elements is repeated *)
     (* main loop through plots *)
     for i = 0 to max_i do
       for j = 0 to max_j do
@@ -198,7 +189,7 @@ let make_pdfs ?(leftright=true) ?(pdfdim=ThreeD) ?(rows=1) ?(cols=1)
         if idx < group_len then  (* don't index past end of a short group *)
           (Pl.set_foreground_color h 0 0 0; (* grid and plot title color *)
            let T.{gen; dists}  = page_group.(idx) in
-           let xs, ys, zs = make_coords every (simple_sort_dists dists) in
+           let xs, ys, zs = make_coords sample_interval (simple_sort_dists dists) in
            (* pre_title: either a newline (for 3D) plots or an empty string, so that
             *  titles on 3D plots will be pushed down a bit.*)
            let pre_title = match pdfdim, !first_of_two with
@@ -232,10 +223,10 @@ let make_pdfs ?(leftright=true) ?(pdfdim=ThreeD) ?(rows=1) ?(cols=1)
 let make_setchain_bounds_pdfs ?(addl_2D_fn=fill_bounds)
                               ?(colors=Pl.[RGB (0,0,200); RGB (200,0,0)])
                               ?(leftright=true) ?(rows=1) ?(cols=1)
-                              ?plot_max ?fontsize 
+			      ?(sample_interval=1) ?plot_max ?fontsize 
                               basename tdistlists =
   make_pdfs ~pdfdim:TwoD ~addl_2D_fn ~colors
-            ~leftright ~rows ~cols ?plot_max ?fontsize
+            ~leftright ~rows ~cols ~sample_interval ?plot_max ?fontsize
             basename tdistlists
 
 
