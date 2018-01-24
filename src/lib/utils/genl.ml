@@ -104,8 +104,8 @@ let lazy_range ?(step=1) start stop =
     integers [~every] apart starting from [init_n].  [every]
     defaults to 1.  Giving it a negative value will produce a
     descending sequence. *)
-let lazy_ints ?(every=1) init_n =
-  LL.seq init_n (fun n -> n + every) always_true
+let lazy_ints ?(skip=1) init_n =
+  LL.seq init_n (fun n -> n + skip) always_true
 
 (** In [lazy_select accessor keys data], [keys] and [data] are lazy
     lists.  The function returns a lazy list of elements from [data]
@@ -290,14 +290,14 @@ let l2_compare = make_compare l2diff
 
 (** Given a matrix, return a narrower matrix in which each [every] nth element
     in each row is present.  The intervening elements are ignored.  *)
-let subsample_in_rows every old_mat =
-  if every <= 1 then old_mat
+let subsample_in_rows skip old_mat =
+  if skip <= 1 then old_mat
   else let (height, width) = M.shape old_mat in
-       let new_width = width / every in (* WHAT ABOUT if doesn't divide evenly? *)
+       let new_width = width / skip in (* WHAT ABOUT if doesn't divide evenly? *)
        let new_mat = M.empty height new_width in
        for i = 0 to height - 1 do
          for j = 0 to new_width - 1 do
-           M.set new_mat i j (M.get old_mat i (j*every))
+           M.set new_mat i j (M.get old_mat i (j*skip))
          done
        done;
        new_mat
