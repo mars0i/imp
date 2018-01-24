@@ -72,8 +72,6 @@ let make_page_groups pdfdim plots_per_page tdistlists =
     will have the same shape as each other, but with values increasing
     in different directions.  This shape will be transposed/rotated wrt the
     z coord matrix that results. That's what Owl.Plot.{mesh,surf} need.
-    For Wright-Fisher pdfs, I use y as frequency; x indexes probability
-    distributions.
     *)
 (** FIXME BUG HERE I think that's causing every, which is calc'ed from T.gen's in make_pdfs,
     to shrink the data so includes only popsize/every, when it should be popsize wide. *)
