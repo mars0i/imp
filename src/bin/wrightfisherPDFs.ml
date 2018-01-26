@@ -7,6 +7,7 @@
 
 module Command = Core.Command
 module Spec = Core.Command.Spec
+module Pl = Owl.Plot
 module WF = Models.Wrightfisher
 module IO = Models.CredalsetIO
 module T = Models.Tdists
@@ -37,6 +38,7 @@ Example: %s foo 500 250 2 6  1.0 0.95 0.8  0.8 0.95 1.0"
 
 let default_alt = 20
 let default_az = 300
+let default_colors = Pl.[RGB (200,0,0)]
 
 let alt_docstring = sprintf "integer aLtitude of perspective: degrees in [0,90] (default: %d)"  default_alt
 let az_docstring =  sprintf "integer aZimuth of perspective: degrees in in [0,360] (default: %d)" default_az
@@ -74,11 +76,13 @@ let commandline =
       let azimuth = float az_int in
       let fitn_recs = WF.group_fitns fitn_floats in
       let distlists = T.add_gens (WF.make_distlists popsize [initfreq] fitn_recs) in
+      let selected_distlists = T.sublist startgen lastgen distlists in
       let pdfdim = match twoD, threeD with
                    | true, true   -> IO.BothDs
                    | true, false  -> IO.TwoD
                    | false, true | false, false -> IO.ThreeD (* default *)
-      in IO.make_pdfs ~rows ~cols ~sample_interval:sample ~altitude ~azimuth ~pdfdim ?plot_max ?fontsize ~leftright:(not updown) basename distlists)
-      (* startgen lastgen FIXME *)
+      in IO.make_pdfs ~rows ~cols ~sample_interval:sample ~colors:default_colors
+                      ~altitude ~azimuth ~pdfdim ?plot_max ?fontsize ~leftright:(not updown) 
+		      basename selected_distlists)
 
-let () = Command.run ~version:"1.1" ~build_info:"wrightfisherPDFS, (c) 2017 Marshall Abrams" commandline
+let () = Command.run ~version:"1.2" ~build_info:"wrightfisherPDFS, (c) 2017, 2018 Marshall Abrams" commandline
