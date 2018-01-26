@@ -14,7 +14,6 @@ module G = Utils.Genl
 module Pl = Owl.Plot
 
 (* TODO: 
- * Fix docstring(s).
  * Add option to control fill color.
  * Add option to control number of pmap forks.
  *)
@@ -85,10 +84,11 @@ let commandline =
       Printf.printf "making lazy prob intervals list ... %!";
       let tdistlists = T.add_gens (SC.lazy_prob_intervals_from_freq initfreq bounds_mats) in
       let selected_gens = G.lazy_ints ~skip:skip 1 in (* 1, i.e. don't display initial dist 0 massed on initfreq *)
-      let selected_distlists = T.sublist startgen lastgen (T.select_by_gens selected_gens tdistlists) in
+      let selected_tdistlists = T.sublist startgen lastgen (T.select_by_gens selected_gens tdistlists) in
+
       Printf.printf "making pdfs ... \n%!";
       IO.make_setchain_bounds_pdfs ~colors:bottom_top_colors
                     ~rows ~cols ~sample_interval:sample ?plot_max ?fontsize ~leftright:(not updown)
-                    basename selected_distlists)
+                    basename selected_tdistlists)
 
-let () = Command.run ~version:"1.0" ~build_info:"setchainPDFS, (c) 2017 Marshall Abrams" commandline
+let () = Command.run ~version:"1.1" ~build_info:"setchainPDFS, (c) 2017, 2018 Marshall Abrams" commandline
