@@ -170,8 +170,8 @@ let mat_vertices ?digits ?uniq p q =
     for products of all possible multiplications of matrices
     in two intervals, the original interval, and one that's
     the result of a previous application of the hi-lo method.
-    The core idea of this process is that the elements of new 
-    pair of lower and upper matrices must be individually
+    The core idea of this process is that the elements of a 
+    new pair of lower and upper matrices must be individually
     calculated so that each element estimates the minimum or
     maximum value for that element from all of the possible
     products.
@@ -201,8 +201,9 @@ let idx_sort_colvec v =
     require arguments in a different order depending on which function 
     is passed.  *)
 
-(* This version of recombine uses suggestion by Evik Tak: https://stackoverflow.com/a/46127060/1455243 *)
-(** Given a relation (>=), a column l vec and two tight row vecs p and q s.t. 
+(* This version of recombine uses a suggestion by Evik Tak: https://stackoverflow.com/a/46127060/1455243 *)
+(** This function is at the core of the hi-lo method.
+    Given a relation (>=), a column l vec and two tight row vecs p and q s.t. 
     p<=q, return a stochastic row vec ("p bar") with high values from q where l
     is low and low values from p where l is high.  Or pass (<=), l, and tight
     row vecs s.t. p >= q to return a stoch row vec ("q bar") with low values 
@@ -210,7 +211,7 @@ let idx_sort_colvec v =
     p and q in Hartfiel, i.e. here the arguments should be (<=), l, q, p
     according to the normal senses of p and q. *)
 let recombine relation p q p_sum idxs =
-  let pbar = M.copy p in  (* p was created using M.row, so it's a view not a copy. *)
+  let pbar = M.copy p in  (* p was created using M.row, so it's a view not a copy. *) (* TODO CHECK HAS THIS CHANGED IN OWL *)
   let rec find_crossover idxs' psum =
     match idxs' with
     | i::idxs'' -> 
@@ -253,7 +254,7 @@ let calc_bound_val recomb pmat qmat prev_bound_mat pmat_row_sums prev_mat_idx_li
   let idxs = A.get prev_mat_idx_lists j in
   let p_row, q_row = M.row pmat i, M.row qmat i in (* row doesn't copy; it just provides a view *)
   let bar_row = recomb p_row q_row p_row_sum idxs in
-  let prev_col = M.col prev_bound_mat j in (* col makes a copy *)
+  let prev_col = M.col prev_bound_mat j in (* col makes a copy *) (* TODO CHECK HAS THIS CHANGED IN OWL *)
   M.(get (bar_row *@ prev_col) 0 0)
 
 (** Wrapper for calc_bound_val (which see), adding an additional, ignored 
