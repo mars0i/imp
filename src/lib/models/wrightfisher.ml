@@ -7,7 +7,7 @@
     found in many places. *)
 
 module Mat = Owl.Mat
-module Prob = Owl.Stats.Pdf
+(* obsolete: module Prob = Owl.Stats.Pdf *)
 module L = Batteries.List
 module TM = Tranmats
 
@@ -34,11 +34,25 @@ let weight_i {w11; w12; w22} allele_popsize freq  =
   let b_hom = w22 *. i' *. i' in
   (a_hom +. het) /. (a_hom +. 2. *. het +. b_hom)
 
+(* old pre-binomial code:
+let prob_ij fitns allele_popsize prev_freq next_freq =
+  let wt = weight_i fitns allele_popsize prev_freq in
+  let other_wt = 1. -. wt in
+  let j = float next_freq in
+  let j' = float (allele_popsize - next_freq) in
+  let comb = Math.combination_float allele_popsize next_freq in (* see note above *)
+  comb  *.  wt**j  *.  other_wt**j'
+*)
+let binomial n k p =
+  let q = 1. -. p in
+  let k' = n -. k in
+  failwith "this isn't going to work without a float combination function"
+
 (** Wright-Fisher transition probability from frequency prev_freq (row index)
     to frequency next_freq (column index). *)
 let prob_ij fitns allele_popsize prev_freq next_freq =
   let p = weight_i fitns allele_popsize prev_freq in
-  Prob.binomial next_freq p allele_popsize
+  binomial allele_popsize next_freq p (* old version obsolete in latest Owl: Prob.binomial next_freq p allele_popsize *)
 
 (** Make a transition matrix from fitnesses *)
 let make_tranmat allele_popsize fitns =
