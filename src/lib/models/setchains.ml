@@ -227,16 +227,6 @@ let recombine relation p q p_sum idxs =
   find_crossover idxs p_sum;
   pbar
 
-(** Calculate a pair of matrix indexes from an index into a vector and
-    a row width for the matrix.  i.e. if we laid out a matrix, one row 
-    after another in vector form, idx would be an index into it, and width
-    woud be the row width of the original matrix.  The corresponding index
-    pair is recovered by this function. *)
-let flat_idx_to_rowcol width idx =
-  let row = idx / width in
-  let col = idx mod width in
-  row, col
-
 (** Given a [recomb] function, the original P and Q matrices [pmat] and [qmat],
     a previous tight bounds matrix [prev_bound_mat], pre-calculated row sums
     [pmat_row_sums] from [pmat] (more efficient to calculate once), and an 
@@ -249,7 +239,7 @@ let flat_idx_to_rowcol width idx =
     to avoid repeatedly performing the same computations.) Used by [_hilo_mult].  
     SEE doc/nonoptimizedcode.ml for an older, perhaps clearer version.  *)
 let calc_bound_val recomb pmat qmat prev_bound_mat pmat_row_sums prev_mat_idx_lists width idx =
-  let i, j = flat_idx_to_rowcol width idx in
+  let i, j = U.flat_idx_to_rowcol width idx in
   let p_row_sum = M.get pmat_row_sums i 0 in
   let idxs = A.get prev_mat_idx_lists j in
   let p_row, q_row = M.row pmat i, M.row qmat i in (* row doesn't copy; it just provides a view *)

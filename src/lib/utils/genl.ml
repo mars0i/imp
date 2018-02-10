@@ -400,6 +400,20 @@ let mat_from_int_lists ls =
 (********************************************)
 (** Numerical utility functions *)
 
+(** Calculate a pair of matrix indexes from an index into a vector and
+    a row width for the matrix.  i.e. if we laid out a matrix, one row 
+    after another in vector form, idx would be an index into it, and width
+    woud be the row width of the original matrix.  The corresponding index
+    pair is recovered by this function. *)
+let flat_idx_to_rowcol width idx =
+  let row = idx / width in
+  let col = idx mod width in
+  row, col
+
+(** [rowcol_to_flat_idx width row col] calculates a 1D index into an array or
+    ndarray in which matrix rows are laid out sequentially. *)
+let rowcol_to_flat_idx width row col = (row * width) + col
+
 (** Rounds second arg to number of decimal digits specified by first arg. *)
 let roundto digits x =
   let scale = F.int_pow 10. digits in
