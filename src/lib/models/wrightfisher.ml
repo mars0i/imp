@@ -34,25 +34,15 @@ let weight_i {w11; w12; w22} allele_popsize freq  =
   let b_hom = w22 *. i' *. i' in
   (a_hom +. het) /. (a_hom +. 2. *. het +. b_hom)
 
-(* old pre-binomial code:
-let prob_ij fitns allele_popsize prev_freq next_freq =
-  let wt = weight_i fitns allele_popsize prev_freq in
-  let other_wt = 1. -. wt in
-  let j = float next_freq in
-  let j' = float (allele_popsize - next_freq) in
-  let comb = Math.combination_float allele_popsize next_freq in (* see note above *)
-  comb  *.  wt**j  *.  other_wt**j'
-*)
-let binomial n k p =
-  let q = 1. -. p in
-  let k' = n -. k in
-  failwith "this isn't going to work without a float combination function"
+(* TODO: Replace with builtin Owl fn when it's available again. *)
+let binomial k n p =
+  Gsl.Randist.binomial_pdf k p n
 
 (** Wright-Fisher transition probability from frequency prev_freq (row index)
     to frequency next_freq (column index). *)
 let prob_ij fitns allele_popsize prev_freq next_freq =
   let p = weight_i fitns allele_popsize prev_freq in
-  binomial allele_popsize next_freq p (* old version obsolete in latest Owl: Prob.binomial next_freq p allele_popsize *)
+  binomial next_freq allele_popsize p
 
 (** Make a transition matrix from fitnesses *)
 let make_tranmat allele_popsize fitns =
