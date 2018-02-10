@@ -53,6 +53,8 @@ let make_tranmat allele_popsize fitns =
   let dim = allele_popsize + 1 in
   let m = Mat.empty dim dim  in
   Mat.mapi (prob_ij_ fitns allele_popsize) m
+  (* TODO This is broken because as of 2/2018 Owl has changed mapi so 
+     that it's fn arg wants a single index rather than two indexes. *)
 
 (** Like make_distlists_from_mats, but uses basic parameters to generate the 
     transition matrices and initial distributions that are arguments to 
