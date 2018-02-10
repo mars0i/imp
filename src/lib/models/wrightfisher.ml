@@ -50,13 +50,12 @@ let prob_ij fitns allele_popsize prev_freq next_freq =
 let make_tranmat allele_popsize fitns =
   let dim = allele_popsize + 1 in  (* frequencies from zero to N *)
   let m = Mat.empty dim dim  in
-  let set_prob_ij_from_flat_idx flat_idx =
-    let prev_freq, next_freq = U.flat_idx_to_rowcol dim flat_idx in
-    let prob = prob_ij fitns allele_popsize prev_freq next_freq in
-    Mat.set m prev_freq next_freq prob;
-  in for k = 0 to dim do
-       set_prob_ij_from_flat_idx k
-     done;
+  for prev_freq = 0 to dim do
+    for next_freq = 0 to dim do
+      let prob = prob_ij fitns allele_popsize prev_freq next_freq in
+      Mat.set m prev_freq next_freq prob_ij
+    done;
+  done;
   m
 
 (** Like make_distlists_from_mats, but uses basic parameters to generate the 
