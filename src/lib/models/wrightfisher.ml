@@ -6,10 +6,12 @@
     equations 1.58, 1.59, and 1.25, though similar formulas can be 
     found in many places. *)
 
-module Mat = Owl.Mat
-(* obsolete: module Prob = Owl.Stats.Pdf *)
 module L = Batteries.List
+module Mat = Owl.Mat
+module Dist = Gsl.Randist
+
 module TM = Tranmats
+module U = Utils.Genl
 
 (** One goal here is to create a "distlist", which is a LazyList of Lists 
     Owl row vector matrices representing probability distributions over 
@@ -36,7 +38,7 @@ let weight_i {w11; w12; w22} allele_popsize freq  =
 
 (* TODO: Replace with builtin Owl fn when it's available again. *)
 let binomial k n p =
-  Gsl.Randist.binomial_pdf k p n
+  Dist.binomial_pdf k p n
 
 (** Wright-Fisher transition probability from frequency prev_freq (row index)
     to frequency next_freq (column index). *)
@@ -46,15 +48,16 @@ let prob_ij fitns allele_popsize prev_freq next_freq =
 
 (** Make a transition matrix from fitnesses *)
 let make_tranmat allele_popsize fitns =
-  (* prob_ij with an extra ignored argument: *)
-  let prob_ij_ fitns allele_popsize prev_freq next_freq _ =
-    prob_ij fitns allele_popsize prev_freq next_freq
-  in
-  let dim = allele_popsize + 1 in
+  let dim = allele_popsize + 1 in  (* frequencies from zero to N *)
   let m = Mat.empty dim dim  in
-  Mat.mapi (prob_ij_ fitns allele_popsize) m
-  (* TODO This is broken because as of 2/2018 Owl has changed mapi so 
-     that it's fn arg wants a single index rather than two indexes. *)
+  let set_prob_ij_from_flat_idx flat_idx =
+    let prev_freq, next_freq = U.flat_idx_to_rowcol dim flat_idx in
+    let prob = prob_ij fitns allele_popsize prev_freq next_freq in
+    Mat.set m prev_freq next_freq prob;
+  in for k = 0 to dim do
+       set_prob_ij_from_flat_idx k
+     done;
+  m
 
 (** Like make_distlists_from_mats, but uses basic parameters to generate the 
     transition matrices and initial distributions that are arguments to 
