@@ -46,7 +46,11 @@ let prob_ij fitns allele_popsize prev_freq next_freq =
   let p = weight_i fitns allele_popsize prev_freq in
   binomial next_freq allele_popsize p
 
-(** Make a transition matrix from fitnesses *)
+(** [make_tranmat allele_popsize fitns] makes a transition matrix for 
+    a population with size [allele_popsize/2] from fitnesses [fitns]. 
+    Note that the dimension of the square transition matrix will be
+    [allele_popsize + 1] since 0 and [allele_popsize] are allowed
+    frequencies. *)
 let make_tranmat allele_popsize fitns =
   let dim = allele_popsize + 1 in  (* frequencies from zero to N *)
   Mat.init_nd dim dim (prob_ij fitns allele_popsize)
