@@ -55,7 +55,7 @@ let updown_docstring = "If present arrange plots top bottom right; vs left right
 let nofork_docstring = "If present, don't split computation across multiple cores/CPUs."
 
 let commandline =
-  Command.basic
+  Command.basic_spec  (* TODO this is apparently depcrecated, or at least Spec below is. Maybe switch to dbuenzli's cmdliner *)
     ~summary:"Make 3D pdfs for multiple generations with setchains."
     ~readme:(fun () -> description)
     Spec.(empty +> flag "-r" (optional_with_default 1 int) ~doc:rows_docstring

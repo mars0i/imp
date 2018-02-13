@@ -52,7 +52,7 @@ let threeD_docstring = "make 3D plots; with -2 make 2D and 3D side-by-side (defa
 let updown_docstring = "If present arrange plots top bottom right; vs left right down."
 
 let commandline =
-  Command.basic
+  Command.basic_spec  (* TODO this is apparently depcrecated, or at least Spec below is. Maybe switch to dbuenzli's cmdliner *)
     ~summary:"Make 3D pdfs for multiple generations with multiple probability distributions."
     ~readme:(fun () -> description)
     Spec.(empty +> flag "-l" (optional_with_default default_alt int) ~doc:alt_docstring
