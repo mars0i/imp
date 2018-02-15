@@ -42,7 +42,7 @@ At least one triple is required (despite brackets above).  The setchain
 will be constructed from the the tight matrix interval containing the
 the transition matrices for these fitness triples.
 
-Example (FIXME): %s foo 500 250 2 6  1.0 0.95 0.8  0.8 0.95 1.0"
+Example: %s foo 500 250 2 6  1.0 0.95 0.8  0.8 0.95 1.0"
 (Filename.basename(Sys.executable_name))
 
 let rows_docstring = sprintf "integer number of rows for multi-plot pages (default %d)" 1
