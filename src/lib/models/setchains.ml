@@ -211,7 +211,7 @@ let idx_sort_colvec v =
     p and q in Hartfiel, i.e. here the arguments should be (<=), l, q, p
     according to the normal senses of p and q. *)
 let recombine relation p q p_sum idxs =
-  let pbar = M.copy p in  (* p was created using M.row, so it's a view not a copy. *) (* TODO CHECK HAS THIS CHANGED IN OWL *)
+  let pbar = M.copy p in  (* p was created using M.row, so it's a view not a copy. *)
   let rec find_crossover idxs' psum =
     match idxs' with
     | i::idxs'' -> 
