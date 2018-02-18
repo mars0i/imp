@@ -53,7 +53,7 @@ let prob_ij fitns allele_popsize prev_freq next_freq =
     frequencies. *)
 let make_tranmat allele_popsize fitns =
   let dim = allele_popsize + 1 in  (* frequencies from zero to N *)
-  Mat.init_nd dim dim (prob_ij fitns allele_popsize)
+  Mat.init_2d dim dim (prob_ij fitns allele_popsize)
 
 (** Like make_distlists_from_mats, but uses basic parameters to generate the 
     transition matrices and initial distributions that are arguments to 
