@@ -1,24 +1,11 @@
-
 module U = Utils.Genl
+module L = Batteries.List
 
+let run_test name f m =
+  let cpu_time, wall_time = Sys.time(), Unix.gettimeofday() in
+  let result = L.init m (fun _ -> f 50000 ~p:0.5 ~n:100000) in
+  Printf.printf "cpu: %fs, wall: %fs " (Sys.time() -. cpu_time) (Unix.gettimeofday() -. wall_time);
+  Printf.printf "%s %d\n" name (L.length result);; (* length to convince compiler I care *)
 
-let run_test f n =
-  print_string "start gsl:\n";
-  U.time0 (fun () -> for i = 1 to n do f 500 0.5 1000 done) ()
-  print_string "done.\n"
-
-let run_gsl = run_test Gsl.Randist.binomial_pdf
-let run_owl = run_test Owl.Stats.binomial_pdf
-
-let description = "time something"
-
-let commandline = Command.basic ~summary:description
-                                ~readme:(fun () -> description)
-                                Spec.(empty +> anon ("N" %: int))
-                                (fun () -> run_gsl; run_owl)
-
-let wrap_run version build_info commandline = 
-  Command.run ~version:version ~build_info:build_info commandline
-
-wrap_run "0.0" "speed test of something commandline"
-
+run_test "gsl" Gsl.Randist.binomial_pdf 1000000;
+run_test "owl" Owl.Stats.binomial_pdf   1000000;
