@@ -17,6 +17,12 @@ let (%) f g = (fun x -> f (g x))
     with partial application on a function that expects multiple arguments,
     you might just get the time needed to return the first function, which
     would probably not be what you wanted. *)
+let time0 f () =
+    let cpu_time, wall_time = Sys.time(), Unix.gettimeofday() in
+    let result = f in
+    Printf.printf "cpu: %fs, wall: %fs\n%!" (Sys.time() -. cpu_time) (Unix.gettimeofday() -. wall_time);
+    result
+
 let time1 f x =
     let cpu_time, wall_time = Sys.time(), Unix.gettimeofday() in
     let result = f x in
