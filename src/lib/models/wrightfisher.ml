@@ -8,7 +8,7 @@
 
 module L = Batteries.List
 module Mat = Owl.Mat
-module Dist = Gsl.Randist
+module Stats = Owl.Stats
 
 module TM = Tranmats
 module U = Utils.Genl
@@ -36,15 +36,11 @@ let weight_i {w11; w12; w22} allele_popsize freq  =
   let b_hom = w22 *. i' *. i' in
   (a_hom +. het) /. (a_hom +. 2. *. het +. b_hom)
 
-(* TODO: Replace with builtin Owl fn when it's available again. *)
-let binomial k n p =
-  Dist.binomial_pdf k p n
-
 (** Wright-Fisher transition probability from frequency prev_freq (row index)
     to frequency next_freq (column index). *)
 let prob_ij fitns allele_popsize prev_freq next_freq =
   let p = weight_i fitns allele_popsize prev_freq in
-  binomial next_freq allele_popsize p
+  Stats.binomial_pdf next_freq ~n:allele_popsize ~p:p
 
 (** [make_tranmat allele_popsize fitns] makes a transition matrix for 
     a population with size [allele_popsize/2] from fitnesses [fitns]. 
