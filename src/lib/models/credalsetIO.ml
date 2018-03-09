@@ -16,7 +16,8 @@ let (%) f g = (fun x -> f (g x))
 let tdists_marshal_ext = "mltds"
 (* let datafile_extension = ".mld" *)
 
-(** Lazy list must be finite! *)
+(** [write_tdists_finite_list basename finite_tdists_list].
+    Lazy list [finite_tdists_list] must be finite! *)
 let write_tdists_finite_list basename finite_tdists_list =
 let open T in
   let first_gen = (LL.first finite_tdists_list).gen in
@@ -27,7 +28,8 @@ let open T in
 
 (** Lazy list must be finite! *)
 let write_tdists_sublist basename start_gen last_gen tdists_list =
-  write_tdists_finite_list basename (G.sub_lazy_list start_gen last_gen tdists_list)
+  write_tdists_finite_list basename
+                           (G.sub_lazy_list start_gen last_gen tdists_list)
 
 let read_marshalled_tdists_list filename =
   ((OU.marshal_from_file filename) : T.t LL.t)
@@ -138,8 +140,7 @@ let fill_bounds ?(spec=[interval_fill_color; FillPattern 0]) h ys zs =  (* args 
 [@@@ warning "+8"]
 
 
-(* Turned into spaghetti when I tried to add option of two different plots.  needs redoing. *)
-(** Make a series of n 3D plot pdfs from distlists using basename.
+(** Make a series of n plot pdfs from tdistlists using basename.
     Example:
       let distlists = make_distlists 500 [200] 
                     [{w11=1.0; w12=0.8; w22=0.7}; {w11=1.0; w12=0.3; w22=0.7}];;
@@ -166,7 +167,7 @@ let make_pdfs ?(leftright=true) ?(pdfdim=ThreeD) ?(rows=1) ?(cols=1)
               basename tdistlists = 
   let plots_per_page = rows * cols in
   let max_row, max_col = rows - 1, cols - 1 in
-  (* Next convert distlists--an infinite lazylist of lists of vectors--into a 
+  (* Next convert distlists--a possibly infinite lazylist of tdists--into a 
    * list of arrays of lists of vectors, where the elements of each rows*cols
    * length array are lists of vectors for a plot on rowsXcols sized page of plots. *)
   let page_groups = make_page_groups pdfdim plots_per_page tdistlists in
@@ -229,18 +230,3 @@ let make_setchain_bounds_pdfs ?(addl_2D_fn=fill_bounds)
             ~leftright ~rows ~cols ~sample_interval ?plot_max ?fontsize
             basename tdistlists
 
-
-(*
-(** Simple (possibly obsolete) function to make a series of n 2D plot pdfs
-    from LazyList [dists] using [basename]. *)
-let make_2D_pdfs basename dists n =
-  let dist_length = snd (Mat.shape (LL.at dists 0)) in
-  let xs = Mat.sequential 1 dist_length in (* vector of x-axis indices *)
-  let make_pdf i dist =
-    let filename = basename ^ (Printf.sprintf "%03d" i) ^ ".pdf" in
-    let h = Pl.create filename in 
-    Pl.set_yrange h 0.0 0.25;
-    Pl.scatter ~h xs dist; 
-    Pl.output h
-  in LL.iteri make_pdf (LL.take n dists)
-*)

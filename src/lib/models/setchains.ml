@@ -165,16 +165,28 @@ let mat_vertices ?digits ?uniq p q =
 (************************************************************)
 (** Hi-Lo Method.  See Hartfiel section 2.4, pp.  46-54
 
-    This is an analog of matrix multiplication for intervals of
-    stochastic matrices.  The method calculates tight bounds
-    for products of all possible multiplications of matrices
-    in two intervals, the original interval, and one that's
-    the result of a previous application of the hi-lo method.
-    The core idea of this process is that the elements of a 
-    new pair of lower and upper matrices must be individually
-    calculated so that each element estimates the minimum or
-    maximum value for that element from all of the possible
-    products.
+    This is an analog of matrix multiplication for intervals of stochastic
+    matrices.  The method calculates tight bounds for products of all
+    possible multiplications of matrices in two intervals, the original
+    interval, and one that's the result of a previous application of the
+    hi-lo method.  The core idea of this process is that the elements of a
+    new pair of lower and upper matrices must be individually calculated so
+    that each element estimates the minimum or maximum value for that
+    element from all of the possible products.
+    
+    Usage example using [CredalsetIO.make_setchain_bounds_pdfs]:
+    {[
+        Module I = Models.CredalsetIO;;
+        Module S = Models.Setchains;;
+        Module T = Models.Tdists;;
+        Module W = Models.Wrightfisher;;
+        let fitnesses = W.([{w11=1.0; w12=0.5; w22=0.1}; {w11=1.0; w12=0.5; w22=0.1}]);;
+        let pmat, qmat = S.make_wf_interval 100 fitnesses;;
+        let bounds_mats =  S.lazy_bounds_mats_list pmat qmat;;
+        let tdistlists = T.add_gens (S.lazy_prob_intervals_from_freq 50 bounds_mats);;
+        I.make_setchain_bounds_pdfs ~rows:2 ~cols:3 "foo" (T.sublist 1 12 tdistlists);;
+    ]}
+    More variations are illustrated in setchainPDFs.ml.
 *)
 
 (** Compare function for use by idx_sort for col vector *)
@@ -222,7 +234,7 @@ let recombine relation p q p_sum idxs =
         then M.set pbar 0 i (1. -. sum_rest) (* return--last iter put it over/under *)
         else (M.set pbar 0 i qi;             (* still <= 1, or >=1; try next one *)
               find_crossover idxs'' sum_rest_plus_qi) 
-    | [] -> raise (Failure "bad vectors") (* this should never happen *)
+    | [] -> raise (Failure "recombine: bad vectors") (* this should never happen *)
   in 
   find_crossover idxs p_sum;
   pbar
