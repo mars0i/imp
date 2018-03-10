@@ -1,8 +1,10 @@
 
-all:
+all: build
+
+build:
 	jbuilder build @install
 
-doc: _build/default/_doc/index.html
+doc: _build
 	jbuilder build @doc
 
 clean:
