@@ -2,7 +2,7 @@
 all:
 	jbuilder build @install
 
-doc:
+doc: _build/default/_doc/index.html
 	jbuilder build @doc
 
 clean:
