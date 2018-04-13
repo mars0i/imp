@@ -1,4 +1,5 @@
 (* based on https://mjambon.github.io/atdgen-doc/tutorial *)
 
-type yo = {gen : int ; dists : float list}
+type foo = {idx : int ; data : float list}
+
 

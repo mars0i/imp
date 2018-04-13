@@ -1,0 +1,18 @@
+#!/bin/sh
+
+if [ -z "$1" ]; then
+  echo "usage $0 basename"
+  exit 1
+fi
+
+base=$1
+
+atdgen -t ${base}.atd
+atdgen -b ${base}.atd
+
+ocamlfind ocamlc -c ${base}_t.mli -package atdgen
+ocamlfind ocamlc -c ${base}_b.mli -package atdgen
+ocamlfind ocamlopt -c ${base}_t.ml -package atdgen
+ocamlfind ocamlopt -c ${base}_b.ml -package atdgen
+ocamlfind ocamlopt -c ${base}.ml -package atdgen
+ocamlfind ocamlopt -o ${base} ${base}_t.cmx ${base}_b.cmx ${base}.cmx -package atdgen -linkpkg
