@@ -1,5 +1,0 @@
-(* based on https://mjambon.github.io/atdgen-doc/tutorial *)
-
-type foo = {idx : int ; data : float list}
-
-
