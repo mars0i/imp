@@ -78,6 +78,8 @@ let commandline =
       Printf.printf "making matrix interval ... %!";
       let pmat, qmat = SC.make_wf_interval popsize fitn_recs in
 
+      (* Printf.printf "\n%B\n" (pmat = qmat); (* DEBUG *) *)
+
       Printf.printf "making lazy bounds mats list ... %!";
       let bounds_mats =  SC.lazy_bounds_mats_list ~fork:(not nofork) pmat qmat in
 
