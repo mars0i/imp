@@ -224,7 +224,11 @@ let idx_sort_colvec v =
     p and q in Hartfiel, i.e. here the arguments should be (<=), l, q, p
     according to the normal senses of p and q. *)
 let recombine relation p q p_sum idxs =
-  if p = q then raise (Failure "recombine: Lower and upper tran matrices are identical");
+  let pm, pn = (M.shape p) in (* DEBUG *)
+  let qm, qn = (M.shape q) in (* DEBUG *)
+  Printf.printf "calc_bound_val_for_parmapi: p q are same: %b, dims: %d %d %d %d sums: %f %f\n%!" (p = q) pm pn qm qn (M.sum' p) (M.sum' q); (* DEBUG *)
+  Printf.printf "calc_bound_val_for_parmapi: %f %f %f %f\n%!" (M.get p 0 100) (M.get p 0 99) (M.get p 0 98) (M.get p 0 97); (* DEBUG *)
+  (* if p = q then raise (Failure "recombine: Lower and upper tran matrices are identical"); *)
   let pbar = M.copy p in  (* p was created using M.row, so it's a view not a copy. *)
   let rec find_crossover idxs' psum =
     match idxs' with
@@ -253,6 +257,9 @@ let recombine relation p q p_sum idxs =
     to avoid repeatedly performing the same computations.) Used by [_hilo_mult].  
     SEE doc/nonoptimizedcode.ml for an older, perhaps clearer version.  *)
 let calc_bound_val recomb pmat qmat prev_bound_mat pmat_row_sums prev_mat_idx_lists width idx =
+  let pm, pn = (M.shape pmat) in (* DEBUG *)
+  let qm, qn = (M.shape qmat) in (* DEBUG *)
+  Printf.printf "calc_bound_val_for_parmapi: pmat qmat are same: %b, dims: %d %d %d %d sums: %f %f\n%!" (pmat = qmat) pm pn qm qn (M.sum' pmat) (M.sum' qmat); (* DEBUG *)
   let i, j = U.flat_idx_to_rowcol width idx in
   let p_row_sum = M.get pmat_row_sums i 0 in
   let idxs = A.get prev_mat_idx_lists j in
@@ -264,6 +271,7 @@ let calc_bound_val recomb pmat qmat prev_bound_mat pmat_row_sums prev_mat_idx_li
 (** Wrapper for calc_bound_val (which see), adding an additional, ignored 
     argument for Pmap.array_float_parmapi. *)
 let calc_bound_val_for_parmapi recomb pmat qmat prev_bound_mat pmat_row_sums prev_mat_idx_lists width idx _ =
+  Printf.printf "\ncalc_bound_val_for_parmapi: pmat qmat are same: %b\n" (pmat = qmat); (* DEBUG *)
   calc_bound_val recomb pmat qmat prev_bound_mat pmat_row_sums prev_mat_idx_lists width idx
 
 (** Given a [recomb] function, the original tight interval bounds pmat and
@@ -279,6 +287,7 @@ let calc_bound_val_for_parmapi recomb pmat qmat prev_bound_mat pmat_row_sums pre
       If recomb is [recombine (<=)], the arguments should be (notice!) [qmat],
       [pmat], and the previous hi matrix, along with the row sums. *)
 let _hilo_mult ?(fork=true) recomb pmat qmat prev_bound_mat row_sums = 
+  Printf.printf "\n_hilo_mult: pmat qmat are same: %b\n" (pmat = qmat); (* DEBUG *)
   let (rows, cols) = M.shape pmat in
   let len = rows * cols in
   let prev_mat_idx_lists = M.map_cols idx_sort_colvec prev_bound_mat in (* sorted list of indexes for each column *)
@@ -324,6 +333,7 @@ let _hi_mult ?(fork=true) pmat qmat prev_hi_mat q_row_sums =
 let next_bounds_mats ?(fork=true) pmat qmat p_row_sums q_row_sums (lo,hi) =
   let lo' = _lo_mult ~fork pmat qmat lo p_row_sums in
   let hi' = _hi_mult ~fork pmat qmat hi q_row_sums in
+  Printf.printf "\nlo', hi' are same: %b\n" (lo' = hi'); (* DEBUG *)
   (lo', hi')
 
 (** lazy_bounds_mats [pmat] [qmat] returns a LazyList of bounds matrix pairs
@@ -394,7 +404,9 @@ let make_wf_interval_no_tight_check popsize fitn_list =
     tightness test directly. *)
 let make_wf_interval popsize fitn_list =
   let low, high = make_wf_interval_no_tight_check popsize fitn_list in
+  Printf.printf "\nlow, high are same: %b\n" (low = high); (* DEBUG *)
   let tight_low, tight_high = tighten_mat_interval low high in
+  Printf.printf "tight_low, tight_high are same: %b\n" (tight_low = tight_high); (* DEBUG *)
   if (low, high) <> (tight_low, tight_high) (* This should not happen; such an interval should already be tight. *)
   then Printf.eprintf "\n[make_wf_interval] Note: had to tighten original Wright-Fisher-based interval.\n";
   tight_low, tight_high
