@@ -1,5 +1,4 @@
 #require "parmap";;
-#require "gsl";;
 #load "utils.cma";;
 #load "models.cma";;
 module I = Models.CredalsetIO;;
