@@ -224,7 +224,8 @@ let idx_sort_colvec v =
     p and q in Hartfiel, i.e. here the arguments should be (<=), l, q, p
     according to the normal senses of p and q. *)
 let recombine relation p q p_sum idxs =
-  if p = q then raise (Failure "recombine: Lower and upper tran matrices are identical");
+  (* This was a mistake because sometimes both p and q are nothing but a single 1.0 entry with zeros: *)
+  (* if p = q then raise (Failure "recombine: Lower and upper tran matrices are identical"); *)
   let pbar = M.copy p in  (* p was created using M.row, so it's a view not a copy. *)
   let rec find_crossover idxs' psum =
     match idxs' with
