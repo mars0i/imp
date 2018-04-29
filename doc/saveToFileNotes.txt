@@ -35,4 +35,27 @@ hdf5 using hdf5-ocaml (in opam)
 	R has libs for it
 
 
+--------------
 
+hdf5 ocaml lib is moribund and only half-featured at this point.
+Convenient use for me is broken.
+
+piqi looks good for OCaml serialization.
+
+However, I think I should also have a csv format available. 
+Simple plan:
+
+Save fitnesses that generated the data.
+Maybe store N or 2N.  Not strictly necessary.
+Save only pairs (or more) of bounds vectors at t.
+Store t.
+Maybe store an index for each vector at t, with 0 for lower and 1 for
+upper.
+
+Global config file, with columns:
+N, wAA, wAB, wBB
+and usually two rows.  Might as well just repeated the N.
+
+Data file, with columns:
+
+"generation", "vectorid" (the within-generation index), "0", "1", ..., 2N
