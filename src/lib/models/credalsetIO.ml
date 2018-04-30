@@ -16,7 +16,19 @@ let (%) f g = (fun x -> f (g x))
 let tdists_marshal_ext = "mltds"
 (* let datafile_extension = ".mld" *)
 
-let write_tdists_finite_list_to_csv basename finite_tdists_list =
+let tdists_list_to_idx_cols finite_tdists_list =
+  let cols_for_one_tdists td =
+    let len = L.length td.dists in
+    Mat.concat_horizontal (M.create len td.gen)
+                          (M.of_array (A.of_list td.dists) len 1)
+  in
+  let llist_of_mats = LL.map cols_for_one_tdists finite_tdists_list in
+  (* concat 'em here *)
+  ()
+
+
+
+let write_csv_tdists_list basename finite_tdists_list =
   let open T in
   let first_gen = (LL.first finite_tdists_list).gen in
   let last_gen = (LL.last finite_tdists_list).gen in
@@ -30,7 +42,7 @@ let write_tdists_finite_list_to_csv basename finite_tdists_list =
 
 (** [write_tdists_finite_list basename finite_tdists_list].
     Lazy list [finite_tdists_list] must be finite! *)
-let write_tdists_finite_list basename finite_tdists_list =
+let marshal_tdists_list basename finite_tdists_list =
   let open T in
   let first_gen = (LL.first finite_tdists_list).gen in
   let last_gen = (LL.last finite_tdists_list).gen in
@@ -39,11 +51,11 @@ let write_tdists_finite_list basename finite_tdists_list =
   OU.marshal_to_file finite_tdists_list filename
 
 (** Lazy list must be finite! *)
-let write_tdists_sublist basename start_gen last_gen tdists_list =
-  write_tdists_finite_list basename
+let marshal_tdists_sublist basename start_gen last_gen tdists_list =
+  marshal_tdists_list basename
                            (G.sub_lazy_list start_gen last_gen tdists_list)
 
-let read_marshalled_tdists_list filename =
+let unmarshal_tdists_list filename =
   ((OU.marshal_from_file filename) : T.t LL.t)
 
 (** PDF plot-writing functions *)

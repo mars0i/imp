@@ -41,6 +41,8 @@ hdf5 ocaml lib is moribund and only half-featured at this point.
 Convenient use for me is broken.
 
 piqi looks good for OCaml serialization.
+However, there are complaints about it being possibly buggy and about
+how the code is written.
 
 However, I think I should also have a csv format available. 
 Simple plan:
@@ -54,7 +56,7 @@ upper.
 
 Global config file, with columns:
 N, wAA, wAB, wBB
-and usually two rows.  Might as well just repeated the N.
+and usually two rows.  Might as well just repeat the N.
 
 Data file, with columns:
 
