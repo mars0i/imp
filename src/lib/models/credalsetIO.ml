@@ -16,16 +16,18 @@ let (%) f g = (fun x -> f (g x))
 let tdists_marshal_ext = "mltds"
 (* let datafile_extension = ".mld" *)
 
+(*
 let tdists_list_to_idx_cols finite_tdists_list =
+  let open T in
   let cols_for_one_tdists td =
     let len = L.length td.dists in
-    Mat.concat_horizontal (M.create len td.gen)
-                          (M.of_array (A.of_list td.dists) len 1)
+    Mat.concat_horizontal (Mat.create len 1 (float td.gen))
+                          (Mat.of_array (A.of_list td.dists) len 1)
   in
   let llist_of_mats = LL.map cols_for_one_tdists finite_tdists_list in
   (* concat 'em here *)
   ()
-
+*)
 
 
 let write_csv_tdists_list basename finite_tdists_list =
@@ -35,7 +37,7 @@ let write_csv_tdists_list basename finite_tdists_list =
   let filename = Printf.sprintf "%s%02dto%02d.%s" basename first_gen last_gen "csv" in
   (* make header row *)
   (* construct data rows *)
-  (* M.save_txt  ...*)
+  (* Mat.save_txt  ...*)
   ()
   
   

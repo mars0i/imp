@@ -5,7 +5,7 @@ module G = Utils.Genl
 
 let always_true _ = true
 
-type t = {gen : int ; dists : Mat.mat list}
+type t = {gen : int ; dists : Mat.mat list} [@@deriving make]
 (** accessor, constructor functions: *)
 let gen tds = tds.gen
 let dists tds = tds.dists
