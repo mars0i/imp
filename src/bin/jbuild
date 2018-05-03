@@ -2,7 +2,7 @@
 
 (executables
  ((names (wrightfisherPDFs setchainPDFs)) ; speedtest mpowtest setchaintest
-	(public_names (wrightfisherPDFs setchainPDFs)) ; speedtest mpowtest setchaintest
+  (public_names (wrightfisherPDFs setchainPDFs)) ; speedtest mpowtest setchaintest
   (package models)
   (libraries (core models utils)) ; owl
   (modes (native)) ; replace native with byte to make bytecode executable
