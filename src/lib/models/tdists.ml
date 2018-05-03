@@ -9,13 +9,17 @@ type t = {gen : int ; dists : Mat.mat list} [@@deriving make]
 (** accessor, constructor functions: *)
 let gen tds = tds.gen
 let dists tds = tds.dists
-let make_tdists gen dists = {gen ; dists}
+(*
+let make_t gen dists = {gen ; dists}
+*)
 
 (* Transform lazy lists of dists to/from lazy lists of tdists: *)
 let ints_from n = LL.seq n ((+) 1) always_true
 
 let add_gens ?(first_tick=0) dists_llist =
-  LL.map2 make_tdists (ints_from first_tick) dists_llist
+  LL.map2 make_t (ints_from first_tick) dists_llist
+
+
 
 let remove_gens tdists_llist = LL.map dists tdists_llist
 
