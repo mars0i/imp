@@ -61,3 +61,29 @@ and usually two rows.  Might as well just repeat the N.
 Data file, with columns:
 
 "generation", "vectorid" (the within-generation index), "0", "1", ..., 2N
+
+--------------
+
+opam install ppx_sexp_conv
+opam install ppx_bin_prot
+
+#require "ppx_sexp_conv";;
+#require "core.top";; (* so they'll print as real sexps *)
+
+open Core;;
+or
+open Sexplib.Conv;;
+or
+open Sexplib.Std;;
+
+type foo = {a : int; bs : float list} [@@deriving sexp];;
+
+....
+
+#require "ppx_bin_prot";;
+
+open Core;;
+or
+open Bin_prot.Std;;
+
+type foo = {a : int; bs : float list} [@@deriving bin_io];;
