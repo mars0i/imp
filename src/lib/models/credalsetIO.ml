@@ -32,7 +32,7 @@ let tdists_list_to_idx_cols finite_tdists_list =
 
 let write_csv_tdists_list basename finite_tdists_list =
   let open T in
-  let first_gen = (LL.first finite_tdists_list).gen in
+  let first_gen = (LL.hd finite_tdists_list).gen in
   let last_gen = (LL.last finite_tdists_list).gen in
   let filename = Printf.sprintf "%s%02dto%02d.%s" basename first_gen last_gen "csv" in
   (* make header row *)
@@ -46,7 +46,7 @@ let write_csv_tdists_list basename finite_tdists_list =
     Lazy list [finite_tdists_list] must be finite! *)
 let marshal_tdists_list basename finite_tdists_list =
   let open T in
-  let first_gen = (LL.first finite_tdists_list).gen in
+  let first_gen = (LL.hd finite_tdists_list).gen in
   let last_gen = (LL.last finite_tdists_list).gen in
   let filename = Printf.sprintf "%s%02dto%02d.%s" 
                                  basename first_gen last_gen tdists_marshal_ext in
