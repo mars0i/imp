@@ -4,6 +4,7 @@
 module I = Models.CredalsetIO;;
 module S = Models.Setchains;;
 module T = Models.Tdists;;
+module TL = Models.Tdistslist;;
 module TM = Models.Tranmats;;
 module W = Models.Wrightfisher;;
 module G = Utils.Genl;;
