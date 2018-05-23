@@ -3,7 +3,7 @@
 
 module LL = Batteries.LazyList
 
-type t = Tdists.t LL
+type t = Tdists.t list
 
 let hd = LL.hd
 let tl = LL.tl
