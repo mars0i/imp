@@ -13,7 +13,7 @@ module Stats = Owl.Stats
 module TM = Tranmats
 module U = Utils.Genl
 
-(** One goal here is to create a "distlist", which is a LazyList of Lists 
+(** One goal here is to create a "distslist", which is a lazy list of Lists 
     Owl row vector matrices representing probability distributions over 
     possible frequencies of alleles (or other organism types0 in a population. 
     The basic distlist creation functions are in tranmats.ml. *)

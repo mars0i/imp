@@ -5,7 +5,7 @@
 module M  = Owl.Mat
 module A  = Batteries.Array
 module L  = Batteries.List
-module LL = Batteries.LazyList
+module TL = Tdistslist
 
 
 (*********** misc. convenience definitions **********)
@@ -33,7 +33,7 @@ let next_intsets pset =
     They can be retreived using e.g., to get the power set of integers
     up to 5: LazyList.at intsets 4 .  Note each power set is in the form
     of a regular list; only the top level list is lazy. *)
-let make_intsets () = LL.from_loop [[0]; []] next_intsets
+let make_intsets () = TL.from_loop [[0]; []] next_intsets
 
 (** A lazy list of integer power sets. *)
 let algebra_sets = make_intsets ()
@@ -90,7 +90,7 @@ let prob_sum probs atom_idxs =
     representing atoms in a set followed by the probability of that set. *)
 let algebra_probs probs = 
   let i = (snd (M.shape probs)) - 1 in
-  let idx_sets = LL.at algebra_sets i in
+  let idx_sets = TL.at algebra_sets i in
   let make_entry event = (event, prob_sum probs event) in
   L.map make_entry idx_sets 
 
@@ -123,11 +123,11 @@ let invert_prob_sum omega_max atom_extrema subset_idxs =
 
 (** Map prob_sum over each possible combination of atoms. *)
 let simple_sums omega_max atom_extrema =
-  L.map (prob_sum atom_extrema) (LL.at algebra_sets omega_max)
+  L.map (prob_sum atom_extrema) (TL.at algebra_sets omega_max)
 
 (** Map invert_prob_sum over each possible combination of atoms. *)
 let inverted_sums omega_max atom_extrema =
-  L.map (invert_prob_sum omega_max atom_extrema) (LL.at algebra_sets omega_max)
+  L.map (invert_prob_sum omega_max atom_extrema) (TL.at algebra_sets omega_max)
 
 (** Calculate L values for all members of the algebra and return an
     (atoms, L-value) alist.  See (3) in Skulj. *)
@@ -135,7 +135,7 @@ let pri_f_field_lowers omega_max atom_mins atom_maxs =
   let mins = simple_sums omega_max atom_mins in
   let inverted_maxs = inverted_sums omega_max atom_maxs in
   let minmins = L.map2 max mins inverted_maxs in
-  L.combine (LL.at algebra_sets omega_max) minmins
+  L.combine (TL.at algebra_sets omega_max) minmins
 
 (** Calculate U values for all members of the algebra and return an
     (atoms, U-value) alist.  See (4) in Skulj. *)
@@ -143,7 +143,7 @@ let pri_f_field_uppers omega_max atom_mins atom_maxs =
   let maxs = simple_sums omega_max atom_maxs in
   let inverted_mins = inverted_sums omega_max atom_mins in
   let maxmaxs = L.map2 min maxs inverted_mins in
-  L.combine (LL.at algebra_sets omega_max) maxmaxs
+  L.combine (TL.at algebra_sets omega_max) maxmaxs
 
 (** Given lists of atoms, value pairs from pri_f_field_lowers and
     pri_f_field_uppers, return a list of pairs that combine the lower

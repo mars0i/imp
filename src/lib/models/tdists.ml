@@ -1,6 +1,6 @@
 module Mat = Owl.Mat
 module L = Batteries.List
-module LL = Batteries.LazyList
+module TL = Tdistslist
 module G = Utils.Genl
 
 let always_true _ = true
@@ -12,12 +12,12 @@ let dists tds = tds.dists
 let make gen dists = {gen ; dists}
 
 (* Transform lazy lists of dists to/from lazy lists of tdists: *)
-let ints_from n = LL.seq n ((+) 1) always_true
+let ints_from n = TL.seq n ((+) 1) always_true
 
 let add_gens ?(first_tick=0) dists_llist =
-  LL.map2 make (ints_from first_tick) dists_llist
+  TL.map2 make (ints_from first_tick) dists_llist
 
-let remove_gens tdists_llist = LL.map dists tdists_llist
+let remove_gens tdists_llist = TL.map dists tdists_llist
 
 (** [sublist start_t finish_t tdists_llist] returns a lazy list that's
     a finite sublist of [tdists_llist], from the first element with 
@@ -25,8 +25,8 @@ let remove_gens tdists_llist = LL.map dists tdists_llist
     Note that if the list is infinite and there are no elements satisfying
     both of these conditions, the function will try to run forever. *)
 let sublist start_gen finish_gen tdists_llist =
-  LL.take_while (fun tds -> tds.gen <= finish_gen)
-                (LL.drop_while (fun tds -> tds.gen < start_gen)
+  TL.take_while (fun tds -> tds.gen <= finish_gen)
+                (TL.drop_while (fun tds -> tds.gen < start_gen)
 		               tdists_llist)
 
 (** In [select_by_gens generations tdists_llist], [generations] is a lazy
