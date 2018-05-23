@@ -1,9 +1,5 @@
 Options for saving data to files for later retrieval
 
-https://github.com/LaurentMazare/npy-ocaml
-
-CapnProto
-
 csv
 	works with non-ocaml
 	Too verbose, and 2D is awkward.

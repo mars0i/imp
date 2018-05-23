@@ -3,8 +3,8 @@
 module M  = Owl.Mat
 module A = Batteries.Array
 module L = Batteries.List
+module LL = Batteries.LazyList
 module F = Core.Float
-module TL = Tdistslist
 
 let always_true _ = true
 
@@ -63,17 +63,17 @@ let memo f =
 (** Sequence manipulators, type converters, etc. *)
 
 (** Convenience abbreviation for [LazyList.(to_list (take n lazy_list))] *)
-let take2list n lazy_list = TL.(to_list (take n lazy_list))
+let take2list n lazy_list = LL.(to_list (take n lazy_list))
 
 (** Return a lazy list that's a sublist of the argument, from element start 
     (zero-based) to element finish, inclusive. *)
 let sub_lazy_list start finish ll =
-  TL.take (finish - start + 1) (TL.drop start ll)
+  LL.take (finish - start + 1) (LL.drop start ll)
 
 (** Convenience function: Takes elements from start to finish, inclusive, 
     from a LazyList, and convert the result to a List. *)
 let take_to_list start finish ll = 
-  TL.to_list (sub_lazy_list start finish ll)
+  LL.to_list (sub_lazy_list start finish ll)
 
 let lazy_take_at_idxs ns ll =
   let f acc elt =
@@ -81,11 +81,11 @@ let lazy_take_at_idxs ns ll =
     match ns' with
     | [] -> acc
     | n::nstl -> if i = n
-                 then (i+1, nstl, TL.cons elt ll')
+                 then (i+1, nstl, LL.cons elt ll')
                  else (i+1, ns', ll')
   in
-  let _, _, result = TL.fold_left f (0, ns, TL.nil) ll in
-  TL.rev result
+  let _, _, result = LL.fold_left f (0, ns, LL.nil) ll in
+  LL.rev result
 
 let list_range ?(step=1) start stop = 
   if start = stop then [start]
@@ -97,7 +97,7 @@ let list_range ?(step=1) start stop =
   in aux start stop
 
 let lazy_range ?(step=1) start stop = 
-  let open TL in
+  let open LL in
   if start = stop then make 1 start
   else let adjust_by, ineq =
     if stop > start then (+), (>) else (-), (<)
@@ -111,7 +111,7 @@ let lazy_range ?(step=1) start stop =
     defaults to 1.  Giving it a negative value will produce a
     descending sequence. *)
 let lazy_ints ?(skip=1) init_n =
-  TL.seq init_n (fun n -> n + skip) always_true
+  LL.seq init_n (fun n -> n + skip) always_true
 
 (** In [lazy_select accessor keys data], [keys] and [data] are lazy
     lists.  The function returns a lazy list of elements from [data]
@@ -123,13 +123,13 @@ let lazy_ints ?(skip=1) init_n =
     intersection of [keys] and [data]. *)
 let lazy_select accessor keys data =
   let rec sel ks ds =
-    if TL.is_empty ds || TL.is_empty ks then TL.Nil
-    else let k, d = TL.hd ks, TL.hd ds in
+    if LL.is_empty ds || LL.is_empty ks then LL.Nil
+    else let k, d = LL.hd ks, LL.hd ds in
          let d_key = accessor d in
-         if k = d_key then TL.Cons(d, (lzsel (TL.tl ks) (TL.tl ds)))
+         if k = d_key then LL.Cons(d, (lzsel (LL.tl ks) (LL.tl ds)))
          else if k > d_key
-	 then sel ks (TL.tl ds)  (* let ds catch up *)
-         else sel (TL.tl ks) ds  (* let ks catch up *)
+	 then sel ks (LL.tl ds)  (* let ds catch up *)
+         else sel (LL.tl ks) ds  (* let ks catch up *)
   and lzsel ks ds = lazy (sel ks ds)
   in lzsel keys data
 
@@ -142,14 +142,14 @@ let lazy_select accessor keys data =
     constructing lazy lists, one must use [Cons] and [nil] rather than
     [cons] and [nil], as with the [LazyList] eager fold functions:
     {[
-      let natnos = TL.seq 0 ((+) 1) (fun _ -> true);;
-      let posints = TL.seq 1 ((+) 1) (fun _ -> true);;
-      let prods = G.lazy_fold_right2 (fun x y acc -> TL.Cons(x*y, acc)) natnos posints TL.nil;;
-      TL.(to_list (take 10 prods));;
+      let natnos = LL.seq 0 ((+) 1) (fun _ -> true);;
+      let posints = LL.seq 1 ((+) 1) (fun _ -> true);;
+      let prods = G.lazy_fold_right2 (fun x y acc -> LL.Cons(x*y, acc)) natnos posints LL.nil;;
+      LL.(to_list (take 10 prods));;
       - : int list = [0; 2; 6; 12; 20; 30; 42; 56; 72; 90]
     ]} *)
 let lazy_fold_right2 f l1 l2 init_val =
-  let open TL in
+  let open LL in
   let rec aux rest1 rest2 =
     lazy begin
       match next rest1, next rest2 with

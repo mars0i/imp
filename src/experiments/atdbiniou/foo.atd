@@ -1,0 +1,7 @@
+(* inspired by https://mjambon.github.io/atdgen-doc/tutorial *)
+
+(* note atd supports lists but not arrays *)
+
+type foo = {idx : int ; data : float list}
+
+type foos = {somefoos : foo list}

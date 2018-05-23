@@ -3,7 +3,7 @@
 (library 
  ((name        models)
   (public_name models)
-  (modules (wrightfisher setchains tdists tdistslist tranmats credalsetIO))
+  (modules (wrightfisher setchains tdists tranmats credalsetIO))
   (preprocess (pps (ppx_deriving.std)))
   (libraries (ppx_deriving.runtime batteries core owl parmap utils))
   ;(ocamlopt_flags (:standard -O3)) ; -dcmm -O3 ; -dcmm dumps intermediate rep
