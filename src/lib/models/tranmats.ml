@@ -5,7 +5,7 @@
 
 module Mat = Owl.Mat
 module L = Batteries.List
-module TL = Tdistslist
+module T = Tdists
 
 (** The general goal here is to create a "distlist", which is a 
     LazyList of Lists Owl row vector matrices representing probability
@@ -31,8 +31,8 @@ let next_dists tranmats dists =
     number of dists in the nth distlist = (length tranmats)**n for one 
     initial distribution.  e.g. with
     two transition matrices and one initial distribution,
-       TL.at distlists 1
+       T.at distlists 1
     will produce 2**1 = 2 dists.  Or with more initial distributions, the
     number of dists at n is (length init_dists) * (length tranmats)**n . *)
 let make_distlists_from_mats tranmats init_dists =
-  TL.seq init_dists (next_dists tranmats) always_true
+  T.seq init_dists (next_dists tranmats) always_true
