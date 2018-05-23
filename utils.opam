@@ -4,6 +4,4 @@ maintainer: "marshall@logical.net"
 authors: ["mars0i"]
 homepage: "https://github.com/mars0i/impev"
 license: "GPL 3.0"
-build: [
-  ["jbuilder" "build" "--only" "wrightfisherPDFs" "--root" "." "-j" jobs "@install"]
-]
+build: [["jbuilder" "build" "-p" name "-j" jobs]]
