@@ -58,7 +58,7 @@ let marshal_tdists_sublist basename start_gen last_gen tdists_list =
                            (T.sub_lazy_list start_gen last_gen tdists_list)
 
 let unmarshal_tdists_list filename =
-  ((OU.marshal_from_file filename) : T.tdistslist)
+  ((OU.marshal_from_file filename) : T.t T.t)
 
 (** PDF plot-writing functions *)
 
