@@ -156,6 +156,49 @@ let next_intsets pset =
     of a regular list; only the top level list is lazy. *)
 let make_intsets () = from_loop [[0]; []] next_intsets
 
+(** A lazy list of integer power sets. *)
+let algebra_sets = make_intsets ()
+
+(*********** probabilities over algebras **********)
+
+
+(** Set difference for ordered lists of integers.
+    Given lists xs and ys that are both ordered in the same way (e.g. 
+    monotonically ordered integers), return a list containing all
+    elements of xs not in ys (with order preserved).  The elements
+    in ys must be a (perhaps improper) subset of xs.
+    This version by RichN at https://codereview.stackexchange.com/a/162407/61384 *)
+let rec subtract_list xs ys =
+  match xs, ys with 
+  | [], _ -> []
+  | _, [] -> xs
+  | x::xs', y::ys' when x = y -> subtract_list xs' ys'
+  | x::xs', _ -> x::(subtract_list xs' ys)
+
+(** Set complement for ordered lists of integers.
+    i.e. return the atoms representing the negation of the original set.
+    Given a maximum element omega_max and a subset of a domain of atoms 
+    represented by list of integers in decreasing order, return a list
+    of the integers, between 0 and omega_max inclusive, that are not in
+    the subset.  The returned list will also be in decreasing order.
+    Note that omega_max is one less than the size of the domain. *)
+let list_complement omega_max subset =
+  let omega = L.range omega_max `Downto 0 in
+  subtract_list omega subset
+
+(** Given a vector of atom probabilities and a list of indexes representing
+    atoms, returns sum of probabilities for the set containing those atoms. *)
+let prob_sum probs atom_idxs =
+  let add_prob sum idx = sum +. Mat.get probs 0 idx  (* Owl.Mat.get rather than .{i,j} to get type right *)
+  in L.fold_left add_prob 0. atom_idxs
+
+(** Return (1 - the sum of probs of extreme probs) for a set of atoms
+    See (3) and (4) in Skulj. *)
+let invert_prob_sum omega_max atom_extrema subset_idxs = 
+  1. -. prob_sum atom_extrema (list_complement omega_max subset_idxs)
+
+(*********** algebras of indexes representing atoms **********)
+
 (** Given a probability vector, returns an alist of pairs for all
     elements in the algebra of sets based on the atoms represented by
     elements in the vector.  Each pair contains a list of indexes 
@@ -189,6 +232,8 @@ let pri_f_field_uppers omega_max atom_mins atom_maxs =
   let inverted_mins = inverted_sums omega_max atom_mins in
   let maxmaxs = L.map2 min maxs inverted_mins in
   L.combine (at algebra_sets omega_max) maxmaxs
+
+(*
 
 (*********** Strings for printing **********)
 
@@ -295,5 +340,4 @@ let sublist start_gen finish_gen tdists_llist =
 let select_by_gens generations tdists_llist =
   G.lazy_select gen generations tdists_llist
 
-
-
+*)
