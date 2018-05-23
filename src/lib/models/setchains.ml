@@ -8,7 +8,7 @@ module Pmap = Parmap
 
 module U = Utils.Genl
 module WF = Wrightfisher
-module TL = Tdistslist
+module T = Tdists
 
 (** One goal here is to create a "distlist", which is a LazyList of Lists 
     Owl row vector matrices representing probability distributions over 
@@ -332,7 +332,7 @@ let next_bounds_mats ?(fork=true) pmat qmat p_row_sums q_row_sums (lo,hi) =
     by [qmat] *)
 let lazy_bounds_mats_list ?(fork=true) pmat qmat =
   let p_row_sums, q_row_sums = M.sum_cols pmat, M.sum_cols qmat in (* sum_cols means add col vecs, = new col vec w/ sum of ea row *)
-  TL.seq (pmat, qmat) (next_bounds_mats ~fork pmat qmat p_row_sums q_row_sums) always
+  T.seq (pmat, qmat) (next_bounds_mats ~fork pmat qmat p_row_sums q_row_sums) always
 
 (** Convenience version of lazy_bounds_mats_list that takes
     (pmat, qmat) as argument rather than pmat and qmat. *)
@@ -359,9 +359,9 @@ let freq_mult freq (lo_mat, hi_mat) =
     be the initial interval: a list containing two copies of a vector with
     1.0 at index freq and 0.0 everywhere else. *)
 let lazy_prob_intervals_from_freq freq bounds_mats_list =
-  let size, _ = M.shape (fst (TL.hd bounds_mats_list)) in
+  let size, _ = M.shape (fst (T.hd bounds_mats_list)) in
   let init_dist = (WF.make_init_dist size freq) in
-  TL.cons [init_dist; init_dist] (TL.map (freq_mult freq) bounds_mats_list)
+  T.cons [init_dist; init_dist] (T.map (freq_mult freq) bounds_mats_list)
 
 
 (*****************************************************)
@@ -406,13 +406,13 @@ module T = Tdists
 
 let lazy_tdists_from_freq ?(first_tick=0) freq bounds_mats_list =
   let f dists tdists_list = 
-    let prev_gen = T.((TL.hd tdists_list).gen) in
+    let prev_gen = T.((T.hd tdists_list).gen) in
     T.{gen = prev_gen + 1; dists}
   in
   let lazy_intervals = lazy_prob_intervals_from_freq freq bounds_mats_list in
-  let first_interval = TL.hd lazy_intervals in
-  let rest_intervals = TL.tl lazy_intervals in
-  TL.lazy_fold_right f rest_intervals {t = 0; dists = first_interval}
+  let first_interval = T.hd lazy_intervals in
+  let rest_intervals = T.tl lazy_intervals in
+  T.lazy_fold_right f rest_intervals {t = 0; dists = first_interval}
 *)
 
 (*

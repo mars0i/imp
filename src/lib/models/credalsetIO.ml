@@ -7,7 +7,6 @@ module L = Batteries.List
 module A = Batteries.Array
 module G = Utils.Genl
 module T = Tdists
-module TL = Tdistslist
 
 let (%) f g = (fun x -> f (g x))
 
@@ -24,7 +23,7 @@ let tdists_list_to_idx_cols finite_tdists_list =
     Mat.concat_horizontal (Mat.create len 1 (float td.gen))
                           (Mat.of_array (A.of_list td.dists) len 1)
   in
-  let llist_of_mats = TL.map cols_for_one_tdists finite_tdists_list in
+  let llist_of_mats = T.map cols_for_one_tdists finite_tdists_list in
   (* concat 'em here *)
   ()
 *)
@@ -33,8 +32,8 @@ let tdists_list_to_idx_cols finite_tdists_list =
 (*
 let write_csv_tdists_list basename finite_tdists_list =
   let open T in
-  let first_gen = (TL.hd finite_tdists_list).gen in
-  let last_gen = (TL.last finite_tdists_list).gen in
+  let first_gen = (T.hd finite_tdists_list).gen in
+  let last_gen = (T.last finite_tdists_list).gen in
   let filename = Printf.sprintf "%s%02dto%02d.%s" basename first_gen last_gen "csv" in
   (* make header row *)
   (* construct data rows *)
@@ -47,8 +46,8 @@ let write_csv_tdists_list basename finite_tdists_list =
     Lazy list [finite_tdists_list] must be finite! *)
 let marshal_tdists_list basename finite_tdists_list =
   let open T in
-  let first_gen = (TL.hd finite_tdists_list).gen in
-  let last_gen = (TL.last finite_tdists_list).gen in
+  let first_gen = (T.hd finite_tdists_list).gen in
+  let last_gen = (T.last finite_tdists_list).gen in
   let filename = Printf.sprintf "%s%02dto%02d.%s" 
                                  basename first_gen last_gen tdists_marshal_ext in
   OU.marshal_to_file finite_tdists_list filename
@@ -56,10 +55,10 @@ let marshal_tdists_list basename finite_tdists_list =
 (** Lazy list must be finite! *)
 let marshal_tdists_sublist basename start_gen last_gen tdists_list =
   marshal_tdists_list basename
-                           (G.sub_lazy_list start_gen last_gen tdists_list)
+                           (T.sub_lazy_list start_gen last_gen tdists_list)
 
 let unmarshal_tdists_list filename =
-  ((OU.marshal_from_file filename) : T.t TL.t)
+  ((OU.marshal_from_file filename) : T.t T.t)
 
 (** PDF plot-writing functions *)
 
@@ -81,7 +80,7 @@ let abs_sort_dists dists = L.sort G.absdiff_compare dists
 type pdfdims = TwoD | ThreeD | BothDs
 
 let make_page_groups pdfdim plots_per_page tdistlists =
-  let nonlazytdistlists = TL.to_list tdistlists in
+  let nonlazytdistlists = T.to_list tdistlists in
   let nonlazytdistlists' = 
     match pdfdim with (* if BothDs, we'll make 2 plots for each generation, so duplicate 'em *)
     | BothDs -> L.concat (L.fold_right (fun e acc -> [e;e]::acc) 
